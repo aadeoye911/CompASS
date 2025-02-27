@@ -48,50 +48,61 @@ def init_latent(pipe, generator, height, width, batch_size=1):
 
     return latents
 
-def store_token_indices(pipe, prompt):
+def get_token_indices(pipe, prompt):
     """
-    Store token indices for SoT (Start-of-Text), EoT (End-of-Text), and words.
+    Get token indices for SoT (Start-of-Text), EoT (End-of-Text), and words.
     """
+    # Tokenize the prompt
     token_ids = pipe.tokenizer.encode(prompt, add_special_tokens=True)
     tokenized_words = pipe.tokenizer.convert_ids_to_tokens(token_ids)
 
-    word_indices = {"sot": [0]}  # SoT is always at index 0
-    eot_positions = (torch.tensor(token_ids) == pipe.tokenizer.eos_token_id).nonzero(as_tuple=True)[0]
-    word_indices["eot"] = [eot_positions[0].item() if len(eot_positions) > 0 else len(token_ids) - 1]
-
-    word_tracker = {}
+    token_indices = {}
     for token_idx, token in enumerate(tokenized_words):
-        word = token.replace("##", "")
-        if word not in word_indices:
-            word_indices[word] = []
-        word_indices[word].append(token_idx)
+        # Clean tokens to regular text
+        if token == pipe.tokenizer.bos_token:
+            word = "sot"
+        elif token == pipe.tokenizer.eos_token:
+            word = "eot"
+        else:
+            word = token.replace("##", "").replace("</w>", "") # Remove BPE subword markers
+        # Store token indices for prompt words and special tokens
+        token_indices.setdefault(word, []).append(token_idx)
 
-    return word_indices
+    return token_indices
 
-def encode_prompt(pipe, prompt, batch_size=1):
+def tokenize_prompt(pipe, prompt, max_length=None):
+    """ 
+    Tokenize a prompt or list of prompts, handling padding and truncation.
+    """
+    if max_length is None:
+        max_length = pipe.tokenizer.model_max_length
+
+    text_inputs = pipe.tokenizer(
+        prompt,
+        padding="max_length",
+        max_length=max_length,
+        truncation=True,
+        return_tensors="pt",
+        return_overflowing_tokens=True,  # Detects if truncation occurs
+    )
+    if "overflowing_tokens" in text_inputs:
+        truncated_tokens = pipe.tokenizer.convert_ids_to_tokens(text_inputs.input_ids[0])
+        last_word = truncated_tokens[-2]  # Get last token before truncation
+        print(f"⚠️ Warning: Prompt was truncated at token {max_length}. Last word kept: '{last_word}'.")
+
+    return text_inputs.input_ids.to(pipe.device)
+    
+def get_text_embeddings(pipe, prompt, batch_size=1):
     """
     Computes text embeddings for conditional and unconditional text (for CFG).
     """
+    batch_size = 1 if isinstance(prompt, str) else len(prompt)
     # Unconditional (empty prompt for CFG guidance)
-    uncond_input = pipe.tokenizer(
-        [""] * batch_size,
-        padding="max_length",
-        max_length=pipe.tokenizer.model_max_length,
-        return_tensors="pt"
-    ).to(pipe.device)
-    uncond_embeddings = pipe.text_encoder(uncond_input.input_ids)[0]
+    uncond_input = tokenize_prompt(pipe, "")
+    uncond_embeddings = pipe.text_encoder(uncond_input)[0]
+    print(uncond_embeddings.shape)
 
-    # Encode actual prompt
-    cond_input = pipe.tokenizer(
-        [prompt] * batch_size,
-        padding="max_length",
-        truncation=True,
-        max_length=pipe.tokenizer.model_max_length,
-        return_tensors="pt",
-    ).to(pipe.device)
-    cond_embeddings = pipe.text_encoder(cond_input.input_ids)[0]
-
-    return torch.cat([uncond_embeddings, cond_embeddings], dim=0)
+    return uncond_embeddings
 
 def parse_layer_name(layer_name):
     """

@@ -1,6 +1,6 @@
-# Ignore dataset folders
+# Ignore dataset folders and csv files
 shotdeck_data/
-shotdeck_data.csv
+*.csv
 
 # Ignore log files
 *.log
