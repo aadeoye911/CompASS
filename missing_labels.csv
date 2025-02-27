@@ -1,0 +1,611 @@
+,Image Hash,Composition,Frame Size,File Paths,Width,Height,Aspect Ratio
+632,5da5f45bfd6296ac4ad77ae64e309d17,Unknown,MS,['shotdeck_data/MS/63 - The Royal Tenenbaums.jpg'],1920,800,2.4
+653,5c1c8139d61889d2eafc1e6718b720ce,Unknown,MS,['shotdeck_data/MS/55 - Minari.jpg'],1920,802,2.39
+667,e156acee9fef60f186ce592c890c37df,Unknown,MS,['shotdeck_data/MS/384 - Once Upon a Time in Hollywood.jpeg'],1920,800,2.4
+754,7d8ae5d26f0bafe090b493433cd2cc07,Unknown,MS,['shotdeck_data/MS/14 - The Rider.jpg'],1920,801,2.4
+775,e5c2ca9229afd82e4f3d3c529a4cb54d,Unknown,"MS, MWS","['shotdeck_data/MS/211 - Pineapple Express.jpg', 'shotdeck_data/MWS/337 - Pineapple Express.jpg']",1920,805,2.39
+810,d81e659cffbadf08700bd5b1655943e0,Unknown,MS,['shotdeck_data/MS/88 - A Single Man.jpg'],2880,1199,2.4
+963,19c3a6f2e0b4f7d287deecc009a850be,Unknown,MS,['shotdeck_data/MS/250 - It Follows.jpg'],2880,1207,2.39
+987,883988b741765378130bc3943fd90238,Unknown,"MS, MWS","['shotdeck_data/MS/362 - Old Joy.png', 'shotdeck_data/MWS/497 - Old Joy.png']",2880,1620,1.78
+1012,994432732a36bd0d8028b4fa1f3e64ad,Unknown,MS,['shotdeck_data/MS/336 - Climax.jpg'],1920,806,2.38
+1064,02ee53990cf7716527fb42ef837368f7,Unknown,MS,['shotdeck_data/MS/467 - Booksmart.jpg'],1920,803,2.39
+1133,2e2861aeacf74f9501c393ebd7063c1a,balanced,Unknown,['shotdeck_data/balanced/83 - Repo Man.jpg'],1920,1080,1.78
+1137,a430be47ad166ba3fb59c02f49e5b20e,balanced,Unknown,['shotdeck_data/balanced/355 - The Great Beauty.jpg'],1728,818,2.11
+1140,2ae4a80d0f0f818b80eb37c2d657926b,balanced,Unknown,['shotdeck_data/balanced/302 - The Sandman.jpg'],1920,804,2.39
+1141,cd5bbd65cd53092b3a894f92697a9809,balanced,Unknown,['shotdeck_data/balanced/140 - The Wire.jpg'],1920,1080,1.78
+1143,f17d24c5dc04fa52b7ed70471a3fa593,balanced,Unknown,['shotdeck_data/balanced/72 - Summer 2023.jpg'],1920,1080,1.78
+1144,ba0129deb266bdfd7c7bc7a129627c92,balanced,Unknown,['shotdeck_data/balanced/102 - The Life Aquatic with Steve Zissou.jpg'],1920,819,2.34
+1146,328db3ddd8a9f8cd62eb6d8210fd7b8c,balanced,Unknown,['shotdeck_data/balanced/227 - Mulholland Drive.jpg'],1920,1038,1.85
+1151,4b1373c94dc0f60108171410b5a2b694,balanced,Unknown,['shotdeck_data/balanced/174 - The Big Year.jpg'],3840,1623,2.37
+1154,a6649cab3999c08ce2cfb024722a548c,balanced,Unknown,['shotdeck_data/balanced/318 - Kind Hearts and Coronets.jpg'],1440,1080,1.33
+1157,59948983919cc634a85c8a90bdbb152f,balanced,Unknown,['shotdeck_data/balanced/360 - Mami Wata.jpg'],1744,1080,1.61
+1164,acb46788f44faba4200de49e16beb758,balanced,Unknown,['shotdeck_data/balanced/90 - Metropolis.jpg'],1440,1080,1.33
+1166,bb726b7c4dc4a56177e95fabcc895a64,balanced,Unknown,['shotdeck_data/balanced/370 - Ralph Breaks the Internet.jpg'],1919,804,2.39
+1170,4446a1d75fd6146bf43bd4b6f4e95f81,balanced,Unknown,['shotdeck_data/balanced/326 - Interstellar.jpg'],1920,804,2.39
+1172,41497878850203e50bf4708d48055d35,balanced,Unknown,['shotdeck_data/balanced/59 - Panic Room.jpg'],1918,800,2.4
+1174,276bbf0ba4625bd6b845eb15a3ad7fb0,balanced,Unknown,['shotdeck_data/balanced/305 - Saturday Night.jpg'],1924,1040,1.85
+1177,717ca7c582a7106814df70d56de6dd14,balanced,Unknown,['shotdeck_data/balanced/362 - Detroit.jpg'],2880,1557,1.85
+1179,26ed4eb78c3125e4ac484abd65627808,balanced,Unknown,['shotdeck_data/balanced/319 - Harold and Maude.jpg'],2880,1557,1.85
+1180,04600bcc58215ab415cbaac97be2a227,balanced,Unknown,['shotdeck_data/balanced/8 - Roadtrip.jpg'],1920,1080,1.78
+1182,d5d37ac39bbecebe002943f53495efb1,balanced,Unknown,['shotdeck_data/balanced/369 - The Naked Gun From the Files of Police Squad.jpg'],1920,1080,1.78
+1188,13df7342b90940a59d9ed71f8af714a1,balanced,Unknown,['shotdeck_data/balanced/214 - Ghostbusters Afterlife.jpg'],1920,800,2.4
+1190,f7a589778f9169ce661449ce927a92d3,balanced,Unknown,['shotdeck_data/balanced/200 - Picnic at Hanging Rock.jpg'],1920,1080,1.78
+1195,1332d3667be95b18a988cff1f7653ea7,balanced,Unknown,['shotdeck_data/balanced/320 - Yellowjackets.jpg'],1920,800,2.4
+1200,1b3dcc739a82ca5951f7f4dcc1c22367,balanced,Unknown,['shotdeck_data/balanced/30 - Skyline.jpg'],1920,1080,1.78
+1202,311c324451fb91b11aaa36cb6a5263cd,balanced,Unknown,['shotdeck_data/balanced/93 - Heli.jpg'],1920,1080,1.78
+1205,7fbca4b611cf786e370f293b63257a8a,balanced,Unknown,['shotdeck_data/balanced/206 - Pose.jpg'],1900,1070,1.78
+1206,b882abdbfe6c4293b4b094e2ad72e0f6,balanced,Unknown,['shotdeck_data/balanced/13 - Conclave.jpg'],1920,800,2.4
+1208,24f93fae5d341a550f23eded5677aac6,balanced,Unknown,['shotdeck_data/balanced/181 - Broken Embraces.jpg'],1920,818,2.35
+1209,9dc33330659d4391492af1bc53e7c9be,balanced,Unknown,['shotdeck_data/balanced/56 - Boil.jpg'],1918,800,2.4
+1213,6479d90af3e15a5cec02d1eb3b2b753e,balanced,Unknown,['shotdeck_data/balanced/299 - The Graduate.jpg'],2880,1214,2.37
+1227,1759a737df9619463be1e394a71351c8,balanced,Unknown,['shotdeck_data/balanced/221 - The Mandalorian.jpg'],1920,804,2.39
+1236,c218977b20363f38ce28141bc029781d,balanced,Unknown,['shotdeck_data/balanced/354 - Small Axe.jpg'],1728,1080,1.6
+1239,3084623c8989155207b4e90a5e3deddf,balanced,Unknown,['shotdeck_data/balanced/316 - The Great Beauty.jpg'],1920,818,2.35
+1240,ce35b91981e1b681b90d460ec5f0df29,balanced,Unknown,['shotdeck_data/balanced/133 - The Horse Whisperer.jpg'],1920,819,2.34
+1242,073a375aae5233197e935ea2917f6847,balanced,Unknown,['shotdeck_data/balanced/364 - One from the Heart.jpg'],1446,1080,1.34
+1246,6bab660f4f8d1afdb1c9bcae36a717d1,balanced,Unknown,['shotdeck_data/balanced/232 - DeafHoops.jpg'],1920,958,2.0
+1247,ac3ae6e12ce0da7d6fa8821f272c2f4b,balanced,Unknown,['shotdeck_data/balanced/175 - Blue Velvet.jpg'],1920,817,2.35
+1255,ca5aa42072873f2c6a97ed512dcf46bb,balanced,Unknown,['shotdeck_data/balanced/307 - The Adventures of Baron Munchausen.jpg'],1916,1038,1.85
+1256,99d71f060745b6a22a795acd72f3aa1c,balanced,Unknown,['shotdeck_data/balanced/161 - A Different Man.jpg'],1924,1040,1.85
+1259,0221729da8ce33470231a5bdde7654dd,balanced,Unknown,['shotdeck_data/balanced/279 - Past Lives.jpg'],1920,1040,1.85
+1271,42b2fba9b8241049de370c82fd6b64d0,balanced,Unknown,['shotdeck_data/balanced/99 - Dragnet Girl.jpg'],1454,1079,1.35
+1278,8c503a94c5d4ede7f1f83df417ddb18a,balanced,Unknown,['shotdeck_data/balanced/346 - Time of the Wolf.jpg'],1920,819,2.34
+1279,5c25b8a73ea04edbf663e315d275b17a,balanced,Unknown,['shotdeck_data/balanced/267 - Please Baby Please.jpg'],1920,804,2.39
+1288,db597b3072f28022b0ada7377bf928e2,balanced,Unknown,['shotdeck_data/balanced/336 - Paid in Full.jpg'],1920,1080,1.78
+1293,3aaf16a42094f6f1559789e545cc3a75,balanced,Unknown,['shotdeck_data/balanced/147 - What Will They Say About You.jpg'],1920,1080,1.78
+1295,e1222a6b82769fc909fde432e9f7ecae,balanced,Unknown,['shotdeck_data/balanced/338 - The Queens Gambit.jpg'],1920,1080,1.78
+1309,6f7b6b7aab8326fba5ab51800cd34bff,balanced,Unknown,['shotdeck_data/balanced/73 - Booksmart.jpg'],1920,803,2.39
+1313,47be17ff5f65567c545559232e4cf101,balanced,Unknown,['shotdeck_data/balanced/212 - Sweet Country.jpg'],1920,804,2.39
+1325,05af50f2e1ba8733150432dfab280a7a,balanced,Unknown,['shotdeck_data/balanced/85 - Mean Girls.jpg'],1924,1040,1.85
+1328,6fb95da907fb601a2b2d495e7a0f5612,balanced,Unknown,['shotdeck_data/balanced/171 - Turn Down For What.jpg'],1920,818,2.35
+1329,cb0981d3165a1937c551cd6c2799425a,balanced,Unknown,['shotdeck_data/balanced/358 - Anyone But You.jpg'],1920,800,2.4
+1330,df29a0184214c18edbe473f162f8ebc6,balanced,Unknown,['shotdeck_data/balanced/332 - Big Fish.jpg'],1918,1040,1.84
+1333,0109e9374761ba5aecbe8b674ae3ab72,balanced,Unknown,['shotdeck_data/balanced/345 - Tiny Furniture.jpg'],1920,800,2.4
+1335,654934b80d07ca50492aed9f61b88a46,balanced,Unknown,['shotdeck_data/balanced/122 - Head.jpg'],1920,1080,1.78
+1338,161357b11a90daa3a6c98d287f767b90,balanced,Unknown,['shotdeck_data/balanced/351 - Event Horizon.jpg'],1914,819,2.34
+1342,d4494a543fc70b7e07101aad2c70de20,balanced,Unknown,['shotdeck_data/balanced/366 - Tombstone.jpg'],1920,798,2.41
+1344,2dd0abd1473ee53713e2a3eec158fca4,balanced,Unknown,['shotdeck_data/balanced/304 - Straight Outta Compton.jpg'],1920,800,2.4
+1355,882e8d75ed3e149610a922536fd883b8,balanced,Unknown,['shotdeck_data/balanced/254 - Unbreakable.jpg'],1917,815,2.35
+1363,d979df183543f039bbe09b27208b2e3e,balanced,Unknown,['shotdeck_data/balanced/143 - Love Jones.jpg'],1920,1038,1.85
+1366,aa14d234b8c2b96299e0ef7f2fa9934a,balanced,Unknown,['shotdeck_data/balanced/195 - All Of That For This .jpg'],2880,1978,1.46
+1373,0daa5d4205a6207ddd8f80020a84dcfb,balanced,Unknown,['shotdeck_data/balanced/216 - Our Planet.jpg'],1920,1080,1.78
+1376,49daf0a5699134099e92cc4a5eb992e0,balanced,Unknown,['shotdeck_data/balanced/352 - Saloum.jpg'],1920,800,2.4
+1379,99994f044575cf20476a935c892905d7,balanced,Unknown,['shotdeck_data/balanced/342 - Mr Smith Goes to Washington.jpg'],1480,1030,1.44
+1387,1ee559962dd03c47ac80d8ba25f80155,balanced,Unknown,['shotdeck_data/balanced/198 - Athena.jpg'],1920,908,2.11
+1388,d5c243d5e0adb38c3986683bc43fdc44,balanced,Unknown,['shotdeck_data/balanced/108 - Rampage.jpg'],2560,1440,1.78
+1389,fbd2c91c7eb8706bc43644c7d847cdc1,balanced,Unknown,['shotdeck_data/balanced/66 - The Man Who Fell to Earth.jpg'],1920,804,2.39
+1397,d2933fcad5dce1453378840a73d74fca,balanced,Unknown,['shotdeck_data/balanced/270 - Rust and Bone.jpg'],1914,793,2.41
+1398,34c8ecb3d524825e57d9dfa9b09af08b,balanced,Unknown,['shotdeck_data/balanced/91 - Cocaine Bear.jpg'],1917,804,2.38
+1403,da64afa2bd33597b0187a85b185ac6c9,balanced,Unknown,['shotdeck_data/balanced/12 - Girls Dont Like Football WE LOVE IT.jpg'],2880,1620,1.78
+1408,527f501512925f036bfae5cea4fb600c,balanced,Unknown,['shotdeck_data/balanced/69 - Wrath of Silence.jpg'],1920,794,2.42
+1410,2b00d2625a3fb2d9634d2a12da07a9ed,balanced,Unknown,['shotdeck_data/balanced/340 - Sonatine.jpg'],1918,1037,1.85
+1419,c65c81ff57633d38373a69c862a2de26,balanced,Unknown,['shotdeck_data/balanced/95 - The Lost Daughter.jpg'],1800,1080,1.67
+1420,76b92c2b1eae1adc4a96ae2464e37512,balanced,Unknown,['shotdeck_data/balanced/328 - The Invisible Man.jpg'],1478,1080,1.37
+1421,8bed8538f2ce01995d308fb40de80e39,balanced,Unknown,['shotdeck_data/balanced/5 - Devotion.jpg'],2880,1300,2.22
+1422,f88786fa40c750b74d3ced533f201d45,balanced,Unknown,['shotdeck_data/balanced/157 - The Irishman.png'],1920,1037,1.85
+1426,fa6b59b5dc3c8777d865153e40a53e3c,balanced,Unknown,['shotdeck_data/balanced/300 - Men in Black.jpg'],1920,1040,1.85
+1427,477fbfcec1abe511da3d9357620d4ba3,balanced,Unknown,['shotdeck_data/balanced/343 - The Wolf Man.jpg'],1274,956,1.33
+1428,e2d9e38502a55b0bb5a902ab79176c16,balanced,Unknown,['shotdeck_data/balanced/164 - Wednesday.jpg'],1920,1034,1.86
+1431,9570bf625f62fa58b9a9fa60e8be3d25,balanced,Unknown,['shotdeck_data/balanced/184 - Anyone But You.jpg'],1920,800,2.4
+1435,b0ac15f669065d17c6579d6a2e63272d,balanced,Unknown,['shotdeck_data/balanced/303 - Utopia.jpg'],1920,807,2.38
+1436,839faa3685aecef6ecfc274f6660a9d2,balanced,Unknown,['shotdeck_data/balanced/372 - Bell Book and Candle.jpg'],1920,1039,1.85
+1446,4378486f1e1ee0d4d026c0abe78e82ea,balanced,Unknown,['shotdeck_data/balanced/74 - Fargo.jpg'],1920,1080,1.78
+1455,7f1623ee7e97caf80a8fb912e827847b,balanced,Unknown,['shotdeck_data/balanced/334 - Layer Cake.jpg'],1920,793,2.42
+1457,662ca0b30b973befa961ce49c7eee1cd,balanced,Unknown,['shotdeck_data/balanced/204 - Seberg.jpg'],1920,800,2.4
+1461,e5cc9b634551533ab69367b809a4781a,balanced,Unknown,['shotdeck_data/balanced/234 - Marry Me.jpg'],1920,804,2.39
+1466,a58290b5c5aabafbe0722d1b52d0cd80,balanced,Unknown,['shotdeck_data/balanced/165 - WAP.jpg'],1920,1080,1.78
+1473,d90e20e33d6453ce7e9b4bee42b3d911,balanced,Unknown,['shotdeck_data/balanced/368 - Shrek.jpg'],1918,1078,1.78
+1474,1e78c59ff077bc733587bc785a8fef02,balanced,Unknown,['shotdeck_data/balanced/293 - Flamin Hot.jpg'],1920,802,2.39
+1480,4f0985f2f2aea5931eb1220f63194889,balanced,Unknown,['shotdeck_data/balanced/167 -  Fukakouryoku.jpg'],1503,1080,1.39
+1481,9739079d556ddb15770cdd2be598cc40,balanced,Unknown,['shotdeck_data/balanced/230 - My Neighbor Totoro.jpg'],1920,1038,1.85
+1490,a5aaa8006378cc84c3d91b12852c143d,balanced,Unknown,['shotdeck_data/balanced/191 - Star Wars Andor.jpg'],1918,802,2.39
+1494,451b7a5156cc50318ff4cab1fa4adc5f,balanced,Unknown,['shotdeck_data/balanced/327 - 3 Days to Kill.jpg'],1918,802,2.39
+1499,abf807a5ea5f77f5b4d133767f3876d3,balanced,Unknown,['shotdeck_data/balanced/298 - Oz The Great and Powerful.jpg'],1918,800,2.4
+1500,d8248fd2bdb64132eb826c7de39b9c83,balanced,Unknown,['shotdeck_data/balanced/111 - SS23 Campaign  Version 1.jpg'],1920,1079,1.78
+1501,7aa90aa2b56269613e5ef1a81171812d,balanced,Unknown,['shotdeck_data/balanced/321 - Reservation Dogs.jpg'],1920,1080,1.78
+1503,988850cf20860337f91cdb3c29a1d115,balanced,Unknown,['shotdeck_data/balanced/139 - The Performance.jpg'],1920,810,2.37
+1504,fca5eed0a70fd028277ce28214c2c6e9,balanced,Unknown,['shotdeck_data/balanced/199 - Mi Esencia My Heritage.jpg'],3104,2160,1.44
+1509,e4bed72406af2c621174c2f1cdaf07cb,balanced,Unknown,['shotdeck_data/balanced/100 - Bogus Operandi.jpg'],3600,2160,1.67
+1517,9de4debe3b2912eca4f5ced9e31f3226,balanced,Unknown,['shotdeck_data/balanced/159 - Cassandro.jpg'],1540,1070,1.44
+1520,f8b68b8d568125e999e05330ead60d05,balanced,Unknown,['shotdeck_data/balanced/142 - At Eternitys Gate.jpg'],1920,800,2.4
+1521,96b1a65f8a5bd193e0916f9b0d8a8e53,balanced,Unknown,['shotdeck_data/balanced/203 - Assassins Creed.jpg'],1920,803,2.39
+1527,4b4a891aa94de96396a1c6dd204696b7,balanced,Unknown,['shotdeck_data/balanced/252 - Thor Love and Thunder.jpg'],1916,800,2.4
+1531,f50b7a96c86767b9100cb847c124f756,balanced,Unknown,['shotdeck_data/balanced/180 - Fast  Furious Presents Hobbs  Shaw.jpg'],1920,804,2.39
+1535,40b350ff17e67a5a5e60f9ad740b18f8,balanced,Unknown,['shotdeck_data/balanced/281 - Love Lies Bleeding.jpg'],1918,802,2.39
+1536,485e65c81f6ca8fab4f16e83a8560ff3,balanced,Unknown,['shotdeck_data/balanced/127 - Tropic Thunder.jpg'],1920,820,2.34
+1551,41e82d886833da7d5953104164cf9236,balanced,Unknown,['shotdeck_data/balanced/160 - Moonage Daydream.jpg'],1920,1080,1.78
+1553,0da467658636c82e450a5f818d23fc4d,balanced,Unknown,['shotdeck_data/balanced/215 - Love  Mercy.jpg'],1920,1080,1.78
+1554,fbe411e87c3079575cfef244aac81411,balanced,Unknown,['shotdeck_data/balanced/361 - The Crown.jpg'],1920,960,2.0
+1560,3d07de9e9392c42482ace7dd07fa5b68,balanced,Unknown,['shotdeck_data/balanced/269 - Babylon.jpg'],1920,804,2.39
+1562,73649be2e95161931684b9ba413758ce,balanced,Unknown,['shotdeck_data/balanced/207 - Calendrio.jpg'],1920,714,2.69
+1566,648a5b8a3622d27db162327002eb38d5,balanced,Unknown,['shotdeck_data/balanced/25 - Supercourt.jpg'],3840,1846,2.08
+1579,57112e6afdac1cbad23487bb5fd572c2,balanced,Unknown,['shotdeck_data/balanced/265 - Mom.jpg'],1920,816,2.35
+1583,2633ce4a58a81c6027e87dc50d35abf7,balanced,Unknown,['shotdeck_data/balanced/324 - Revanche.jpg'],1920,1038,1.85
+1586,7208da5b702552bcbc0cead6641d93a7,balanced,Unknown,['shotdeck_data/balanced/301 - Napoleon.jpg'],1436,1080,1.33
+1588,076836b43d5e69a240b81ab36e6ba0be,balanced,Unknown,['shotdeck_data/balanced/365 - The Girl with the Dragon Tattoo.jpg'],1917,796,2.41
+1591,dd4fd9d667fd274ece1a49f922774ad5,balanced,Unknown,['shotdeck_data/balanced/233 - The Hangover.jpg'],1920,800,2.4
+1596,8c13f2873c6666cc880278cea2a82d63,balanced,Unknown,['shotdeck_data/balanced/126 - Avatar The Way of Water.jpg'],1920,1036,1.85
+1598,445e5a06ec9e249992648a1e93acceb3,balanced,Unknown,['shotdeck_data/balanced/134 - Oversharing Mom.jpg'],1920,1080,1.78
+1600,465110397e6b38d439266d95ebc8e149,balanced,Unknown,['shotdeck_data/balanced/268 - Adventureland.jpg'],1920,1038,1.85
+1602,204608756f321970881b97a1ba56f5dd,balanced,Unknown,['shotdeck_data/balanced/296 - The Kings Speech.jpg'],1920,1080,1.78
+1609,eb065f5b9629f6cb717cdb938a7aecf3,balanced,Unknown,['shotdeck_data/balanced/53 - Harder Than My Demons.jpg'],1793,1080,1.66
+1610,bd267739b287de31ec3df321588b5229,balanced,Unknown,['shotdeck_data/balanced/106 - Badlands.png'],1920,1038,1.85
+1612,218be334ce8e503e92b222f9fb0ec1c6,balanced,Unknown,['shotdeck_data/balanced/273 - Euphoria.jpg'],1920,1037,1.85
+1618,7edc8507c472f6597ed65d831c04c91c,balanced,Unknown,['shotdeck_data/balanced/792 - Outer Range.jpg'],1910,800,2.39
+1629,2507cef8fbe50ef28e85698c77a2d6a9,balanced,Unknown,['shotdeck_data/balanced/110 - Rumours.jpg'],1800,1080,1.67
+1631,bbdc8a03d1a32d4afa04db0472b4ad9d,balanced,Unknown,['shotdeck_data/balanced/323 - In the Heights.jpg'],1920,804,2.39
+1633,6630f7e79fdc220d92cb8d234ab0c8c3,balanced,Unknown,['shotdeck_data/balanced/42 - The Sandman.jpg'],1920,802,2.39
+1638,160f085d10bbe97ded3e443f90125933,balanced,Unknown,['shotdeck_data/balanced/357 - Ozark.jpg'],1920,872,2.2
+1645,9dbd65f8ccdfcc0bf523c0c5f0fa2dd2,balanced,Unknown,['shotdeck_data/balanced/277 - Love Lies Bleeding.jpg'],1918,802,2.39
+1647,113eaaf081cf4343508c19e342e14599,balanced,Unknown,['shotdeck_data/balanced/197 - Promised Land.jpg'],1910,1036,1.84
+1654,3460b6dbe9042f98080ced9af111d44f,balanced,Unknown,['shotdeck_data/balanced/156 - Westworld.jpg'],1920,1080,1.78
+1658,0269c9f0dd81e6a7c597c8b32b77f602,balanced,Unknown,['shotdeck_data/balanced/46 - Funeral Parade of Roses.jpg'],1497,1080,1.39
+1660,80ee2ce3ecfb449d19ce6342771e990d,balanced,Unknown,['shotdeck_data/balanced/136 - The Way He Looks.jpg'],1920,804,2.39
+1661,eac472b65619ee2bbb4baa1308cb8754,balanced,Unknown,['shotdeck_data/balanced/807 - Blurry.jpg'],1767,1071,1.65
+1665,203bfc6d68ee165786974e6cdb67761c,balanced,Unknown,['shotdeck_data/balanced/253 - The Chlo Portraits.jpg'],1544,1080,1.43
+1667,6caaef3ad45283b67151b73f4c23121b,balanced,Unknown,['shotdeck_data/balanced/218 - Riders of Justice.jpg'],1920,804,2.39
+1670,24ea05265284ec23d7967b65ad2ee51b,balanced,Unknown,['shotdeck_data/balanced/333 - Woke.jpg'],1920,804,2.39
+1674,7370dd0c0f12953ac82dbf7208d1cfd3,balanced,Unknown,['shotdeck_data/balanced/51 - Bugatti.jpg'],1920,1080,1.78
+1675,6bd846ce62a047e2a756e9671847c149,balanced,Unknown,['shotdeck_data/balanced/325 - Prince of Darkness.jpg'],1920,812,2.36
+1676,fb778008b0bbe289a70154549017b022,balanced,Unknown,['shotdeck_data/balanced/367 - Fly Me to the Moon.jpg'],1920,800,2.4
+1681,4cabd3396845510b8cecb1a2fdb33097,balanced,Unknown,['shotdeck_data/balanced/317 - Good Omens.jpg'],1920,816,2.35
+1683,c180be00470ed43e1e53eac4d2bafeae,balanced,Unknown,['shotdeck_data/balanced/82 - A Real Pain.jpg'],1920,1038,1.85
+1686,f8d58032f323b8acaef2da5c78911037,balanced,Unknown,['shotdeck_data/balanced/341 - The Devils Advocate.jpg'],1920,798,2.41
+1689,d1857b14307595e3fbfbe8d3b066a5ac,balanced,Unknown,['shotdeck_data/balanced/41 - Club Tropicana.jpg'],1920,1080,1.78
+1692,23b79ea5a6280d6342d79e12ba4a540f,balanced,Unknown,['shotdeck_data/balanced/11 - Barfi.jpg'],1920,817,2.35
+1693,e8f2ce7f425416d22937f59f91f4444f,balanced,Unknown,['shotdeck_data/balanced/162 - Everybody Knows.jpg'],1920,1030,1.86
+1694,b7b7678b1a63a512abd2fe040fe18b67,balanced,Unknown,['shotdeck_data/balanced/188 - Hale County This Morning This Evening.jpg'],1920,1080,1.78
+1695,2f65f7cd59a7b947155844306a788eed,balanced,Unknown,['shotdeck_data/balanced/172 - I Know This Much Is True.jpg'],2880,1430,2.01
+1702,354c0078f09e1e249418f79a7785a169,balanced,Unknown,['shotdeck_data/balanced/297 - Ferris Buellers Day Off.jpg'],2873,1221,2.35
+1705,114e5c3422a9bcb63d8b8305dd87559f,balanced,Unknown,['shotdeck_data/balanced/153 - Queen  Slim.jpg'],1920,804,2.39
+1707,93e049d557d5b5d721d506d203423df3,balanced,Unknown,['shotdeck_data/balanced/363 - Girlhood.jpg'],1920,800,2.4
+1718,7c942b131127e78b0d3945065c949b7e,balanced,Unknown,['shotdeck_data/balanced/239 - Tomboy.jpg'],1920,1038,1.85
+1728,1fb6aff173da9e47598a96064aae138a,balanced,Unknown,['shotdeck_data/balanced/48 - Utopia.jpg'],1920,807,2.38
+1730,178b2e60a814e5e840196a5047248f4b,balanced,Unknown,['shotdeck_data/balanced/67 - WandaVision.jpg'],1920,800,2.4
+1731,c28a044012dd78c7067ff954993980c6,balanced,Unknown,['shotdeck_data/balanced/16 - Dead Ringers.jpg'],1920,798,2.41
+1733,10751860c27efe845572a71dd021c81f,balanced,Unknown,['shotdeck_data/balanced/183 - Dilemme.jpg'],1608,1080,1.49
+1745,5dcf2575a289dfec21876f59e6f4c185,balanced,Unknown,['shotdeck_data/balanced/335 - The Devils.jpg'],1916,807,2.37
+1756,2444ee4ce9ebdc338a0aaf1a075408cf,balanced,Unknown,['shotdeck_data/balanced/308 - Happy Feet.jpg'],1918,797,2.41
+1758,62afa43d4633c0360e707558d07b5e1c,balanced,Unknown,['shotdeck_data/balanced/194 - The Hunt.jpg'],1920,812,2.36
+1759,94f148f9452dd41c27fa89ca304fe9ae,balanced,Unknown,['shotdeck_data/balanced/179 - Straight Outta Compton.jpg'],1912,790,2.42
+1763,80396eeb9477509793b5327029e5a484,balanced,Unknown,['shotdeck_data/balanced/348 - Reservation Dogs.jpg'],1920,1080,1.78
+1765,1e969a89f644a9f60e73cf568de8c27b,balanced,Unknown,['shotdeck_data/balanced/315 - The Suicide Squad.jpg'],1920,1010,1.9
+1770,c692206c401076cdb9a6a30b701fdabd,balanced,Unknown,['shotdeck_data/balanced/344 - Chimes at Midnight.jpg'],1798,1080,1.66
+1776,887a0bb73f1e4936a5337714ba1d5fe1,balanced,Unknown,['shotdeck_data/balanced/166 - Living.jpg'],1598,1080,1.48
+1777,9f9b40b91170594027d56f3888ec8e89,balanced,Unknown,['shotdeck_data/balanced/116 - Family Diary.jpg'],1920,1080,1.78
+1783,cd6195737d6997fef4a8fef461356684,balanced,Unknown,['shotdeck_data/balanced/313 - Atonement.jpg'],1920,1039,1.85
+1788,edd8de88baf338b9e9aa0057fb114d39,balanced,Unknown,['shotdeck_data/balanced/235 - A Quiet Place.jpg'],1920,800,2.4
+1789,c4eeba11046b42c9d977576aa6070d5f,balanced,Unknown,['shotdeck_data/balanced/186 - Super Dark Times.jpg'],1920,800,2.4
+1792,cfe52928ed5629b71145c393aea631de,balanced,Unknown,['shotdeck_data/balanced/289 - All Your Words.jpg'],2409,1052,2.29
+1797,1c4cdcde17cfece43bad2c74397a6811,balanced,Unknown,['shotdeck_data/balanced/224 - The Lost City of Z.jpg'],1920,801,2.4
+1798,02e808c3075cf641cf883cedbe728925,balanced,Unknown,['shotdeck_data/balanced/176 - Twilight of the Warriors Walled In.jpg'],1920,790,2.43
+1803,b43121ead77ee277a597743a41f148a4,balanced,Unknown,['shotdeck_data/balanced/244 - Yes You Are A Bike Person.jpg'],1920,1080,1.78
+1805,eb7ef941eb47353577f592587a989ea4,balanced,Unknown,['shotdeck_data/balanced/322 - Starship Troopers.jpg'],1917,1039,1.85
+1814,d6145657da4ee4e4289039638786257d,balanced,Unknown,['shotdeck_data/balanced/314 - The Other Side of Hope.jpg'],1920,1038,1.85
+1817,aacdb736f69a416ce4b23fae8216e098,balanced,Unknown,['shotdeck_data/balanced/98 - All Dirt Roads Taste of Salt.jpg'],1920,800,2.4
+1819,2fdb74669a87af8ab6ca8e17cb05cc95,balanced,Unknown,['shotdeck_data/balanced/121 - Point And Kill.jpg'],1911,1078,1.77
+1820,a367d917ff76fe154472567344c2c1a6,balanced,Unknown,['shotdeck_data/balanced/309 - Mad Men.jpg'],1920,1080,1.78
+1824,3d9735c0ea0fcc3b0beddd81e3177f54,balanced,Unknown,['shotdeck_data/balanced/353 - Dope.jpg'],1920,804,2.39
+1836,b321250d28967b9f6b9e5ab9acc1a306,balanced,Unknown,['shotdeck_data/balanced/36 - Youre Not Alone.jpg'],2840,2160,1.31
+1837,0573bd5d49e6b9ee45d1b6cf9815703b,balanced,Unknown,['shotdeck_data/balanced/193 - Due Date.jpg'],2871,1198,2.4
+1839,9201235e6d4853f2fc63d3086d1543ba,balanced,Unknown,['shotdeck_data/balanced/349 - Basic Instinct.jpg'],1920,800,2.4
+1840,a52146ae10877b0e652ab9f043e24930,balanced,Unknown,['shotdeck_data/balanced/373 - The Sandlot.jpg'],1918,816,2.35
+1841,4b9c5c51b70d104916490085e07814e6,balanced,Unknown,['shotdeck_data/balanced/291 - Song to Song.jpg'],1920,800,2.4
+1844,89b0c265e0b7c35e2565a11189a8bc8e,balanced,Unknown,['shotdeck_data/balanced/86 - The Green Knight.jpg'],1916,1036,1.85
+1848,8aa6b07757301e83b98a78455f4bae44,balanced,Unknown,['shotdeck_data/balanced/802 - Winning Time The Rise of the Lakers Dynasty.jpg'],2880,1620,1.78
+1857,7568664322f144edd9cc0bb0cc9d7007,balanced,Unknown,['shotdeck_data/balanced/120 - Cameraperson.jpg'],1918,1078,1.78
+1859,b2879623171851cbd100fdc1a1cba98c,balanced,Unknown,['shotdeck_data/balanced/294 - Marvels Daredevil.jpg'],1920,1080,1.78
+1863,8ad8e573ba6b47075410a3009c12c041,balanced,Unknown,['shotdeck_data/balanced/292 - Honeyland.jpg'],1920,1080,1.78
+1865,a9f66ce773a7c75b8ba4105a8d7f54f5,balanced,Unknown,['shotdeck_data/balanced/220 - Shaun of the Dead.jpg'],1874,818,2.29
+1868,90d490130bce437d76f72a887e8abf63,balanced,Unknown,['shotdeck_data/balanced/350 - Wedding Crashers.jpg'],1920,816,2.35
+1872,20e73e1baa7347573ff0f77d6a6e4d14,balanced,Unknown,['shotdeck_data/balanced/35 - Song Lang.jpg'],1620,1080,1.5
+1874,3125bae995be350ad49a649a1866fc1b,balanced,Unknown,['shotdeck_data/balanced/125 - Cold in July.jpg'],1920,798,2.41
+1877,637905c327254cdce35433b6bc2e2ff0,balanced,Unknown,['shotdeck_data/balanced/138 - Pieces of a Woman.jpg'],1920,1038,1.85
+1894,d05597bcca25594ce24c5589bbca915f,balanced,Unknown,['shotdeck_data/balanced/359 - Dumbo.jpg'],1438,1078,1.33
+1899,a2fc43bbb57f390a579e383317dbbd07,balanced,Unknown,['shotdeck_data/balanced/295 - The Mauritanian.jpg'],1382,808,1.71
+1909,dd541c234dae1d67a3e77c334f5beb81,balanced,Unknown,['shotdeck_data/balanced/337 - Practical Magic.jpg'],1920,800,2.4
+1913,4c523c06f81a584751bd65ddde3616fe,balanced,Unknown,['shotdeck_data/balanced/312 - Spy.jpg'],1920,804,2.39
+1917,d0707b5b885f67f7fba9cb8b762ce51e,balanced,Unknown,['shotdeck_data/balanced/18 - Challengers.jpg'],1920,1038,1.85
+1928,1bb9f921ea381a8a2f76365e737af696,balanced,Unknown,['shotdeck_data/balanced/137 - Closer.jpg'],1918,1040,1.84
+1930,7822b7ac0562f4edf42d3034a1a0ffc5,balanced,Unknown,['shotdeck_data/balanced/287 - Severance.jpg'],1920,803,2.39
+1933,b338ebe4362a0cc754ac67180e183c42,balanced,Unknown,['shotdeck_data/balanced/78 - Phoebes Angels.jpg'],3840,2160,1.78
+1937,b5fc860678fbce67fc4d2886fe6aafb2,balanced,Unknown,['shotdeck_data/balanced/28 - Johnny Gaddaar.jpg'],1915,840,2.28
+1941,3532a9d16356890a64ae1aee4212e111,balanced,Unknown,['shotdeck_data/balanced/211 - Puss in Boots The Last Wish.jpg'],1920,800,2.4
+1942,1ddc5596371fee8d1e220bf277ec1c7d,balanced,Unknown,['shotdeck_data/balanced/274 - The Boys.jpg'],1920,800,2.4
+1945,0f2cba477ee81346fd6bbe2cdbf5898b,balanced,Unknown,['shotdeck_data/balanced/805 - Barbie.jpg'],1920,960,2.0
+1947,318c12fdeb7a0d764188daa67b208b10,balanced,Unknown,['shotdeck_data/balanced/329 - Udaan.png'],1920,816,2.35
+1959,840d9a77728f1c146431c96e0dccbfa7,balanced,Unknown,['shotdeck_data/balanced/310 - The Loveless.jpg'],1920,1038,1.85
+1960,ab3833ea9a781c8fe4507b3699090e42,balanced,Unknown,['shotdeck_data/balanced/246 - ShangChi and the Legend of the Ten Rings.jpg'],1920,802,2.39
+1971,3dba29d80c52e141c8eada171b4afd40,balanced,Unknown,['shotdeck_data/balanced/52 - Succession.jpg'],1920,1080,1.78
+1973,29d51f273c7e6278754390fa10eed93d,balanced,Unknown,['shotdeck_data/balanced/356 - Manchester by the Sea.jpg'],1920,1038,1.85
+1975,94a87118a4cfdafab00dc40b313af283,balanced,Unknown,['shotdeck_data/balanced/192 - How to Blow Up a Pipeline.jpg'],1920,1080,1.78
+1977,5a6109ff8b1249846785333ed85a264c,balanced,Unknown,['shotdeck_data/balanced/339 - Everybody Wants Some.jpg'],1920,1080,1.78
+1978,061b77565930af02801641003344cc26,balanced,Unknown,['shotdeck_data/balanced/144 - In the Cut.jpg'],2880,1550,1.86
+1987,c59890c7e92e62480afb11250875e169,balanced,Unknown,['shotdeck_data/balanced/306 - The Land.jpg'],1520,1080,1.41
+1990,5bd6bf5495da5f62ca8e48aa5700e8a2,balanced,Unknown,['shotdeck_data/balanced/243 - Gosh.jpg'],1920,1080,1.78
+1992,6f4d076d4fc2c80916254e389144885b,balanced,Unknown,['shotdeck_data/balanced/347 - Viridiana.jpg'],1920,1080,1.78
+1993,805171d66b5afefa4c9c1a8501a45fe8,balanced,Unknown,['shotdeck_data/balanced/371 - Natural Born Killers.jpg'],3334,1886,1.77
+2002,3671e0f5d43e1a88e97dcf5c5a629596,balanced,Unknown,['shotdeck_data/balanced/330 - A Friend of the Family.jpg'],1280,686,1.87
+2011,6f66b38ed6e9e3fd10225a4c6b452508,balanced,Unknown,['shotdeck_data/balanced/231 - Time Share.jpg'],1920,802,2.39
+2023,eb6edabf1ffe9faddb9d557f5c6868e1,balanced,Unknown,['shotdeck_data/balanced/75 - Wonders of Life.jpg'],1920,1080,1.78
+2024,f14923de1937ac7263e540fd7185c9a6,balanced,Unknown,['shotdeck_data/balanced/155 - Mike.jpg'],1790,1080,1.66
+2031,6278cc40b461998246c53b21dd2bd8f3,balanced,Unknown,['shotdeck_data/balanced/130 - Antlers.jpg'],1920,1038,1.85
+2032,653e86496b513dfefdc6758d2f1027fd,balanced,Unknown,['shotdeck_data/balanced/118 - Dahmer  Monster The Jeffrey Dahmer Story.jpg'],1920,800,2.4
+2037,470781628029026f432b688ffd82f750,balanced,Unknown,['shotdeck_data/balanced/6 - God Bless Our Souls.jpg'],1920,816,2.35
+2038,b97a028c64a48dbe904964001d0ca374,balanced,Unknown,['shotdeck_data/balanced/311 - 12 Monkeys.jpg'],1920,1080,1.78
+2051,1d10fe81d51545dcf0cdb58c22eb6fe4,Unknown,CU,['shotdeck_data/CU/52 - A Fantastic Woman.jpg'],1920,804,2.39
+2058,4d80afc90cb289fc2e05ca8fe3131283,Unknown,CU,['shotdeck_data/CU/488 - Deep Red.jpg'],1920,814,2.36
+2121,50ba8c5011d9a2668793ba45bd71de6f,Unknown,CU,['shotdeck_data/CU/426 - Dune.jpg'],1920,802,2.39
+2131,f81810b52d2954d3e13a3370a4e4da05,Unknown,"ECU, CU","['shotdeck_data/CU/561 - The Hunger.jpg', 'shotdeck_data/ECU/337 - The Hunger.jpg']",1920,804,2.39
+2152,98cf835e7a42875426c5a2d868514b1d,Unknown,CU,['shotdeck_data/CU/51 - Honey Boy.jpg'],1920,804,2.39
+2158,99fbb4942d05879af78e07158a5e4aa8,Unknown,CU,['shotdeck_data/CU/406 - Trance.jpg'],1920,800,2.4
+2193,296da80a5c03562532b965cad4c3c68b,Unknown,CU,['shotdeck_data/CU/346 - Oppenheimer.jpg'],1920,870,2.21
+2212,f1fd1f511fa57d3f0685f6900c2d71cc,Unknown,"ECU, CU","['shotdeck_data/CU/333 - Portrait of a Lady on Fire.jpg', 'shotdeck_data/ECU/480 - Portrait of a Lady on Fire.jpg']",1920,1036,1.85
+2214,fdaa58cacc36e1d9fb67b2643ba6f73a,Unknown,CU,['shotdeck_data/CU/95 - The Batman.jpg'],1920,802,2.39
+2238,b1cedf408d1a6c9084269e76928c5255,Unknown,"CU, MWS","['shotdeck_data/CU/231 - The Descendants.jpg', 'shotdeck_data/MWS/479 - The Descendants.jpg']",1918,794,2.42
+2255,e3e1f75970da45ba2ee1b7a6e3d86533,Unknown,CU,['shotdeck_data/CU/282 - The Night House.jpg'],1920,798,2.41
+2257,8b6c9b27e1ddbb080ff8eb03bf0a1afb,Unknown,CU,['shotdeck_data/CU/84 - Silver Linings Playbook.jpg'],1915,795,2.41
+2329,4cd6589f40e225e045b9bc7e3a96d93a,Unknown,CU,['shotdeck_data/CU/241 - Dogtooth.jpg'],1914,816,2.35
+2345,41c4a4a85e2aa71422174df8b58347f8,Unknown,"ECU, CU","['shotdeck_data/CU/554 - Drive.jpg', 'shotdeck_data/ECU/148 - Drive.jpg']",1920,806,2.38
+2374,50f9deb565d91005724540e0f4dfab75,Unknown,"ECU, CU","['shotdeck_data/CU/550 - La Haine.jpg', 'shotdeck_data/ECU/279 - La Haine.jpg']",1897,1039,1.83
+2392,aad73c8bd8480fce147cb8d6f02a3cd8,Unknown,CU,['shotdeck_data/CU/479 - The Batman.jpg'],1920,802,2.39
+2400,2dd235c2853b2d5a85f79e2efc82a8fc,Unknown,CU,['shotdeck_data/CU/272 - Dune.jpg'],1920,802,2.39
+2510,4846382a484e27410858ca01af210428,Unknown,CU,['shotdeck_data/CU/366 - The Tree of Life.jpg'],1920,1040,1.85
+2563,51de62f46292c39930e918183f808534,Unknown,CU,['shotdeck_data/CU/421 - How to Be Single.jpg'],1920,796,2.41
+2571,029e93a5b2944818c86cb1fb4bbaa720,Unknown,CU,['shotdeck_data/CU/452 - Candyman.jpg'],1920,804,2.39
+3575,8deb86864179a08f0c5465227d61bf9b,"left, center",Unknown,"['shotdeck_data/center/649 - The Substance.jpg', 'shotdeck_data/left/390 - The Substance.jpg']",1920,800,2.4
+3691,b95f92c9b652dda734fba0103b3ecf5f,Unknown,MWS,['shotdeck_data/MWS/38 - Dune.jpg'],1920,802,2.39
+3693,b905aec04dd061248e37f8430ae6934d,Unknown,MWS,['shotdeck_data/MWS/347 - Fifty Shades Darker.jpg'],1920,800,2.4
+3696,bf7ff1c4693ca3078410a1da12ee80ad,Unknown,"WS, MWS","['shotdeck_data/MWS/272 - The Beach Bum.jpg', 'shotdeck_data/WS/460 - The Beach Bum.jpg']",1920,804,2.39
+3716,1d78808805821238bf7cbfc3a3ccfbca,Unknown,MWS,['shotdeck_data/MWS/288 - Blade Runner 2049.jpg'],1920,800,2.4
+3725,c90dba372f60a04d08820f6280648994,Unknown,MWS,['shotdeck_data/MWS/141 - Chungking Express.jpg'],1796,1080,1.66
+3727,544457ceb3952858a7d881f62db1a590,Unknown,MWS,['shotdeck_data/MWS/461 - The Shining.jpg'],3838,2171,1.77
+3731,a865c561eb758f9ccd97da1530c81489,Unknown,MWS,['shotdeck_data/MWS/40 - A Single Man.jpg'],2880,1199,2.4
+3736,04a251d549e4199149d8ef49ce0991df,Unknown,MWS,['shotdeck_data/MWS/435 - Dune.jpg'],1920,802,2.39
+3742,6dc88b7b387c4f24af175c0a3117a5ce,Unknown,MWS,['shotdeck_data/MWS/203 - A Single Man.jpg'],2880,1199,2.4
+3773,1963376a46f8e42ec4f5f8fa07101f77,Unknown,"WS, MWS","['shotdeck_data/MWS/312 - No Time to Die.jpg', 'shotdeck_data/WS/554 - No Time to Die.jpg']",1920,804,2.39
+3787,003b8a06f5064407719fa82016a64fdd,Unknown,MWS,['shotdeck_data/MWS/155 - It Follows.jpg'],2880,1207,2.39
+3795,0790d0d286f88486c97ef621509ce22a,Unknown,"WS, MWS","['shotdeck_data/MWS/93 - Persona.jpg', 'shotdeck_data/WS/589 - Persona.jpg']",1480,1080,1.37
+3797,6a76f848aa9f40cfd80ec38c14ad9700,Unknown,MWS,['shotdeck_data/MWS/351 - I Give It a Year.jpg'],1920,803,2.39
+4095,bf17d141ada66177bf347c7f8da6678b,Unknown,ECU,['shotdeck_data/ECU/186 - Le Bonheur.jpg'],1792,1080,1.66
+4096,bd2a5ac62a83563dd09ece0e271a9e51,Unknown,ECU,['shotdeck_data/ECU/206 - Past Lives.jpg'],1920,1040,1.85
+4097,6e8985320b8351789ed5999db4642019,Unknown,ECU,['shotdeck_data/ECU/313 - Drive.jpg'],1920,806,2.38
+4098,345c50b771ed7861339af04473316a95,Unknown,ECU,['shotdeck_data/ECU/250 - The Girl with the Dragon Tattoo.jpg'],1917,796,2.41
+4099,5ad71ec59218f13ba3a1411dc0551133,Unknown,ECU,['shotdeck_data/ECU/399 - The Last Voyage of the Demeter.png'],1920,804,2.39
+4100,263b939283b0b5eebc076252aef24f24,Unknown,ECU,['shotdeck_data/ECU/173 - The Equalizer.jpg'],1920,801,2.4
+4101,9f768a750e75a1e397fe21dcb9a0ebc5,Unknown,ECU,['shotdeck_data/ECU/150 - Blade Runner.jpg'],2560,1069,2.39
+4102,9e62a351bb08d40ead26f2073d77db0e,Unknown,ECU,['shotdeck_data/ECU/111 - Past Lives.jpg'],1920,1040,1.85
+4103,1ce2c8bc481ec1356fb86c70176b3d51,Unknown,ECU,['shotdeck_data/ECU/60 - Le Bonheur.jpg'],1792,1080,1.66
+4104,2661eeb95a2ed217d0060d645055e40f,Unknown,ECU,['shotdeck_data/ECU/406 - Prometheus.jpg'],1934,799,2.42
+4105,fc919f70fabcd022ec2e46acb085226d,Unknown,ECU,['shotdeck_data/ECU/160 - Enter the Void.jpg'],1920,819,2.34
+4106,4d94d211b2d342e3c2c73ff5af4cc8cf,Unknown,ECU,['shotdeck_data/ECU/425 - Waves.jpg'],1920,1038,1.85
+4107,cc9ce380feda06a0c6ddee9a91e73b72,Unknown,ECU,['shotdeck_data/ECU/387 - The Batman.jpg'],1920,802,2.39
+4108,c4e3f1f8b7817748968450c75782632d,Unknown,ECU,['shotdeck_data/ECU/29 - To the Wonder.jpg'],1920,816,2.35
+4109,fc815717a7f43e1beb7dcd4860d52a78,Unknown,ECU,['shotdeck_data/ECU/360 - A Single Man.jpg'],2880,1199,2.4
+4110,4daf8ca989f514ca8758e4b4d6df1ebf,Unknown,ECU,['shotdeck_data/ECU/95 - Beyond the Black Rainbow.jpg'],1920,798,2.41
+4111,14a5a4b1dd9b8ccc599b1c42caec7a1d,Unknown,ECU,['shotdeck_data/ECU/68 - Halloween.jpg'],1920,804,2.39
+4150,fa86d1e2b656a902ca6a41c6de467406,Unknown,EWS,['shotdeck_data/EWS/541 - Lost Me.jpg'],1879,1053,1.78
+4151,8d4bc1d5c0d24835e3b4996e1bd10e0b,Unknown,EWS,['shotdeck_data/EWS/584 - Relic.jpg'],1920,800,2.4
+4152,f04f98d2fa9fd74cd9c4b02eb117e6b4,Unknown,EWS,['shotdeck_data/EWS/187 - The Batman.jpg'],1920,802,2.39
+4153,520db1bbce581cea0d65f027eec5f435,Unknown,EWS,['shotdeck_data/EWS/222 - Blade Runner 2049.jpg'],1920,800,2.4
+4154,e1e3ab98c1d0b78bf8ed02175512de4e,Unknown,EWS,['shotdeck_data/EWS/637 - The Batman.jpg'],1920,802,2.39
+4155,cb5fae9664e5d6e63ec8f4fe7472e205,Unknown,EWS,['shotdeck_data/EWS/596 - Big Fish.jpg'],1920,1040,1.85
+4156,f607c36ccdaed1e53d10255583f1dba3,Unknown,EWS,['shotdeck_data/EWS/103 - Dune.jpg'],1920,802,2.39
+4157,e544e9942498f2dbfe33364ded98e3c4,Unknown,EWS,['shotdeck_data/EWS/577 - Interstellar.jpg'],1920,1080,1.78
+4158,65494c8492e0fc84192f7f0fa4735f8b,Unknown,EWS,['shotdeck_data/EWS/68 - Thief.jpg'],1918,1037,1.85
+4159,e3ee2ef627871a4bed955f98c2327313,Unknown,EWS,['shotdeck_data/EWS/639 - Headhunters.jpg'],1920,800,2.4
+4160,0d52bef9536fadaf670c1ca7a2c67e40,Unknown,EWS,['shotdeck_data/EWS/253 - There Will Be Blood.jpg'],1920,792,2.42
+4161,eebaaabea9cd570bc03afc1892dc65d6,Unknown,EWS,['shotdeck_data/EWS/115 - Dune.jpg'],1920,802,2.39
+4162,e094b0496c3dd17d566163898bfdab10,Unknown,EWS,['shotdeck_data/EWS/49 - The Descent.jpg'],1920,816,2.35
+4163,45b108163b43d6791524791fba3f046d,Unknown,EWS,['shotdeck_data/EWS/233 - The Place Beyond the Pines.jpg'],1920,800,2.4
+4164,e1e81cc84c2a9a6eb180ac7d4cdbaf6c,Unknown,EWS,['shotdeck_data/EWS/265 - Dune.jpg'],1920,802,2.39
+4165,c14a0951cae98c235c671a02fabb2ee2,Unknown,"EWS, WS","['shotdeck_data/EWS/668 - Respect.jpg', 'shotdeck_data/WS/6 - Respect.jpg']",1920,804,2.39
+4166,a871207a51d95c0ab44b719107a917e2,Unknown,EWS,['shotdeck_data/EWS/182 - Encounter.jpg'],1920,800,2.4
+4167,cd0b30f3d2e7e0575beb741949278e2b,Unknown,EWS,['shotdeck_data/EWS/207 - Pig.jpg'],1920,801,2.4
+4168,f72ef8ce5af36746164893553e252e59,Unknown,EWS,['shotdeck_data/EWS/160 - Dune.jpg'],1920,802,2.39
+4169,f1ed0dd13235bce7b2f15cf45d30ac70,Unknown,EWS,['shotdeck_data/EWS/73 - To the Wonder.jpg'],1920,816,2.35
+4170,1e1f9039c95458d5c5be83d49954bcdf,Unknown,EWS,['shotdeck_data/EWS/178 - Old.jpg'],1920,804,2.39
+4171,636dcafdc5121d17487abd8e38acb68b,Unknown,EWS,['shotdeck_data/EWS/291 - Dune.jpg'],1920,802,2.39
+4172,e8c9045ccac7087504380145cede5f96,Unknown,EWS,['shotdeck_data/EWS/648 - Prey.jpg'],1920,804,2.39
+4173,f120ec7eb7be1087beeae41434860ebe,Unknown,EWS,['shotdeck_data/EWS/231 - Drive.jpg'],1913,799,2.39
+4174,f4bd5056452d1aea5b3e5733a78a0e14,Unknown,EWS,['shotdeck_data/EWS/51 - Joy Ride.jpg'],1920,811,2.37
+4175,a92f3014d1376dd36592e32b66ea9b8d,Unknown,EWS,['shotdeck_data/EWS/124 - No Time to Die.jpg'],1920,804,2.39
+4176,d9f7f72f004911d2d7b0101d2fb3e0e2,Unknown,EWS,['shotdeck_data/EWS/592 - No Time to Die.jpg'],1920,804,2.39
+4177,134eabda6026d5e33963e15f5df5a8ec,Unknown,EWS,['shotdeck_data/EWS/50 - This Must Be the Place.jpg'],1920,814,2.36
+4178,bcac7421f0dbd2ac41c47276ec40b366,Unknown,EWS,['shotdeck_data/EWS/431 - Dune.jpg'],1920,802,2.39
+4179,6b0b715de1ed4414b2ba4e0d3091eab0,Unknown,EWS,['shotdeck_data/EWS/619 - Waves.jpg'],1920,1038,1.85
+4180,275c748fcba61d8067975138630190ed,Unknown,EWS,['shotdeck_data/EWS/132 - To the Wonder.jpg'],1920,816,2.35
+4181,e3ae5bf9b1512ecfbd4fe4a16de83102,Unknown,EWS,['shotdeck_data/EWS/179 - Blade Runner 2049.jpg'],1920,800,2.4
+4182,970d7e5bfaa6425b01eb4cbc211028c6,Unknown,EWS,['shotdeck_data/EWS/27 - Good Will Hunting.jpg'],1920,1040,1.85
+4183,e0f49bb1052928076e68df37cd191c19,Unknown,EWS,['shotdeck_data/EWS/41 - The Mauritanian.jpg'],1920,802,2.39
+4184,5b71b9335737d2e4edfb6bf0e4341b63,Unknown,MCU,['shotdeck_data/MCU/172 - Moonlight.jpg'],2880,1209,2.38
+4185,970b26c27f9f14615e68c44245ef175b,Unknown,MCU,['shotdeck_data/MCU/289 - Kong Skull Island.jpg'],1920,798,2.41
+4186,a9cdc375c6ccfe75b81aeb906da5c47d,Unknown,MCU,['shotdeck_data/MCU/114 - The Batman.jpg'],1920,802,2.39
+4187,58e66f5def61c6cc0c9c0e85ea47497a,Unknown,MCU,['shotdeck_data/MCU/91 - Samsara.jpg'],1920,800,2.4
+4188,dc84eee4002801a9d8ccd90973e1173c,Unknown,MCU,['shotdeck_data/MCU/32 - A Death in the Gunj.jpg'],1920,817,2.35
+4189,4d34441457330c709dc1b20459fefc9c,Unknown,MCU,['shotdeck_data/MCU/152 - Waves.jpg'],1405,1037,1.35
+4190,38fdb6a525eca10d90379c7dd8048c74,Unknown,MCU,['shotdeck_data/MCU/96 - Bones and All.jpg'],1920,1036,1.85
+4191,e5b4f9919e3d48e280e45e1993b54b86,Unknown,WS,['shotdeck_data/WS/286 - Avengers Age of Ultron.jpg'],1918,800,2.4
+4192,314d41a4a34ea85b4c2cbe8383d1dffe,Unknown,WS,['shotdeck_data/WS/404 - Extraction.jpg'],1920,800,2.4
+4193,92c57c835c48f940f4a8888b237fd7bd,Unknown,WS,['shotdeck_data/WS/326 - Palm Springs.jpg'],1920,802,2.39
+4194,4ad7fb38296bcdab42f980ac969f8cc1,Unknown,WS,['shotdeck_data/WS/325 - Sylvies Love.jpg'],1924,1040,1.85
+4195,02daa84f2219ee2022ac6ac013b2615e,Unknown,WS,['shotdeck_data/WS/490 - John Wick Chapter 4.jpg'],1920,802,2.39
+4196,857efe5c235aadf94a1c620560280fbc,Unknown,WS,['shotdeck_data/WS/469 - The Big Year.png'],3840,1620,2.37
+4197,416b1cfc777f121aadd7d650fd55f2ac,Unknown,WS,['shotdeck_data/WS/559 - Sicario.jpg'],1920,800,2.4
+4198,0aae1e4d05d575ac738536444da34b1f,Unknown,WS,['shotdeck_data/WS/371 - Wild Tales.jpg'],1920,804,2.39
+4199,0f1ca4c4a56aceb3f7a7c8584d9c6210,Unknown,WS,['shotdeck_data/WS/391 - Star Wars The Rise of Skywalker.jpg'],1920,804,2.39
+4200,23fea1456e00eb189ae9ffc4dd3389db,Unknown,WS,['shotdeck_data/WS/261 - Bottle Rocket.jpg'],1916,1038,1.85
+4201,d7ec8133cb7791754078f74f56e88a3b,Unknown,WS,['shotdeck_data/WS/484 - Parallel Mothers.jpg'],1920,1038,1.85
+4202,777b0170541621dd3cba84f7c054c59b,Unknown,WS,['shotdeck_data/WS/519 - Spring Breakers.jpg'],1920,800,2.4
+4203,ab1a49be0e86ad30b7d647d51040c92f,Unknown,WS,['shotdeck_data/WS/339 - Longlegs.jpg'],1920,800,2.4
+4204,b9e845b9ca8f4a76da0de285ddf738b9,Unknown,WS,['shotdeck_data/WS/494 - Yi Yi.jpg'],1920,1038,1.85
+4205,66cd2e1fc3331e851f53b18b7ffeebe8,Unknown,WS,['shotdeck_data/WS/256 - It Follows.jpg'],2880,1207,2.39
+4206,b027f263a80b716d31a62f6719bad72a,Unknown,WS,['shotdeck_data/WS/525 - Tomboy.jpg'],1920,1038,1.85
+4207,b4451e221bb593e400690c5dc08a4c8b,Unknown,WS,['shotdeck_data/WS/538 - Wadjda.jpg'],1920,1038,1.85
+4208,f8fb828513ff74b65d4ebdffb2dc31d6,Unknown,WS,['shotdeck_data/WS/441 - Love.jpg'],1920,804,2.39
+4209,4612469ec5e5b6d224a056fe800d5437,Unknown,WS,['shotdeck_data/WS/345 - Old Henry.jpg'],1920,720,2.67
+4210,ab2f39639979cd73be16a1ab53f1ce35,Unknown,WS,['shotdeck_data/WS/360 - The Killer.jpg'],1920,814,2.36
+4211,7d411f6ee29c68a194bd39647a974b78,Unknown,WS,['shotdeck_data/WS/520 - Kimi.png'],1920,938,2.05
+4212,0104348b2ba1c34717b61ff9d78a0cde,Unknown,WS,['shotdeck_data/WS/342 - Joker.jpg'],2000,1081,1.85
+4213,aebe1ad963d2386302f7d489300504cc,Unknown,WS,['shotdeck_data/WS/536 - The Royal Tenenbaums.jpg'],1920,799,2.4
+4214,18e1079ef8976a89aba62d2df54371e4,Unknown,WS,['shotdeck_data/WS/316 - Parallel Mothers.jpg'],1920,1038,1.85
+4215,f375b0e7ce8edc37b8441f614e6f5c15,Unknown,WS,['shotdeck_data/WS/431 - Beau Is Afraid.jpg'],1920,1036,1.85
+4216,b4e1d80dd2c6f67de5559edff3369a5e,Unknown,WS,['shotdeck_data/WS/504 - Seven.jpg'],1920,800,2.4
+4217,b86deaaa1561874bc6f88910aebecf08,Unknown,WS,['shotdeck_data/WS/502 - Saint Maud.jpg'],1920,804,2.39
+4218,ba9701cfb7f1bfdd8af3ed766b769fec,Unknown,WS,['shotdeck_data/WS/275 - American Beauty.jpg'],2880,1225,2.35
+4219,1567e18355c22620573dcc34da5859b4,Unknown,WS,['shotdeck_data/WS/531 - The United States vs Billie Holiday.jpg'],1918,804,2.39
+4220,ea0c68a9e84e5483d9f8952a0bd21004,Unknown,WS,['shotdeck_data/WS/556 - Three Thousand Years of Longing.jpg'],1920,800,2.4
+4221,2d067584351d1d9404c5df64b772883e,Unknown,WS,['shotdeck_data/WS/565 - Where the Crawdads Sing.jpg'],1916,800,2.4
+4222,307173e7d3192592a9ef78c27fbb587d,Unknown,WS,['shotdeck_data/WS/437 - Bad Boys for Life.png'],1920,802,2.39
+4223,dda40a5f935661da79e55d6a0806b57b,Unknown,WS,['shotdeck_data/WS/486 - Call Me by Your Name.jpg'],1920,1038,1.85
+4224,a68e81567cb9946615bd38da8af0b483,Unknown,WS,['shotdeck_data/WS/190 - A Single Man.jpg'],2880,1199,2.4
+4225,1248f26ca5ccb5b4555060956039a206,Unknown,WS,['shotdeck_data/WS/501 - Hit Man.jpg'],1920,802,2.39
+4226,3fd1829c4fcd8a1e861df9edc0cded56,Unknown,WS,['shotdeck_data/WS/349 - Monsters and Men.jpg'],2880,1204,2.39
+4227,1cc640fc0bfba0d2446fdfa9b19b9b65,Unknown,WS,['shotdeck_data/WS/268 - The Ballad of Buster Scruggs.jpg'],1920,1036,1.85
+4228,71518f354f4859f4e6b52e82aee9da58,Unknown,WS,['shotdeck_data/WS/452 - BARDO False Chronicle of a Handful of Truths.jpg'],1920,800,2.4
+4229,b6092d3a7bdf8c2ec6b223b15a384f31,Unknown,WS,['shotdeck_data/WS/338 - Game Night.jpg'],1920,800,2.4
+4230,1a610fee8de643ab2623b1f291acfef6,Unknown,WS,['shotdeck_data/WS/513 - I Am Love.jpg'],1916,1034,1.85
+4231,3c2142efcc7e4686aab475173463e93a,Unknown,WS,['shotdeck_data/WS/343 - Aftersun.jpg'],1924,1040,1.85
+4232,ca60522979db1aa5e1a3a4342a70c9b4,Unknown,WS,['shotdeck_data/WS/424 - Little Women.jpg'],1920,1037,1.85
+4233,5dbf540ca6d21be9f9b35e67e47d45fe,Unknown,WS,['shotdeck_data/WS/446 - The Big Lebowski.jpg'],1920,1040,1.85
+4234,e5b5e1ab6a9c2ebbd42273a8628c5fd9,Unknown,WS,['shotdeck_data/WS/357 - Sicario.jpg'],1915,798,2.4
+4235,154aa133b682371632e903ead2fd57cd,Unknown,WS,['shotdeck_data/WS/380 - Titane.jpg'],1920,802,2.39
+4236,4ad983cd52610eb7d008d2d1352815df,Unknown,WS,['shotdeck_data/WS/483 - Booksmart.jpg'],1920,803,2.39
+4237,9636d234007a39d720194dee2f130cdc,Unknown,WS,['shotdeck_data/WS/414 - Riders of Justice.jpg'],1920,804,2.39
+4238,6cec2f8a0a12f8b8a258fe098e84620c,Unknown,WS,['shotdeck_data/WS/533 - My Blueberry Nights.jpg'],1920,816,2.35
+4239,c316677173b8974f5f93314bd931c881,Unknown,WS,['shotdeck_data/WS/352 - John Wick Chapter 3  Parabellum.jpg'],1920,800,2.4
+4240,6eda4802707d51f6c7400c3e2a5fedde,Unknown,WS,['shotdeck_data/WS/302 - To the Wonder.jpg'],1920,816,2.35
+4241,d24f988f4be947987d0caf3cae053f29,Unknown,WS,['shotdeck_data/WS/432 - Casino Royale.jpg'],1920,798,2.41
+4242,5eee2353311078e48920201b5d1c090e,Unknown,WS,['shotdeck_data/WS/530 - Bad Times at the El Royale.jpg'],1920,804,2.39
+4243,b85694f741cbe695c95b809c93535594,Unknown,WS,['shotdeck_data/WS/506 - The Batman.jpg'],1920,802,2.39
+4244,c58ae1b73aebb9c41802fcfbe5435847,Unknown,WS,['shotdeck_data/WS/442 - The Thin Red Line.jpg'],1920,818,2.35
+4245,9cccb25df2d0aaeeed02a7613800728c,Unknown,WS,['shotdeck_data/WS/405 - Drive.jpg'],1920,806,2.38
+4246,48e0b50f725f26b47d9da47bcae3ea63,Unknown,WS,['shotdeck_data/WS/392 - Malcolm  Marie.jpg'],1920,1038,1.85
+4247,c82d9e6758b377bc71a09f08ac064f68,Unknown,WS,['shotdeck_data/WS/260 - Babylon.jpg'],1920,804,2.39
+4248,99f47a9cbffbb9bc66187a8db473295c,Unknown,WS,['shotdeck_data/WS/252 - The Rhythm Section.jpg'],1920,804,2.39
+4249,1384370980e19d6dc30bef6ced38b785,Unknown,WS,['shotdeck_data/WS/389 - We the Animals.jpg'],1920,816,2.35
+4250,2c28d77287aac0b4ae2490ede3fdb676,Unknown,WS,['shotdeck_data/WS/362 - No Country for Old Men.jpg'],1916,814,2.35
+4251,97c63279827ba3fb32126cb73d931cef,Unknown,WS,['shotdeck_data/WS/253 - Babylon.jpg'],1920,804,2.39
+4252,3b44bbbe1c97517caa5d0721e223eba0,Unknown,WS,['shotdeck_data/WS/355 - We Need to Talk About Kevin.jpg'],1920,816,2.35
+4253,b8d5fa487ef560a61c55f22e3cef5932,Unknown,WS,['shotdeck_data/WS/324 - The Fabelmans.jpg'],1997,1080,1.85
+4254,9c5661de99b0ea1e4d77610b673cd8f9,Unknown,WS,['shotdeck_data/WS/105 - The Batman.jpg'],1920,802,2.39
+4255,a33c602af98d0a51c47cdb96b7d20fe6,Unknown,WS,['shotdeck_data/WS/415 - Empire of Light.jpg'],1920,804,2.39
+4256,3174dcf507a69304dfd6b6ca3653f924,Unknown,WS,['shotdeck_data/WS/527 - Do the Right Thing.jpg'],1920,1040,1.85
+4257,dffe126a6694ebf288ceb19f5913a58d,Unknown,WS,['shotdeck_data/WS/310 - Bones and All.jpg'],1920,1036,1.85
+4258,305e9341f5071becca82ef76d830c3d1,Unknown,WS,['shotdeck_data/WS/323 - Interstellar.jpg'],1920,804,2.39
+4259,3efde45ebc92eba57f7c4abfbca7de5c,Unknown,WS,['shotdeck_data/WS/356 - The Creator.jpg'],1920,694,2.77
+4260,8edc58442948b10d8f8e0103764748be,Unknown,WS,['shotdeck_data/WS/271 - Challengers.jpg'],1920,1038,1.85
+4261,58e77d61e90df086f73789c46132920c,Unknown,WS,['shotdeck_data/WS/321 - Do Revenge.jpg'],1920,804,2.39
+4262,38ae2ca5fa2d2d227af8955016087cd5,Unknown,WS,['shotdeck_data/WS/458 - The Square.jpg'],1920,1038,1.85
+4263,08c334e9588738022263dd6df1d54d1b,Unknown,WS,['shotdeck_data/WS/294 - Dont Breathe.jpg'],1920,802,2.39
+4264,932964abdfbc668cb4ffcbe1f35b4440,Unknown,WS,['shotdeck_data/WS/478 - Promising Young Woman.jpg'],1920,803,2.39
+4265,d6b1c88d3e75eed3f5b4ebafbde0625c,Unknown,WS,['shotdeck_data/WS/517 - Ambulance.jpg'],1920,804,2.39
+4266,c73fee06567ee6c81b59e1c2b33de521,Unknown,WS,['shotdeck_data/WS/370 - Dune Part Two.jpg'],1920,800,2.4
+4267,babca7c36b5c0ad4636d0ecb639994c4,Unknown,WS,['shotdeck_data/WS/306 - Digital Witness.jpg'],1920,1080,1.78
+4268,68fd731ace4db91eed6153f4f00b8f39,Unknown,WS,['shotdeck_data/WS/540 - Monster.jpg'],1920,804,2.39
+4269,e7ca7e72b9c97f81411e55d5ae7bed1e,Unknown,WS,['shotdeck_data/WS/283 - Petite Maman.jpg'],1920,1038,1.85
+4270,26eff02e907313c720d0b202c6c8b927,Unknown,WS,['shotdeck_data/WS/422 - Past Lives.jpg'],1920,1040,1.85
+4271,152fe7e8061d16a65ed653047cfba6ab,Unknown,WS,['shotdeck_data/WS/255 - The Hangover Part III.jpg'],1920,800,2.4
+4272,8db1ed9a5fb95fbd276c9e18884a7546,Unknown,WS,['shotdeck_data/WS/265 - What Dreams May Come.jpg'],1916,816,2.35
+4273,0505989cba7e3f32564a74e303420498,Unknown,WS,['shotdeck_data/WS/304 - No Country for Old Men.jpg'],1916,814,2.35
+4274,d7f25079f5ed15e68d9b2fd29c93f3e4,Unknown,WS,['shotdeck_data/WS/508 - Ford v Ferrari.jpg'],1920,804,2.39
+4275,47d032a1633e71cb652ca2bf56dae033,Unknown,WS,['shotdeck_data/WS/335 - Pieces of a Woman.jpg'],1920,1038,1.85
+4276,854323f0bdf8b8e54bad1522484ab5be,Unknown,WS,['shotdeck_data/WS/524 - Udta Punjab.png'],1920,804,2.39
+4277,21989ffb18b3a45ab948f9ae50888077,Unknown,WS,['shotdeck_data/WS/263 - Past Lives.jpg'],1920,1040,1.85
+4278,1f482b2752459463905beed17944ee45,Unknown,WS,['shotdeck_data/WS/313 - Bones and All.jpg'],1920,1036,1.85
+4279,e9c47daba0696f69ce37a13fbed4bbe6,Unknown,WS,['shotdeck_data/WS/468 - Uncut Gems.jpg'],1920,804,2.39
+4280,bcdc070c6bfd722fefd00236aab061b7,Unknown,WS,['shotdeck_data/WS/473 - Her.jpg'],2880,1559,1.85
+4281,73d441ec30a161affdaad72651f8f5a3,Unknown,WS,['shotdeck_data/WS/353 - Creed III.jpg'],1920,801,2.4
+4282,368ea58770193492d3861d09a1b40fe8,Unknown,WS,['shotdeck_data/WS/500 - The Worst Person in the World.png'],1920,1038,1.85
+4283,92fa2165a1b5820fb4b2d45b33d6e362,Unknown,WS,['shotdeck_data/WS/436 - In Time.jpg'],1920,816,2.35
+4284,9ebfd8658062f362057a67968d233fea,Unknown,WS,['shotdeck_data/WS/544 - Challengers.jpg'],1920,1038,1.85
+4285,1947775926c744ef555537291ee8c463,Unknown,WS,['shotdeck_data/WS/499 - The Dark Knight.jpg'],1920,1080,1.78
+4286,cde48e640c1de5179654e0e41166e49c,Unknown,WS,['shotdeck_data/WS/364 - Creed II.jpg'],1920,800,2.4
+4287,7b8dd1d5f0e8a00241ee606065d4b823,Unknown,WS,['shotdeck_data/WS/553 - Casino Royale.jpg'],1920,798,2.41
+4288,e3d2b3c36e532c278614145f99477ae6,Unknown,WS,['shotdeck_data/WS/251 - Let the Right One In.jpg'],1920,820,2.34
+4289,6d6a0279bece2c517561ec43484dfa68,Unknown,WS,['shotdeck_data/WS/547 - Get on Up.jpg'],1916,1034,1.85
+4290,7a3c444dcbb354016ecd56132f1c5546,Unknown,WS,['shotdeck_data/WS/449 - The Wonderful Story of Henry Sugar.jpg'],1440,1080,1.33
+4291,42d56f528d7308083f98a91472114479,Unknown,WS,['shotdeck_data/WS/394 - A Man Called Otto.jpg'],1920,1038,1.85
+4292,dcbad6e8dec2e61200532761d08c42a0,Unknown,WS,['shotdeck_data/WS/421 - The Theory of Everything.jpg'],1918,798,2.4
+4293,ab38f00d2eeff6ebc837e3084c671329,Unknown,WS,['shotdeck_data/WS/461 - Never Rarely Sometimes Always.jpg'],1924,1040,1.85
+4294,e969cc96697bffe3aed0ef0106d266c2,Unknown,WS,['shotdeck_data/WS/291 - Doctor Strange in the Multiverse of Madness.jpg'],1920,802,2.39
+4295,ab01418593fa0a743c912069447f8cf1,Unknown,WS,['shotdeck_data/WS/400 - The Neon Demon.jpg'],1920,804,2.39
+4296,b36717b2c46f0aa76bfe01e1af81ea90,Unknown,WS,['shotdeck_data/WS/288 - Take This Waltz.jpg'],1920,1080,1.78
+4297,0c03be5e409b3265a8eca92b88332f01,Unknown,WS,['shotdeck_data/WS/427 - Juno.jpg'],1920,1037,1.85
+4298,2329dce3afee704d184fc5bb2873fe10,Unknown,WS,['shotdeck_data/WS/340 - It Follows.jpg'],2880,1207,2.39
+4299,3e252e4078598e9d88b3fee5f46fc615,Unknown,WS,['shotdeck_data/WS/454 - October 1.jpg'],1918,804,2.39
+4300,bcd9732821e814e50801f61355f55899,Unknown,WS,['shotdeck_data/WS/438 - The Neon Demon.jpg'],1920,802,2.39
+4301,2a2f0a4b13393986ba4c59255888afbe,Unknown,WS,['shotdeck_data/WS/359 - Monster.jpg'],1920,804,2.39
+4302,d548b6f61b9bb6915c7e1161a78134cd,Unknown,WS,['shotdeck_data/WS/407 - Mr Nobody.jpg'],1920,818,2.35
+4303,026d8423a59d89b648ae605c19058029,Unknown,WS,['shotdeck_data/WS/267 - Millers Girl.jpg'],1920,960,2.0
+4304,e787c43e035fbc7af75e741dc9893084,Unknown,WS,['shotdeck_data/WS/281 - Raya and the Last Dragon.jpg'],1920,804,2.39
+4305,8dcaee05ca7cc44bf4e84c1774e9e14e,Unknown,WS,['shotdeck_data/WS/296 - Close.jpg'],1800,1080,1.67
+4306,6941cf1f0e2591f10086906ac75343ee,Unknown,WS,['shotdeck_data/WS/320 - Eternals.jpg'],1920,792,2.42
+4307,7949bf7e58a7a145e49edfa5b5484bb8,Unknown,WS,['shotdeck_data/WS/312 - Inherent Vice.jpg'],1917,1033,1.86
+4308,50a4643aa4cf3fe2ca5ef430c3a01a00,Unknown,WS,['shotdeck_data/WS/470 - Love Lies Bleeding.jpg'],1918,802,2.39
+4309,5ef66ab2483963f22172d66e5ceca319,Unknown,WS,['shotdeck_data/WS/395 - Silent Hill.jpg'],1918,818,2.34
+4310,ee8be7b3436382474a5ff146bce74157,Unknown,WS,['shotdeck_data/WS/128 - Chungking Express.jpg'],1796,1080,1.66
+4311,aa87ae87eb6025b3016be5000037103b,Unknown,WS,['shotdeck_data/WS/305 - Promising Young Woman.jpg'],1920,803,2.39
+4312,9e6c333c70f4cdbf472991c14372c85d,Unknown,WS,['shotdeck_data/WS/455 - The Dark Knight.jpg'],1920,1080,1.78
+4313,ad6d29b6c891fec5b1f72ef309c609f7,Unknown,WS,['shotdeck_data/WS/314 - Petes Dragon.jpg'],1920,799,2.4
+4314,92e715d4dbc87f311b83dbc342743d13,Unknown,WS,['shotdeck_data/WS/466 - Moonage Daydream.jpg'],1920,1080,1.78
+4315,eccf0bdd0508af2cb6395c8dd37a84ef,Unknown,WS,['shotdeck_data/WS/328 - Drive.jpg'],1920,806,2.38
+4316,2e72fe0f04f558b277a4c065b7f6fc0c,Unknown,WS,['shotdeck_data/WS/272 - Moonlight.jpg'],2880,1209,2.38
+4317,d3599b5feda0c1285d70147bf72e7425,Unknown,WS,['shotdeck_data/WS/274 - Silent Hill.jpg'],1918,818,2.34
+4318,9abb7dfa1ba645866ca089ed8435d614,Unknown,WS,['shotdeck_data/WS/365 - The Life Aquatic with Steve Zissou.jpg'],1920,819,2.34
+4319,718e969b8405c3493fdc8146be7f744a,Unknown,WS,['shotdeck_data/WS/416 - Ad Astra.jpg'],1920,805,2.39
+4320,f6b2b515f61d6e316a7d4d2dd5a8b476,Unknown,WS,['shotdeck_data/WS/290 - Thor.jpg'],1916,814,2.35
+4321,fa0c201b0a8fa31f85c7526031d25933,Unknown,WS,['shotdeck_data/WS/482 - Roma.jpg'],1920,804,2.39
+4322,e4d0c6b3262514582ed3e4b1d365f4d0,Unknown,WS,['shotdeck_data/WS/383 - To the Wonder.jpg'],1920,816,2.35
+4323,2e89a44183d44ec13c205574b95b8ca9,Unknown,WS,['shotdeck_data/WS/327 - Dune.jpg'],1920,802,2.39
+4324,1341e10943572fb8bf211da8d26038f1,Unknown,WS,['shotdeck_data/WS/451 - Drumline.jpg'],1910,810,2.36
+4325,f0224037985ff24e925c411ceaa0bfb5,Unknown,WS,['shotdeck_data/WS/495 - Never Look Away.jpg'],1920,1030,1.86
+4326,d84bf3feb7ceafd3a0af2871ccf2227a,Unknown,WS,['shotdeck_data/WS/330 - 6 Underground.jpg'],1916,800,2.4
+4327,30ddd33743d60180e1a17f0ca8921264,Unknown,WS,['shotdeck_data/WS/523 - Red Rocket.jpg'],1920,803,2.39
+4328,e46a15add046fd1bbeaf200dfe16e780,Unknown,WS,['shotdeck_data/WS/453 - Little Women.jpg'],1920,1037,1.85
+4329,1584ba047a779ca033c6126a2f497a8d,Unknown,WS,['shotdeck_data/WS/447 - The Killing of a Sacred Deer.jpg'],3352,1809,1.85
+4330,16cffcf041fb9058d90baf8ed1132d5e,Unknown,WS,['shotdeck_data/WS/298 - Challengers.jpg'],1920,1038,1.85
+4331,13c60454b7d8f69b55465001f8c684d3,Unknown,WS,['shotdeck_data/WS/222 - There Will Be Blood.jpg'],1920,792,2.42
+4332,b42b9bd3c44bff3b5d1da9d6d80c0097,Unknown,WS,['shotdeck_data/WS/541 - All of Us Strangers.jpg'],1920,803,2.39
+4333,9a12dc758e760eba1c6c37d6500d68c4,Unknown,WS,['shotdeck_data/WS/337 - Midsommar.jpg'],1920,960,2.0
+4334,992def8dc263904f69505eaf90745da2,Unknown,WS,['shotdeck_data/WS/273 - The Rider.jpg'],1920,801,2.4
+4335,387d0a3fe995565fcde80281276c50f2,Unknown,WS,['shotdeck_data/WS/514 - The Batman.jpg'],1920,802,2.39
+4336,e1f739eced59ebe063cb4c3acb40cc1a,Unknown,WS,['shotdeck_data/WS/390 - Pearl.jpg'],1920,804,2.39
+4337,ddbe62653d71f96ccf1511acb109084e,Unknown,WS,['shotdeck_data/WS/450 - Challengers.jpg'],1920,1038,1.85
+4338,a2b159469b010fe3a0f80d012e207664,Unknown,WS,['shotdeck_data/WS/472 - Ali Fear Eats the Soul.jpg'],1478,1080,1.37
+4339,b89659b8461fa188bec2aeec240dc2f6,Unknown,WS,['shotdeck_data/WS/334 - The Revenant.jpg'],1920,808,2.38
+4340,ad48bb73bda09ce0fb92cad48d70acb5,Unknown,WS,['shotdeck_data/WS/411 - The Babadook.jpg'],1913,789,2.42
+4341,34039a284e3a1a85ae35ea0cb8e90092,Unknown,WS,['shotdeck_data/WS/505 - Queen  Slim.jpg'],1920,804,2.39
+4342,8fba1ff308254c250080852c5b013af0,Unknown,WS,['shotdeck_data/WS/317 - Dune Part Two.jpg'],1920,800,2.4
+4343,f4fe3758a763da1d89fa45a33e22c0f0,Unknown,WS,['shotdeck_data/WS/419 - Dil Chahta Hai.jpg'],1920,784,2.45
+4344,b91db8c19572d4485edfd6fdba033bbb,Unknown,WS,['shotdeck_data/WS/202 - The Batman.jpg'],1920,802,2.39
+4345,adf9b83301d4e9a583d66ec2b74411cb,Unknown,WS,['shotdeck_data/WS/412 - Priscilla.jpg'],1924,1040,1.85
+4346,771a2c0bf08386386a0c2851ef413368,Unknown,WS,['shotdeck_data/WS/287 - The Darjeeling Limited.jpg'],1920,795,2.42
+4347,2d909cf55fb698073f3a4acc913916a6,Unknown,WS,['shotdeck_data/WS/498 - Theater Camp.jpg'],1920,1080,1.78
+4348,747a552cd25185ae9f6fcbc250ab80b6,Unknown,WS,['shotdeck_data/WS/299 - Blade Runner 2049.jpg'],1920,800,2.4
+4349,6cf49a1aa7a87b7d2b0e9648500fdd5a,Unknown,WS,['shotdeck_data/WS/429 - The Wolf of Wall Street.jpg'],1915,798,2.4
+4350,4f9e58cd1386c15c0d1a5d41275be97f,Unknown,WS,['shotdeck_data/WS/443 - The Beach Bum.jpg'],1920,804,2.39
+4351,3fc2f0ff6443557142d653b73c5abe5b,Unknown,WS,['shotdeck_data/WS/351 - This Is Not Berlin.jpg'],1920,817,2.35
+4352,b170090bcc007a4d73e7636e2681fdae,Unknown,WS,['shotdeck_data/WS/384 - Double Indemnity.jpg'],1478,1080,1.37
+4353,bbf2b5a3902cf0f070eb8fa3983b7a38,Unknown,WS,['shotdeck_data/WS/457 - Once Upon a Time in Hollywood.jpeg'],1920,800,2.4
+4354,5de8c6e8599c690d1e8c4fa2ab647e19,Unknown,WS,['shotdeck_data/WS/259 - The Sweet East.jpg'],1920,1080,1.78
+4355,a7ea1ba1e88da2048a6e1b6710d7c36e,Unknown,WS,['shotdeck_data/WS/276 - Game Night.jpg'],1920,800,2.4
+4356,280aef98521f5a8fe699991422a592ba,Unknown,WS,['shotdeck_data/WS/551 - Sicario.jpg'],1920,800,2.4
+4357,4ad2feee64b4c032057dd7502c100cea,Unknown,WS,['shotdeck_data/WS/572 - Oldboy.jpg'],1920,818,2.35
+4358,175b9607726ca4eeed11c7e9dd0c314c,Unknown,WS,['shotdeck_data/WS/511 - The Conjuring The Devil Made Me Do It.jpg'],1920,803,2.39
+4359,c9e7d13d1da6c2bfd99bedd37d74ec30,Unknown,WS,['shotdeck_data/WS/399 - Spring Breakers.jpg'],1920,799,2.4
+4360,6fb25121f55f337e631fb5726b75e6c8,Unknown,WS,['shotdeck_data/WS/336 - I Saw the TV Glow.jpg'],1920,1038,1.85
+4361,b7a66147c37716ebbc8b507d2b906b95,Unknown,WS,['shotdeck_data/WS/479 - Air.jpg'],1920,1038,1.85
+4362,51c82d4d407bac09460094a47f102f77,Unknown,WS,['shotdeck_data/WS/333 - Past Lives.jpg'],1920,1040,1.85
+4363,b19764ea789015774dd71727298feee3,Unknown,WS,['shotdeck_data/WS/257 - Once Upon a Time in the West.jpg'],1920,816,2.35
+4364,05a9f95497bf09b3658507a060acf545,Unknown,WS,['shotdeck_data/WS/493 - A Serious Man.jpg'],1920,1040,1.85
+4365,3809740f56ebcd108222eaca5dbb3388,Unknown,WS,['shotdeck_data/WS/477 - The Killing of a Sacred Deer.jpg'],3352,1809,1.85
+4366,f99a83c1bfcd061e4dd86e0fd70534ea,Unknown,WS,['shotdeck_data/WS/413 - Get Out.jpg'],2880,1204,2.39
+4367,73342a3a4e469373941242ea1370cb12,Unknown,WS,['shotdeck_data/WS/485 - Drive.jpg'],1920,806,2.38
+4368,1fb5436040887aedee49b8df55bfc06f,Unknown,WS,['shotdeck_data/WS/346 - Encounter.jpg'],1920,800,2.4
+4369,ca2ce95815455585e858a4f771cbbdba,Unknown,WS,['shotdeck_data/WS/439 - F9.jpg'],1920,790,2.43
+4370,488b1a45b7e24cd25000382320768af5,Unknown,WS,['shotdeck_data/WS/269 - Nope.jpg'],1920,1080,1.78
+4371,80b08267f8bd152c45b0ff3d85ceb7d2,Unknown,WS,['shotdeck_data/WS/403 - The Immigrant.jpg'],1920,800,2.4
+4372,1aa1133da80e181f0714c78f68b38a7f,Unknown,WS,['shotdeck_data/WS/379 - Blade Runner 2049.jpg'],1920,800,2.4
+4373,932b516ab489ad51ef975af447e88874,Unknown,WS,['shotdeck_data/WS/423 - Minari.jpg'],1920,802,2.39
+4374,c96b30b1addeebf681397cfe49ce3f1d,Unknown,WS,['shotdeck_data/WS/367 - The Quiet Girl.jpg'],1438,1080,1.33
+4375,b0387c57354dba32d0acf387565bc786,Unknown,WS,['shotdeck_data/WS/300 - Pride  Prejudice.jpg'],1915,818,2.34
+4376,f58d67829c95e34d59902934215c9dcf,Unknown,WS,['shotdeck_data/WS/292 - Raiders of the Lost Ark.jpg'],1920,810,2.37
+4377,14631bdb592688191ece07913f0f6064,Unknown,WS,['shotdeck_data/WS/368 - Scream.jpg'],1920,802,2.39
+4378,b8cdb80946c5284f0d76c72f77b5a0fb,Unknown,WS,['shotdeck_data/WS/341 - Revolutionary Road.jpg'],1920,816,2.35
+4379,264cf6412daa56749c0edb17a0c8ae79,Unknown,WS,['shotdeck_data/WS/361 - Nope.jpg'],1920,874,2.2
+4380,106ed25360c4620e5dd9a991575bce03,Unknown,WS,['shotdeck_data/WS/488 - The Holy Mountain.jpg'],1920,817,2.35
+4381,f2487caff57294adf2352f15635f478c,Unknown,WS,['shotdeck_data/WS/510 - Us.jpg'],1920,803,2.39
+4382,025530eae5a4dcacb1ceb7d0456e0d8c,Unknown,WS,['shotdeck_data/WS/98 - Calvary.jpg'],1915,817,2.34
+4383,2161dd5e9bbbd18682204fb79c086fb7,Unknown,WS,['shotdeck_data/WS/463 - Women in Love.jpg'],1890,1080,1.75
+4384,eff7e6f53bb348ca3791515ea63c6e01,Unknown,WS,['shotdeck_data/WS/521 - Dead Poets Society.jpg'],1920,1036,1.85
+4385,2c6fcbcc1972f4d3a4a529157ac420f6,Unknown,WS,['shotdeck_data/WS/372 - Killers of the Flower Moon.jpg'],1920,800,2.4
+4386,85acdaeda8e8b7f26133021fc3ffcc0e,Unknown,WS,['shotdeck_data/WS/425 - Macbeth.jpg'],1920,804,2.39
+4387,9474b9ab48855e3a451b2905b716e900,Unknown,WS,['shotdeck_data/WS/322 - Nobody.jpg'],1920,804,2.39
+4388,4e8429e0a819510cceb26391d90f89cb,Unknown,WS,['shotdeck_data/WS/420 - The Ritual.jpg'],1918,960,2.0
+4389,9a62d203ce19c17bcbc8f324a775bdda,Unknown,WS,['shotdeck_data/WS/435 - Spermworld.jpg'],1918,960,2.0
+4390,13fbbaefc7bf005743c6be09143137f4,Unknown,WS,['shotdeck_data/WS/329 - Never Let Me Go.jpg'],1920,816,2.35
+4391,fffdc6873fd6de3ce4a94abb2d01139e,Unknown,WS,['shotdeck_data/WS/248 - Nanny.jpg'],1920,958,2.0
+4392,86f1ded4858cdfd3211d1cf9e9e147f3,Unknown,WS,['shotdeck_data/WS/270 - Marie Antoinette.jpg'],1920,1040,1.85
+4393,8203b113f0e41b57834e7d15abf325ba,Unknown,WS,['shotdeck_data/WS/374 - Casino Royale.jpg'],1920,798,2.41
+4394,2ef88b86b177c3f75d3feda1674830e8,Unknown,WS,['shotdeck_data/WS/378 - Challengers.jpg'],1920,1038,1.85
+4395,92681201dc24da92bac95040356fd0e4,Unknown,WS,['shotdeck_data/WS/496 - West Side Story.jpg'],1920,802,2.39
+4396,9d020741105ce670e83bca127ac839fa,Unknown,WS,['shotdeck_data/WS/459 - No Country for Old Men.jpg'],1920,816,2.35
+4397,2336aec25194c5dd0d87b771dd6efd62,Unknown,WS,['shotdeck_data/WS/307 - Lion.jpg'],1916,794,2.41
+4398,484693f8c9caf0cb4a9a3309e75a7d08,Unknown,WS,['shotdeck_data/WS/539 - True Stories.jpg'],1920,1040,1.85
+4399,13cd712d406c6c18e0c8e20975c98c3b,Unknown,WS,['shotdeck_data/WS/363 - Scream VI.jpg'],1920,804,2.39
+4400,654f8ceeec9313735f57394e0c05cf05,Unknown,WS,['shotdeck_data/WS/402 - Creed II.jpg'],1920,800,2.4
+4401,a57548b48a81c8f6c554129dea02b7eb,Unknown,WS,['shotdeck_data/WS/430 - Watcher.jpg'],1920,960,2.0
+4402,0bafa12be8e04ba87453fd31768775be,Unknown,WS,['shotdeck_data/WS/280 - Children of Men.jpg'],1920,1036,1.85
+4403,e72641aba206c9262b82de183afb565d,Unknown,WS,['shotdeck_data/WS/516 - Sicario.jpg'],1920,800,2.4
+4404,9275faa90d7e2f245c90e2da1d005281,Unknown,WS,['shotdeck_data/WS/549 - The Worst Person in the World.png'],1920,1038,1.85
+4405,05aae4f84495abba45d4501e53c4c46c,Unknown,WS,['shotdeck_data/WS/282 - Blade Runner.jpg'],2560,1069,2.39
+4406,449648099f4f2b08518de10c066d731a,Unknown,WS,['shotdeck_data/WS/309 - Decision to Leave.jpg'],1920,802,2.39
+4407,74ba0fb55af5a6011569eec31ce80bbe,Unknown,WS,['shotdeck_data/WS/467 - Scary Stories to Tell in the Dark.jpg'],1920,800,2.4
+4408,b1a0bb46f2373c7d270f65fc31b169b3,Unknown,WS,['shotdeck_data/WS/241 - Macbeth.jpg'],1920,804,2.39
+4409,13e5e37b3b486fddf390db3516933476,Unknown,WS,['shotdeck_data/WS/311 - Longlegs.jpg'],1340,1010,1.33
+4410,4946100f7c3df9780eebda020df16f2b,Unknown,WS,['shotdeck_data/WS/497 - Halloween Ends.jpg'],1910,800,2.39
+4411,6fd4001ae87ce4e206afcf10f8d52450,Unknown,WS,['shotdeck_data/WS/284 - City of God.jpg'],1920,1072,1.79
+4412,28bb5f8450edf389ab89454249a09c82,Unknown,WS,['shotdeck_data/WS/518 - Captain Fantastic.jpg'],1920,800,2.4
+4413,8cfd60ada61b80a541be9c8a5037882a,Unknown,WS,['shotdeck_data/WS/417 - The French Dispatch.jpg'],1409,1032,1.37
+4414,8de0143a937999d7078c82fda6904cbe,Unknown,WS,['shotdeck_data/WS/285 - Mary Magdalene.jpg'],1727,781,2.21
+4415,45001cb31c9537aa19a221c9eb5f55b8,Unknown,WS,['shotdeck_data/WS/254 - Past Lives.jpg'],1920,1040,1.85
+4416,d6ff880a43faf3b2b03ddd7d0ac46a57,Unknown,WS,['shotdeck_data/WS/385 - Longlegs.jpg'],1920,800,2.4
+4417,f0f92f89eb91ae70ea28105755defedd,Unknown,WS,['shotdeck_data/WS/344 - I Saw the TV Glow.jpg'],1920,1038,1.85
+4418,2507c00d287455d7f471d948ed248460,Unknown,WS,['shotdeck_data/WS/492 - Farewell Amor.jpg'],1920,805,2.39
+4419,f5fc1054d70e5d882271605d378166e5,Unknown,WS,['shotdeck_data/WS/491 - Minari.jpg'],1920,802,2.39
+4420,b7cf7f2885f580dba975f72d83146123,Unknown,WS,['shotdeck_data/WS/303 - Dune.jpg'],1920,802,2.39
+4421,1a61dbb93bdf09b916cc57f0a3abdaef,Unknown,WS,['shotdeck_data/WS/386 - Respect.jpg'],1920,804,2.39
+4422,9d35b7b5d6691a467ac305aa56dbf4a9,Unknown,WS,['shotdeck_data/WS/262 - I Give It a Year.jpg'],1920,803,2.39
+4423,ec12feac3aef6492a238e0772d546739,Unknown,WS,['shotdeck_data/WS/264 - Pulp Fiction.jpg'],1920,816,2.35
+4424,5262e046cb1fe8f3d48cff2a409bd5f8,Unknown,WS,['shotdeck_data/WS/503 - I Robot.jpg'],1920,819,2.34
+4425,545198bf1bbe5e88a326216a153a7e5d,Unknown,WS,['shotdeck_data/WS/591 - After Yang.jpg'],1920,801,2.4
+4426,4e6713a8f457850e83d8db3fa4c74beb,Unknown,WS,['shotdeck_data/WS/515 - Saint Maud.jpg'],1920,804,2.39
+4427,612a813a3d110f159504793e87b78500,Unknown,WS,['shotdeck_data/WS/509 - Alien.jpg'],1920,818,2.35
+4428,a0682a5c12b3d42c924f54d8e205fcdc,Unknown,WS,['shotdeck_data/WS/376 - Macbeth.jpg'],1920,804,2.39
+4429,c3183afdaf2dbd8181689f94ee21ad34,Unknown,WS,['shotdeck_data/WS/35 - The Equalizer.jpg'],1920,796,2.41
+4430,8b31b6c3784308b1e249c5dc9d6ca2de,Unknown,WS,['shotdeck_data/WS/293 - Past Lives.jpg'],1920,1040,1.85
+4431,54d56eef11fbe56e31b2d366aa8af003,Unknown,WS,['shotdeck_data/WS/440 - Rye Lane.jpg'],1920,800,2.4
+4432,67aabe3c7c99a245cd75f56e3e6c3a21,Unknown,WS,['shotdeck_data/WS/249 - Lion.jpg'],1915,797,2.4
+4433,3a407e2f2a7f6c01ecfc9dff152f3fd4,Unknown,WS,['shotdeck_data/WS/480 - Another Round.jpg'],1920,960,2.0
+4434,a534acbd9db1c396f96c2acd06b6793e,Unknown,WS,['shotdeck_data/WS/387 - Song to Song.jpg'],1920,800,2.4
+4435,f9979b70cc112f59b522752919d1fdf3,Unknown,WS,['shotdeck_data/WS/401 - Challengers.jpg'],1920,1038,1.85
+4436,9bf64ba9357b786a1acf8d72ffd46316,Unknown,WS,['shotdeck_data/WS/462 - Dune Part Two.jpg'],1920,800,2.4
+4437,2be4912679084725075d63fba45ffd30,Unknown,WS,['shotdeck_data/WS/481 - Isle of Dogs.jpg'],1920,803,2.39
+4438,9ab7b76ce9b8ebbb4fb5f0cf62fab414,Unknown,WS,['shotdeck_data/WS/464 - Pirates of the Caribbean The Curse of the Black Pearl.jpg'],1915,800,2.39
+4439,986c5b4e16ac6ddea4508814f935a072,Unknown,WS,['shotdeck_data/WS/297 - The Night House.jpg'],1920,798,2.41
+4440,f7a52f38f0e2a3002433d287acbe56d7,Unknown,WS,['shotdeck_data/WS/388 - The Psychic.jpg'],1924,1040,1.85
+4441,eaccd3f30271828f8359661b48da52ee,Unknown,WS,['shotdeck_data/WS/489 - Monsters and Men.jpg'],2880,1204,2.39
+4442,6c6af9539773c0b6b5e6af9e5dbd9da0,Unknown,WS,['shotdeck_data/WS/158 - Divergent.jpg'],1920,799,2.4
+4443,fc9ebef2cffa9e3a726697cea77dd069,Unknown,WS,['shotdeck_data/WS/434 - Poor Things.jpg'],1800,1080,1.67
+4444,97a41837475716a7ee43d38b7128c97f,Unknown,WS,['shotdeck_data/WS/332 - Last Night in Soho.jpg'],1920,804,2.39
+4445,edb20a5b5904aca417ce430cdd0c9b8d,Unknown,WS,['shotdeck_data/WS/409 - 120 BPM Beats per Minute.jpg'],1920,803,2.39
+4446,7f680c0ed43b0f763de1c8265ac5c7db,Unknown,WS,['shotdeck_data/WS/350 - Saint Maud.jpg'],1920,804,2.39
+4447,e288008865099cdeec4faa30306f71ab,Unknown,WS,['shotdeck_data/WS/258 - John Wick Chapter 4.jpg'],1920,802,2.39
+4448,dbcd41bbe55d03f80fc73c8d99dca5bc,Unknown,WS,['shotdeck_data/WS/408 - The Girl on the Train.jpg'],1920,1037,1.85
+4449,7a3971003413f36157e2d6405c564ff0,Unknown,WS,['shotdeck_data/WS/398 - The Invisible Man.jpg'],1920,804,2.39
+4450,5d7e95972d89db8768de7c2907d11fe5,Unknown,WS,['shotdeck_data/WS/433 - Top Gun Maverick.jpg'],1920,1012,1.9
+4451,b7e59c81708eec16de18fd4a865d5a50,Unknown,WS,['shotdeck_data/WS/318 - Babylon.jpg'],1920,804,2.39
+4452,5c7a922d3e14bb86a26b8353bd7954cb,Unknown,WS,['shotdeck_data/WS/487 - Dune.jpg'],1920,802,2.39
+4453,e1ac00f1ba194ab05b88e1611275de5f,Unknown,WS,['shotdeck_data/WS/535 - Top Gun Maverick.jpg'],1920,804,2.39
+4454,2ee392695812acb9f5c6da65daf4d243,Unknown,WS,['shotdeck_data/WS/474 - Do the Right Thing.jpg'],1920,1040,1.85
+4455,8e9b408f48cc90486f1a551d6243cdfa,Unknown,WS,['shotdeck_data/WS/308 - Another Round.jpg'],1920,960,2.0
+4456,64b790441a9c5bd0cbfce8fbb2ddcc8a,Unknown,WS,['shotdeck_data/WS/377 - 6 Underground.jpg'],1916,800,2.4
+4457,32551166a492ffc1593948309181c704,Unknown,WS,['shotdeck_data/WS/522 - Joker.jpg'],2000,1081,1.85
+4458,45c1bea76742aeccd5b137570f512615,Unknown,WS,['shotdeck_data/WS/396 - Triangle of Sadness.jpg'],1920,804,2.39
+4459,3927d9a4693c5c791d75f8281f0b51d2,Unknown,WS,['shotdeck_data/WS/542 - Tigertail.jpg'],1920,802,2.39
+4460,8f50776ca23f1082b9b4b3c43b208061,Unknown,WS,['shotdeck_data/WS/44 - Eternals.jpg'],1920,792,2.42
+4461,7854e507ea0b5c55a2c8d649ef6b7291,Unknown,WS,['shotdeck_data/WS/406 - Drive My Car.jpg'],1920,1040,1.85
+4462,1e5ee0f7e2cc20b1ab1508dbc223ba64,Unknown,WS,['shotdeck_data/WS/250 - Pain  Gain.jpg'],1920,800,2.4
+4463,e071c2d24de2d204af59e652a794ec9f,Unknown,WS,['shotdeck_data/WS/266 - You Were Never Really Here.jpg'],1920,804,2.39
+4464,c5878c40f500f463736d653669193e96,Unknown,WS,['shotdeck_data/WS/546 - Dune Part Two.jpg'],1920,800,2.4
+4465,213faf83c364323e06d8c4120c1cacde,Unknown,WS,['shotdeck_data/WS/393 - Mirror.jpg'],1478,1080,1.37
+4466,b3941ee1dd149053f4e68eacd943c641,Unknown,WS,['shotdeck_data/WS/512 - Sinister.jpg'],1920,800,2.4
+4467,174857be4c6a286ee6cf0b7bdfeb42a7,Unknown,WS,['shotdeck_data/WS/507 - Moneyball.jpg'],1913,1036,1.85
+4468,5a04fe7f0b1a03231f8fe4f94c949ab5,Unknown,WS,['shotdeck_data/WS/348 - Love Lies Bleeding.jpg'],1918,802,2.39
+4469,744e1a42107ae349af9e23af343bf720,Unknown,WS,['shotdeck_data/WS/465 - The Matrix Revolutions.jpg'],1918,798,2.4
+4470,e1b2ee1de174a120cab016aca4454b07,Unknown,WS,['shotdeck_data/WS/278 - Jennifers Body.jpg'],1920,1035,1.86
+4471,1f42441fd95bc2ab2160a64cd2fa642e,Unknown,WS,['shotdeck_data/WS/537 - The Square.jpg'],1920,1038,1.85
+4472,33a3b677429be2e5b34fd58edc1a49f6,Unknown,WS,['shotdeck_data/WS/471 - Rent.png'],1920,799,2.4
+4473,ce0fe54186b23b6c005e0c777f9aadd4,Unknown,WS,['shotdeck_data/WS/476 - To Leslie.jpg'],1920,801,2.4
+4474,7309d3cbdadd5b9ce5b38acc9e5bb4d6,Unknown,WS,['shotdeck_data/WS/426 - Aftersun.jpg'],1924,1040,1.85
