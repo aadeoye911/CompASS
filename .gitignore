@@ -1,0 +1,10 @@
+# Ignore dataset folders
+shotdeck_data/
+
+# Ignore log files
+*.log
+
+# Ignore cache files
+__pycache__/
+*.pkl
+*.pt
