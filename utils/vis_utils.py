@@ -1,5 +1,4 @@
 import matplotlib as plt
-import 
 
 def visualize_latents(sampler):
     T = len(sampler.decoded_images)

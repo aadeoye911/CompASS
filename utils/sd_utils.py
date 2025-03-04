@@ -2,12 +2,12 @@ import torch
 from PIL import Image
 from torchvision.transforms import Normalize, ToTensor, Resize, Compose, ToPILImage
 
-def resize_image(image, max_dim=512, factor=64):
+def resize_image(image, min_dim=512, factor=64):
     """
     Resize PIL image to maintain aspect ratio, ensuring dimensions are multiples of 64.
     """
     width, height = image.size
-    scale = max_dim / max(width, height)
+    scale = min_dim / min(width, height)
     width = int(round(width * scale / factor) * factor)
     height = int(round(height * scale / factor) * factor)
 
