@@ -67,27 +67,30 @@ def init_latent(pipe, generator, height, width, batch_size=1):
 
     return latents
 
-def get_token_indices(pipe, prompt):
+def get_token_indices(pipe, prompts, eot_only=True):
     """
-    Get token indices for SoT (Start-of-Text), EoT (End-of-Text), and words.
+    Get index of EoT tokens or a list of dictionaries mapping words to token indices.
     """
-    # Tokenize the prompt
-    token_ids = pipe.tokenizer.encode(prompt, add_special_tokens=True)
-    tokenized_words = pipe.tokenizer.convert_ids_to_tokens(token_ids)
+    if isinstance(prompts, str):
+        prompts = [prompts]  # Convert to list for uniform processing
 
-    token_indices = {}
-    for token_idx, token in enumerate(tokenized_words):
-        # Clean tokens to regular text
-        if token == pipe.tokenizer.bos_token:
-            word = "sot"
-        elif token == pipe.tokenizer.eos_token:
-            word = "eot"
-        else:
-            word = token.replace("##", "").replace("</w>", "") # Remove BPE subword markers
-        # Store token indices for prompt words and special tokens
-        token_indices.setdefault(word, []).append(token_idx)
+    encodings = pipe.tokenizer(prompts, add_special_tokens=True)
+    if eot_only:
+        return {"eot": [len(tokens) - 1 for tokens in encodings["input_ids"]]}
+
+    token_indices = []
+    tokenized_prompts = [pipe.tokenizer.convert_ids_to_tokens(token_ids) for token_ids in encodings["input_ids"]]
+    for tokens in tokenized_prompts:
+        token_map = {"sot": [0]}
+        token_map["eot"] = [len(tokens) - 1]
+        for i in range(1, len(tokens) - 1):
+            word = tokens[i].replace("##", "").replace("</w>", "")  # Remove BPE subword markers
+            token_map.setdefault(word, []).append(i)
+        
+        token_indices.append(token_map)
 
     return token_indices
+
 
 def parse_layer_name(layer_name):
     """
