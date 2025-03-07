@@ -42,7 +42,7 @@ def preprocess_image(image):
     
     return transform(image).unsqueeze(0)
 
-def prepare_latents(self, image, batch_size, generator)
+def prepare_latents(self, image, batch_size, generator):
        
     image = image.repeat(batch_size, 1, 1, 1)
     latents = self.vae.encode(image).latent_dist.sample(generator=generator)
