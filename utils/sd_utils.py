@@ -7,19 +7,36 @@ def resize_image(image, min_dim=512, factor=64):
     Resize PIL image to maintain aspect ratio, ensuring dimensions are multiples of 64.
     """
     width, height = image.size
+    min_dim = round_to_multiple(min_dim, factor, mode="up")
     scale = min_dim / min(width, height)
-    width = int(round(width * scale / factor) * factor)
-    height = int(round(height * scale / factor) * factor)
 
-    return image.resize((width, height), Image.LANCZOS)
+    # Return image as-is if dimensions are already correct
+    if scale == 1 and width % factor == 0 and height % factor == 0:
+        return image 
 
+    new_width = round_to_multiple(width * scale, factor)
+    new_height = round_to_multiple(height * scale, factor)
+
+    return image.resize((new_width, new_height), Image.LANCZOS)
+
+def round_to_multiple(value, factor, mode="nearest"):
+    """
+    Round a given value to the nearest multiple of `factor`.
+    """
+    if mode == "up":
+        return int((value + factor - 1) // factor * factor)
+    elif mode == "down":
+        return int(value // factor * factor)
+    elif mode == "nearest":
+        return int(round(value / factor) * factor)
+    else:
+        raise ValueError("mode must be 'up', 'down', or 'nearest'")
+                         
 def image2latent(pipe, image):
     """
     Encode PIL image into SD latent space.
     """
-    width, height = image.size
-    if (width % 64 != 0 or height % 64 != 0):
-        image = resize_image(image)
+
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
     image_tensor = transform(image).unsqueeze(0).to(pipe.device, dtype=pipe.dtype)
     with torch.no_grad():
