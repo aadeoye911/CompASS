@@ -1,6 +1,6 @@
 import torch
 from PIL import Image
-from torchvision.transforms import Normalize, ToTensor, Resize, Compose, ToPILImage
+from torchvision.transforms import Normalize, ToTensor, Compose
 
 def resize_image(image, min_dim=512, factor=64):
     """
@@ -32,27 +32,12 @@ def round_to_multiple(value, factor, mode="nearest"):
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
                          
-def image2latent(pipe, image):
+def pil_to_pt(image):
     """
-    Encode PIL image into SD latent space.
+    Convert PIL image into a torch.Tensor.
     """
-
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
-    image_tensor = transform(image).unsqueeze(0).to(pipe.device, dtype=pipe.dtype)
-    with torch.no_grad():
-        latents = pipe.vae.encode(image_tensor).latent_dist.mode()
-
-    return latents * pipe.vae.config.scaling_factor, image
-
-# def latent2image(pipe, latent):
-#     """
-#     Decode SD latents to PIL image.
-#     """
-#     image_tensor = pipe.vae.decode(latent / pipe.vae.config.scaling_factor).sample
-#     image = (image_tensor / 2 + 0.5).clamp(0, 1)
-#     image = image.detach().cpu().permute(0, 2, 3, 1).numpy()
-
-#     return pipe.numpy_to_pil(image)[0]
+    return transform(image).unsqueeze(0)
 
 def init_latent(pipe, generator, height, width, batch_size=1):
     """
@@ -67,19 +52,20 @@ def init_latent(pipe, generator, height, width, batch_size=1):
 
     return latents
 
-def get_token_indices(pipe, prompts, eot_only=True):
+
+def get_token_indices(tokenizer, prompts, eot_only=True):
     """
     Get index of EoT tokens or a list of dictionaries mapping words to token indices.
     """
     if isinstance(prompts, str):
         prompts = [prompts]  # Convert to list for uniform processing
 
-    encodings = pipe.tokenizer(prompts, add_special_tokens=True)
+    encodings = tokenizer(prompts, add_special_tokens=True)
     if eot_only:
         return {"eot": [len(tokens) - 1 for tokens in encodings["input_ids"]]}
 
     token_indices = []
-    tokenized_prompts = [pipe.tokenizer.convert_ids_to_tokens(token_ids) for token_ids in encodings["input_ids"]]
+    tokenized_prompts = [tokenizer.convert_ids_to_tokens(token_ids) for token_ids in encodings["input_ids"]]
     for tokens in tokenized_prompts:
         token_map = {"sot": [0]}
         token_map["eot"] = [len(tokens) - 1]
