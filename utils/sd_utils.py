@@ -9,11 +9,10 @@ def resize_image(image, min_dim=512, factor=64):
     width, height = image.size
     min_dim = round_to_multiple(min_dim, factor, mode="up")
     scale = min_dim / min(width, height)
-
     # Return image as-is if dimensions are already correct
     if scale == 1 and width % factor == 0 and height % factor == 0:
         return image 
-
+    
     new_width = round_to_multiple(width * scale, factor)
     new_height = round_to_multiple(height * scale, factor)
 
@@ -32,19 +31,31 @@ def round_to_multiple(value, factor, mode="nearest"):
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
                          
-def pil_to_pt(image):
+def preprocess_image(image):
     """
     Convert PIL image into a torch.Tensor.
     """
+    if image.mode == "RGBA":
+        image = image.convert("RGB")
+    image = resize_image(image)
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
+    
     return transform(image).unsqueeze(0)
 
-def init_latent(pipe, generator, height, width, batch_size=1):
+def prepare_latents(self, image, batch_size, generator)
+       
+    image = image.repeat(batch_size, 1, 1, 1)
+    latents = self.vae.encode(image).latent_dist.sample(generator=generator)
+    latents = latents * self.vae.config.scaling_factor
+    
+    return latents
+
+def init_latent(unet, generator, height, width, batch_size=1):
     """
     Initialize latent for Stable Diffusion.
     """
     latents = torch.randn(
-        (batch_size, pipe.unet.in_channels, height, width),
+        (batch_size, unet.in_channels, height, width),
         generator=generator,
         device=pipe.device,
         dtype=pipe.dtype

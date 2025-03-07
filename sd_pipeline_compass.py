@@ -1,3 +1,5 @@
+from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
+from attention import AttentionStore
 
 class CompASSPipeline(StableDiffusionPipeline):
     """
@@ -98,8 +100,3 @@ class CompASSPipeline(StableDiffusionPipeline):
                                 device=self.device,
                                 num_images_per_prompt=batch_size,
                                 do_classifier_free_guidance=False)
-
-    def image2tensor(image):
-        transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
-        image_tensor = transform(image).unsqueeze(0).to(pipe.device, dtype=pipe.dtype)
-        return image_tensor
