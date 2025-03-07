@@ -17,23 +17,25 @@ def image2latent(pipe, image):
     """
     Encode PIL image into SD latent space.
     """
+    width, height = image.size
+    if (width % 64 != 0 or height % 64 != 0):
+        image = resize_image(image)
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
     image_tensor = transform(image).unsqueeze(0).to(pipe.device, dtype=pipe.dtype)
     with torch.no_grad():
-        latents = pipe.vae.encode(image_tensor).latent_dist.mean
+        latents = pipe.vae.encode(image_tensor).latent_dist.mode()
 
-    return latents * pipe.vae.config.scaling_factor
+    return latents * pipe.vae.config.scaling_factor, image
 
-def latent2image(pipe, latent):
-    """
-    Decode SD latents to PIL image.
-    """
-    with torch.no_grad():
-        image_tensor = pipe.vae.decode(latent / pipe.vae.config.scaling_factor).sample
-        image = (image_tensor / 2 + 0.5).clamp(0, 1)
-        image = image.detach().cpu().permute(0, 2, 3, 1).numpy()
+# def latent2image(pipe, latent):
+#     """
+#     Decode SD latents to PIL image.
+#     """
+#     image_tensor = pipe.vae.decode(latent / pipe.vae.config.scaling_factor).sample
+#     image = (image_tensor / 2 + 0.5).clamp(0, 1)
+#     image = image.detach().cpu().permute(0, 2, 3, 1).numpy()
 
-    return pipe.numpy_to_pil(image)[0]
+#     return pipe.numpy_to_pil(image)[0]
 
 def init_latent(pipe, generator, height, width, batch_size=1):
     """
@@ -69,40 +71,6 @@ def get_token_indices(pipe, prompt):
         token_indices.setdefault(word, []).append(token_idx)
 
     return token_indices
-
-def tokenize_prompt(pipe, prompt, max_length=None):
-    """ 
-    Tokenize a prompt or list of prompts, handling padding and truncation.
-    """
-    if max_length is None:
-        max_length = pipe.tokenizer.model_max_length
-
-    text_inputs = pipe.tokenizer(
-        prompt,
-        padding="max_length",
-        max_length=max_length,
-        truncation=True,
-        return_tensors="pt",
-        return_overflowing_tokens=True,  # Detects if truncation occurs
-    )
-    if "overflowing_tokens" in text_inputs:
-        truncated_tokens = pipe.tokenizer.convert_ids_to_tokens(text_inputs.input_ids[0])
-        last_word = truncated_tokens[-2]  # Get last token before truncation
-        print(f"⚠️ Warning: Prompt was truncated at token {max_length}. Last word kept: '{last_word}'.")
-
-    return text_inputs.input_ids.to(pipe.device)
-    
-def get_text_embeddings(pipe, prompt, batch_size=1):
-    """
-    Computes text embeddings for conditional and unconditional text (for CFG).
-    """
-    batch_size = 1 if isinstance(prompt, str) else len(prompt)
-    # Unconditional (empty prompt for CFG guidance)
-    uncond_input = tokenize_prompt(pipe, "")
-    uncond_embeddings = pipe.text_encoder(uncond_input)[0]
-    print(uncond_embeddings.shape)
-
-    return uncond_embeddings
 
 def parse_layer_name(layer_name):
     """

@@ -76,9 +76,8 @@ if __name__ == "__main__":
     
     base_folder = "shotdeck_data"  # Root folder containing subfolders for composition and frame size
     image_data = scan_folders(base_folder, composition_categories, frame_size_categories)
-    df = create_dataframe(image_data)
+    # # df = create_dataframe(image_data)
     
-    # Save or display the DataFrame
-    df.to_csv("shotdeck_data.csv", index=False)
-    print("DataFrame saved to shotdeck_data.csv")
-
+    # # Save or display the DataFrame
+    # df.to_csv("shotdeck_data.csv", index=False)
+    # print("DataFrame saved to shotdeck_data.csv")

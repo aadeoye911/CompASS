@@ -2,6 +2,10 @@
 shotdeck_data/
 shotdeck_resized/
 *.csv
+# Ignore unwanted files
+attn_scoring.ipynb
+missing_labels.csv
+shotdeck_attention_maps.h5
 
 # Ignore log files
 *.log
