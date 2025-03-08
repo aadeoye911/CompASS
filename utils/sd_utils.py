@@ -94,8 +94,8 @@ def retrieve_latents(
         return encoder_output.latent_dist.mode()
     elif hasattr(encoder_output, "latent_dist") and sample_mode == "mean":
         return encoder_output.latent_dist.mean()
-    elif hasattr(encoder_output, "latents"):
-        return encoder_output.latents
+    # elif hasattr(encoder_output, "latents"):
+    #     return encoder_output.latents
     else:
         raise AttributeError("Could not access latents of provided encoder_output")
         
