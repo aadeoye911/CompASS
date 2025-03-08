@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
 from torchvision.transforms import Normalize, ToTensor, Compose
+from typing import Any, Callable, Dict, List, Optional, Union
 
 def resize_image(image, target_dim=512, factor=64):
     """
@@ -71,6 +72,7 @@ def seed2generator(device, seed=None, batch_size=1):
 
     return [torch.Generator(device=device).manual_seed(s) for s in seed]
 
+
 def init_latent(batch_size, num_channels, height, width, generator=None, dtype=torch.float32):
     """
     Generate random noise latent tensor for Stable Diffusion.
@@ -82,6 +84,21 @@ def init_latent(batch_size, num_channels, height, width, generator=None, dtype=t
 
     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
+# Adapted from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.retrieve_latents
+def retrieve_latents(
+    encoder_output: torch.Tensor, generator: Optional[torch.Generator] = None, sample_mode: str = "sample"
+):
+    if hasattr(encoder_output, "latent_dist") and sample_mode == "sample":
+        return encoder_output.latent_dist.sample(generator)
+    elif hasattr(encoder_output, "latent_dist") and sample_mode == "mode":
+        return encoder_output.latent_dist.mode()
+    elif hasattr(encoder_output, "latent_dist") and sample_mode == "mean":
+        return encoder_output.latent_dist.mean()
+    elif hasattr(encoder_output, "latents"):
+        return encoder_output.latents
+    else:
+        raise AttributeError("Could not access latents of provided encoder_output")
+        
 def get_token_indices(tokenizer, prompts, eot_only=True):
     """
     Retrives EoT token index for prompts or dictionary of word-to-token index maps.

@@ -69,6 +69,37 @@ def create_dataframe(image_data):
     
     return df
 
+def update_dataframe(df, image_data):
+    # Update existing images by checking for valid file paths and updating metadata
+    for idx, row in df.iterrows():
+        img_hash = row['Image Hash']
+        if img_hash in image_data:
+            # Only keep file paths that exist
+            valid_paths = [path for path in image_data[img_hash]["file_paths"] if os.path.exists(path)]
+            df.at[idx, "File Paths"] = ", ".join(valid_paths)  # Update the file paths column
+
+            # Update the composition and frame size
+            df.at[idx, "Composition"] = ", ".join(image_data[img_hash]["composition"]) if image_data[img_hash]["composition"] else "Unknown"
+            df.at[idx, "Frame Size"] = ", ".join(image_data[img_hash]["frame_size"]) if image_data[img_hash]["frame_size"] else "Unknown"
+    
+    # Handle new images (those not in the original DataFrame)
+    existing_hashes = set(df['Image Hash'])
+    for img_hash, metadata in image_data.items():
+        if img_hash not in existing_hashes:
+            # Add new row for this image
+            new_row = {
+                'Image Hash': img_hash,
+                'Composition': ", ".join(metadata["composition"]) if metadata["composition"] else "Unknown",
+                'Frame Size': ", ".join(metadata["frame_size"]) if metadata["frame_size"] else "Unknown",
+                'File Paths': ", ".join(metadata["file_paths"]),
+                'Width': metadata["width"],
+                'Height': metadata["height"],
+                'Aspect Ratio': round(metadata["width"] / metadata["height"], 2) if metadata["width"] and metadata["height"] else None
+            }
+            df = df.append(new_row, ignore_index=True)
+
+    return df
+
 if __name__ == "__main__":
     # Define composition and frame size categories
     composition_categories = ["balanced", "center", "left", "right", "symmetrical"]
@@ -76,8 +107,10 @@ if __name__ == "__main__":
     
     base_folder = "shotdeck_data"  # Root folder containing subfolders for composition and frame size
     image_data = scan_folders(base_folder, composition_categories, frame_size_categories)
-    # # df = create_dataframe(image_data)
-    
+    output_csv = "test.csv"
+    # df = create_dataframe(image_data)
+    # df = pd.read_csv("shotdeck_data.csv")
+    # df = update_dataframe(df, image_data)
     # # Save or display the DataFrame
-    # df.to_csv("shotdeck_data.csv", index=False)
-    # print("DataFrame saved to shotdeck_data.csv")
+    # df.to_csv(output_csv, index=False)
+    print("DataFrame saved to shotdeck_data.csv")

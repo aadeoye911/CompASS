@@ -19,7 +19,6 @@ class AttentionStore:
         """
         Store attention scores using a dictionary-based key format.
         """
-        key = (timestep, block_type, level, instance)
         self.attention_maps[key].append(attention_probs.detach().cpu())
 
     def query_attention(self, timestep=None, block_type=None, level=None, instance=None, is_cross=True):
