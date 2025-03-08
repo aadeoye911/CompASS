@@ -33,7 +33,7 @@ def round_to_multiple(value, factor, mode="nearest"):
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
                          
 
-def preprocess_image(image, dtype=torch.float16):
+def preprocess_image(image, pipe=None):
     """
     Convert PIL image into a torch.Tensor.
     """
@@ -41,7 +41,8 @@ def preprocess_image(image, dtype=torch.float16):
         image = image.convert("RGB")
     image = resize_image(image)
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
-    
+    dtype = pipe.dtype if pipe is not None else torch.float(32)
+
     return transform(image).unsqueeze(0).to(dtype)
 
 
