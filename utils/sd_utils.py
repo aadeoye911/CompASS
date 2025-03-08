@@ -18,6 +18,7 @@ def resize_image(image, min_dim=512, factor=64):
 
     return image.resize((new_width, new_height), Image.LANCZOS)
 
+
 def round_to_multiple(value, factor, mode="nearest"):
     """
     Round a given value to the nearest multiple of `factor`.
@@ -31,7 +32,8 @@ def round_to_multiple(value, factor, mode="nearest"):
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
                          
-def preprocess_image(image):
+
+def preprocess_image(image, dtype=torch.float16):
     """
     Convert PIL image into a torch.Tensor.
     """
@@ -40,7 +42,8 @@ def preprocess_image(image):
     image = resize_image(image)
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
     
-    return transform(image).unsqueeze(0)
+    return transform(image).unsqueeze(0).to(dtype)
+
 
 def prepare_latents(self, image, batch_size, generator):
        
@@ -50,10 +53,15 @@ def prepare_latents(self, image, batch_size, generator):
     
     return latents
 
-def init_latent(unet, generator, height, width, batch_size=1):
+
+def init_latent(unet, generator, image=None, batch_size=1):
     """
     Initialize latent for Stable Diffusion.
     """
+    if image is not None:
+        width, height = image.size
+    else:
+        width, height = unet.
     latents = torch.randn(
         (batch_size, unet.in_channels, height, width),
         generator=generator,
