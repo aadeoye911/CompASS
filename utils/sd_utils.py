@@ -31,46 +31,56 @@ def round_to_multiple(value, factor, mode="nearest"):
         return int(round(value / factor) * factor)
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
-                         
 
-def preprocess_image(image, dtype=torch.float32):
+
+def preprocess_image(image, dtype=torch.float32, min_dim=512, factor=64):
     """
-    Convert PIL image into a torch.Tensor.
+    Convert PIL image into a torch.Tensor with model-compatible dimensions.
     """
     if image.mode == "RGBA":
         image = image.convert("RGB")
-    image = resize_image(image)
+    image = resize_image(image, min_dim, factor)
     transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
     return transform(image).unsqueeze(0).to(dtype)
 
 
-def prepare_latents(self, image, batch_size, generator):
-       
-    image = image.repeat(batch_size, 1, 1, 1)
-    latents = self.vae.encode(image).latent_dist.sample(generator=generator)
-    latents = latents * self.vae.config.scaling_factor
-    
-    return latents
-
-
-def init_latent(unet, generator, image=None, batch_size=1):
+def generate_seeds(num_seeds: int = 1):
     """
-    Initialize latent for Stable Diffusion.
+    Generate a list of random seeds.
     """
-    if image is not None:
-        width, height = image.size
-    else:
-        width, height = unet.
-    latents = torch.randn(
-        (batch_size, unet.in_channels, height, width),
-        generator=generator,
-        device=pipe.device,
-        dtype=pipe.dtype
-    ) * pipe.scheduler.init_noise_sigma
+    if not isinstance(num_seeds, int) or num_seeds < 1:
+        raise ValueError(f"`num_seeds` must be a positive integer, but got {num_seeds}.")
 
-    return latents
+    return [torch.randint(0, 2**32 - 1, (1,)).item() for _ in range(num_seeds)]
 
+
+def seed2generator(device, seed=None, batch_size=1):
+    """
+    Generate one or multiple random generators.
+    """
+    if isinstance(seed, int):
+        seed = [seed] * batch_size  # Duplicate same seed for all batch elements
+    elif seed is None:
+        seed = [torch.randint(0, 2**32 - 1, (1,)).item() for _ in range(batch_size)]  # Generate random seeds
+    elif not isinstance(seed, list):
+        raise TypeError(f"`seed` must be an int, list of ints, or None, but got {type(seed)}")
+
+    if len(seed) != batch_size:
+        raise ValueError(f"Seed list length ({len(seed)}) does not match batch size ({batch_size}).")
+
+    return [torch.Generator(device=device).manual_seed(s) for s in seed]
+
+def init_latent(batch_size, num_channels, height, width, generator=None, dtype=torch.float32):
+    """
+    Generate random noise latent tensor for Stable Diffusion.
+    """
+    if isinstance(generator, list):
+        if len(generator) > batch_size:
+            print(f'generator longer than batch size. truncationg list to match batch')
+            generator = generator[:batch_size]
+
+    return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
 def get_token_indices(tokenizer, prompts, eot_only=True):
     """
