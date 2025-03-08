@@ -2,16 +2,16 @@ import torch
 from PIL import Image
 from torchvision.transforms import Normalize, ToTensor, Compose
 
-def resize_image(image, min_dim=512, factor=64):
+def resize_image(image, target_dim=512, factor=64):
     """
-    Resize PIL image to maintain aspect ratio, ensuring dimensions are multiples of 64.
+    Resize PIL image dimensions to multiples of 'factor'.
     """
     width, height = image.size
-    min_dim = round_to_multiple(min_dim, factor, mode="up")
+    min_dim = round_to_multiple(target_dim, factor, mode="up")
     scale = min_dim / min(width, height)
-    # Return image as-is if dimensions are already correct
+    
     if scale == 1 and width % factor == 0 and height % factor == 0:
-        return image 
+        return image # Return image as is if dimensions are already correct
     
     new_width = round_to_multiple(width * scale, factor)
     new_height = round_to_multiple(height * scale, factor)
@@ -57,7 +57,7 @@ def generate_seeds(num_seeds: int = 1):
 
 def seed2generator(device, seed=None, batch_size=1):
     """
-    Generate one or multiple random generators.
+    Generate list of generators from random seeds.
     """
     if isinstance(seed, int):
         seed = [seed] * batch_size  # Duplicate same seed for all batch elements
@@ -109,7 +109,7 @@ def get_token_indices(tokenizer, prompts, eot_only=True):
 
 def parse_layer_name(layer_name):
     """
-    Parse the layer name to determine block type ("down", "up", "mid"), level, and instance.
+    Parse attention layer name to determine block type ("down", "up", "mid"), level, and instance.
     """
     try:
         block_type = layer_name.split("_")[0]
