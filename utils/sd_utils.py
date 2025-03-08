@@ -75,14 +75,14 @@ def init_latent(unet, generator, image=None, batch_size=1):
 
 def get_token_indices(tokenizer, prompts, eot_only=True):
     """
-    Get index of EoT tokens or a list of dictionaries mapping words to token indices.
+    Retrives EoT token index for prompts or dictionary of word-to-token index maps.
     """
     if isinstance(prompts, str):
         prompts = [prompts]  # Convert to list for uniform processing
 
     encodings = tokenizer(prompts, add_special_tokens=True)
     if eot_only:
-        return {"eot": [len(tokens) - 1 for tokens in encodings["input_ids"]]}
+        return [{"eot": len(tokens) - 1} for tokens in encodings["input_ids"]]
 
     token_indices = []
     tokenized_prompts = [tokenizer.convert_ids_to_tokens(token_ids) for token_ids in encodings["input_ids"]]
