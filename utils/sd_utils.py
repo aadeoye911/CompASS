@@ -85,7 +85,7 @@ def init_latent(batch_size, num_channels, height, width, generator=None, dtype=t
     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
 # Adapted from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img.retrieve_latents
-def retrieve_latents(
+def sample_latent_dist(
     encoder_output: torch.Tensor, generator: Optional[torch.Generator] = None, sample_mode: str = "sample"
 ):
     if hasattr(encoder_output, "latent_dist") and sample_mode == "sample":
