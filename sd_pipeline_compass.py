@@ -28,20 +28,33 @@ class CompASSPipeline(StableDiffusionPipeline):
             feature_extractor=feature_extractor
         )
 
+        # Initialise resolution default variables
+        self.default_output_resolution = None # Default output resolution for model
+        self.unet_downsample_factor = None # UNet downsampling factor
+        self.total_downsample_factor = None # Total VAE+UNet downscaling
+        
+        # Load resolution defaults
+        self.get_resolution_defaults()
+
         # Additional components for attention tracking
+        self.attn_store = AttentionStore()
+        self.layer_metadata = defaultdict(list)
         self.hooks = []
         self.setup_hooks()
-
-        self.attention_store = AttentionStore()
-        self.layer_metadata = defaultdict(list)
-        self.decoded_images = []
-        self.latents = None
+        self.diffused_images = []
 
         self.height = None
         self.width = None
-        self.prompt_embeds = None
+        self.empty_embeds = None
+        self.get_empty_embeddings()
 
-        self.setup_hooks()
+    def get_resolution_defaults(self):
+        """
+        Compute and store default model parameters.
+        """
+        self.default_output_resolution = self.unet.config.sample_size * self.vae_scale_factor
+        self.unet_downsample_factor = 2**(len(self.unet.config.block_out_channels)-1)
+        self.total_downsample_factor = self.unet_downsample_factor * self.vae_scale_factor         
 
     def setup_hooks(self):
         """
@@ -63,10 +76,11 @@ class CompASSPipeline(StableDiffusionPipeline):
         def hook(module, input, output):
             try:
                 query = module.to_q(input[0])
-                key = module.to_k(self.text_embeddings)
+                key = module.to_k(self.empty_embeddings)
                 # key = module.to_k(self.text_embeddings.chunk(2, dim=0)[1] if is_cross else input[0])
-                attention_scores = module.get_attention_scores(query, key)
-                self.attention_store.store(attention_scores)
+                attn_probs = module.get_attention_scores(query, key)
+                attn_maps = self.attn_store.reshape_attention_map(attn_probs, self.height, self.width)
+                self.attn_store.store(attn_maps)
             except Exception as e:
                 print(f"Error processing attention scores for layer {layer_key}: {e}")
         return hook
@@ -89,14 +103,49 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         Reset stored latents, images, and attention maps.
         """
-        self.decoded_images.clear()
+        self.diffused_images.clear()
         self.attn_store.reset()
 
-    def get_text_embeddings(self, prompt="", batch_size=1):
+    def get_empty_embeddings(self, prompt="", batch_size=1):
         """
-        Tokenize the prompt and get text embeddings.
+        Tokenize the prompt and get text embeddings. 
         """
-        self.prompt_embeds = self.encode_prompt(prompt,
-                                device=self.device,
-                                num_images_per_prompt=batch_size,
-                                do_classifier_free_guidance=False)
+        self.empty_embeds = self.encode_prompt(prompt, self.device, batch_size, False)
+        # Output is tuple 
+        print("Initiatilized empty embeddings")
+
+    def image2latent(self, image, timesteps, seed=42):
+        """
+        Prepare latents from an image or random noise.
+        """
+        if image.shape[0] != len(timesteps):
+            if image.shape[1] == 1:
+                image = image.repeat(len(timesteps), 1, 1, 1)
+            else:
+                raise ValueError(f"Image shape {image.shape} does not match timesteps {timesteps}")
+
+        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
+        # Set seed for reproducibility 
+        generator = torch.Generator(device=self.device).manual_seed(seed)
+        batch_size, num_channels, height, width = latents.shape
+        noise = sd_utils.init_latent(batch_size, num_channels, height, width, generator=generator, dtype=pipe.dtype)  # Generate noise deterministically
+        # Apply timestep-dependent noise across batch channel
+        latents = self.scheduler.add_noise(latents, noise, timesteps)
+
+    def extract_reference_attn_maps(self, image, timesteps, seed=42):
+        batch_size = len(timesteps)
+        if image.shape[0] != batch_size:
+            if image.shape[0] == 1:
+                image = image.repeat(batch_size, 1, 1, 1)
+            else:
+                raise ValueError(f"Image shape {image.shape} does not match timesteps {batch_size}")
+        print(self.empty_embeds[0].shape)
+
+        if self.empty_embeds[0].shape[0] != batch_size:
+            self.empty_embeds = (self.empty_embeds[0].repeat(batch_size, 1, 1), self.empty_embeds[1])
+
+        latents = self.image2latent(image, timesteps, seed)
+        with torch.no_grad():
+            unet_output = self.pipe.unet(latents, timesteps, self.text_embeddings, return_dict=True)
+            noise_pred = unet_output["sample"]
+            latents = self.pipe.scheduler.step(noise_pred, t, latents)["prev_sample"]

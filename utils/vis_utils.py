@@ -1,5 +1,31 @@
 import matplotlib as plt
 
+def view_images(input_image):
+    plt.figure(figsize=(6, 3))  # Adjust overall figure size
+    plt.imshow(input_image)
+    plt.title("Input Image")
+    plt.axis('off')
+
+    plt.show()
+
+# def view_images(input_image, diffused_image)
+#     plt.figure(figsize=(6, 3))  # Adjust overall figure size
+
+#     # # Original Image
+#     plt.subplot(1, 2, 1)  # 1 row, 2 columns, position 1
+#     plt.imshow(input_image)
+#     plt.title("Input Image")
+#     plt.axis('off')
+
+#     # # Resized Image
+#     # plt.subplot(1, 2, 2)  # 1 row, 2 columns, position 2
+#     # plt.imshow(test_resized)
+#     # plt.title("Resized Image")
+#     # plt.axis('off')
+
+#     # plt.show()
+
+
 def visualize_latents(sampler):
     T = len(sampler.decoded_images)
     cols = min(10, T)  # Max 10 columns
