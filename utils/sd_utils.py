@@ -1,6 +1,5 @@
 import torch
 from PIL import Image
-from torchvision.transforms import Normalize, ToTensor, Compose
 from typing import Any, Callable, Dict, List, Optional, Union
 
 def resize_image(image, target_dim=512, factor=64):
@@ -32,18 +31,6 @@ def round_to_multiple(value, factor, mode="nearest"):
         return int(round(value / factor) * factor)
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
-
-
-def preprocess_image(image, dtype=torch.float32, min_dim=512, factor=64):
-    """
-    Convert PIL image into a torch.Tensor with model-compatible dimensions.
-    """
-    if image.mode == "RGBA":
-        image = image.convert("RGB")
-    image = resize_image(image, min_dim, factor)
-    transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
-
-    return transform(image).unsqueeze(0).to(dtype)
 
 
 def generate_seeds(num_seeds: int = 1):
