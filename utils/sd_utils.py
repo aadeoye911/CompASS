@@ -45,19 +45,19 @@ def seed2generator(device, seed=42, batch_size=1):
     Generate list of generators from random seeds.
     """
     if isinstance(seed, int):
-        seed = [seed] * batch_size  # Duplicate same seed for all batch elements
+        seeds = [seed] * batch_size  # Duplicate same seed for all batch elements
     elif seed is None:
-        seed = [torch.randint(0, 2**32 - 1, (1,)).item() for _ in range(batch_size)]  # Generate random seeds
+        seeds = generate_seeds(batch_size)  # Generate random seeds
     elif not isinstance(seed, list):
         raise TypeError(f"`seed` must be an int, list of ints, or None, but got {type(seed)}")
 
-    if len(seed) != batch_size:
+    if len(seeds) != batch_size:
         raise ValueError(f"Seed list length ({len(seed)}) does not match batch size ({batch_size}).")
 
     return [torch.Generator(device=device).manual_seed(s) for s in seed]
 
 
-def init_latent(batch_size, num_channels, height, width, generator=None, dtype=torch.float32):
+def init_latent(size, generator=None, dtype=torch.float32):
     """
     Generate random noise latent tensor for Stable Diffusion.
     """

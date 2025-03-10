@@ -6,7 +6,6 @@ from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPV
 from torchvision.transforms import Normalize, ToTensor, Compose
 from attention import AttentionStore
 from utils.sd_utils import resize_image, extract_attention_info, init_latent
-from collections import defaultdict
 
 class CompASSPipeline(StableDiffusionPipeline):
     """
@@ -57,7 +56,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         Compute and store default model parameters.
         """
         self.default_output_resolution = self.unet.config.sample_size * self.vae_scale_factor
-        self.unet_depth = len(self.unet.config.block_out_channels)-1
+        self.unet_depth = len(self.unet.config.block_out_channels) - 1
         self.total_downsample_factor = 2**self.unet_depth * self.vae_scale_factor
 
 
@@ -153,35 +152,33 @@ class CompASSPipeline(StableDiffusionPipeline):
         return transform(image).unsqueeze(0).to(self.dtype)
     
 
-    def image2latent(self, image, timesteps, seed=42):
+    def image2latent(self, image, timesteps, num_images_per_prompt, seed=42):
         """
         Prepare latents from an image or random noise.
         """
-        if image.shape[0] != len(timesteps):
-            if image.shape[1] == 1:
-                image = image.repeat(len(timesteps), 1, 1, 1)
-            else:
-                raise ValueError(f"Image shape {image.shape} does not match timesteps {timesteps}")
-
-        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        
-        # Set seed for reproducibility
+        image = image.to(device=self.device, dtype=self.dtype)
+        batch_size = len(timesteps)
+        if image.shape[0] < batch_size:
+            if batch_size % image.shape[0] == 0:
+                image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
+            else: 
+                raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
+            
         generator = torch.Generator(device=self.device).manual_seed(seed)
-        batch_size, num_channels, height, width = latents.shape
-        noise = init_latent(batch_size, num_channels, height, width, generator=generator, dtype=self.dtype)  # Generate noise deterministically
+        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
+        noise = torch.randn(latents.shape, generator=generator, dtype=self.dtype)
         
         # Apply timestep-dependent noise across batch channel
-        latents = self.scheduler.add_noise(latents, noise, timesteps)
+        noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
+        
+        return noisy_latents
 
 
     def extract_reference_attn_maps(self, image, timesteps, seed=42):
         batch_size = len(timesteps)
-        if image.shape[0] != batch_size:
-            if image.shape[0] == 1:
-                image = image.repeat(batch_size, 1, 1, 1)
-            else:
-                raise ValueError(f"Image shape {image.shape} does not match timesteps {batch_size}")
         image = image.to(self.device)
+        timesteps.to(self.device)
+        latents = self.image2latent(image, timesteps)
 
         if self.empty_embeds[0].shape[0] != batch_size:
             self.empty_embeds = (self.empty_embeds[0].repeat(batch_size, 1, 1), self.empty_embeds[1])
