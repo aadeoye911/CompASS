@@ -87,14 +87,14 @@ class AttentionStore():
         if scale_factor > 1:
             if upsample_mode not in ["bilinear", "nearest", "bicubic"]:
                 raise ValueError(f"Invalid upsample_mode='{upsample_mode}'. Choose 'bilinear', 'nearest', or 'bicubic'.")
-            resized_map = F.interpolate(attn_map, size=target_res, mode=upsample_mode, align_corners=False)
+            resized_map = F.interpolate(attn_map, size=target_res, mode=upsample_mode)
 
         # Handle downsampling
         else:
             if downsample_mode == "max":
                 resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
             elif downsample_mode in ["bilinear", "nearest", "bicubic"]:
-                resized_map = F.interpolate(attn_map, size=target_res, mode=downsample_mode, align_corners=False)
+                resized_map = F.interpolate(attn_map, size=target_res, mode=downsample_mode)
             else:
                 raise ValueError(f"Invalid downsample_mode='{downsample_mode}'. Choose 'bilinear', 'nearest', 'bicubic', or 'max'.")
 
