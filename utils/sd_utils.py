@@ -57,18 +57,6 @@ def seed2generator(device, seed=42, batch_size=1):
     return [torch.Generator(device=device).manual_seed(s) for s in seed]
 
 
-def init_latent(size, generator=None, dtype=torch.float32):
-    """
-    Generate random noise latent tensor for Stable Diffusion.
-    """
-    if isinstance(generator, list):
-        if len(generator) > batch_size:
-            print(f'generator longer than batch size. truncationg list to match batch')
-            generator = generator[:batch_size]
-
-    return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
-
-
 def token2idx(tokenizer, prompts, eot_only=True):
     """
     Retrives EoT token indices for prompts or dictionary of prompt mappings (SoT, EoT, and words) --> indices.

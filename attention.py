@@ -48,81 +48,60 @@ class AttentionStore():
 
 
     def reshape_attention_map(self, attn_probs, latent_height, latent_width, res_factor):
-        if not latent_height % res_factor != 0 or not latent_width % res_factor != 0:
+        if (latent_height % res_factor != 0) or (latent_width % res_factor != 0):
             raise ValueError(f"Downsampling produced non-integer dimensions.")
-        attn_height, attn_width = int(latent_height / res_factor), int(latent_width / res_factor)
+        attn_height, attn_width = latent_height // res_factor, latent_width // res_factor
         attn_map = attn_probs.reshape(attn_probs.shape[0], attn_height, attn_width, -1)
 
         return attn_map
     
-import torch
-import torch.nn.functional as F
 
-class AttentionAggregator:
-    def __init__(self, attn_store, attn_metadata):
+    def filter_layer_keys(self, place_in_unet, level=None):
         """
-        Initialize the Attention Aggregator.
-        
-        Args:
-            attn_store (dict): Dictionary storing attention maps with keys.
-            attn_metadata (dict): Metadata dictionary containing downsample factors.
+        Filters keys for attention maps based on place in unet (down, mid, up) and level.
         """
-        self.attn_store = attn_store
-        self.attn_metadata = attn_metadata
-
-    def filter_attention_maps(self, place_in_unet, level=None):
-        """
-        Filters attention maps based on place in unet (down, mid, up) and level.
-        """
-        filtered_maps = defaultdict(list)
-        res_factors = []
-        # Select attention maps based on filter keys
-        for layer_key, attn_map in self.attn_store.items():
+        filtered_keys = {}
+        for layer_key in self.attn_store.keys():
             if layer_key[0] == place_in_unet and (level is None or layer_key[1] == level):
-                filtered_maps[(place_in_unet, level)].append(attn_map)
-                res_factors.append(self.attn_metadata[layer_key][0])
+                filter = (place_in_unet,) if level is None else (place_in_unet, level)
+                filtered_keys.setdefault(filter, []).append(layer_key)
+
+        if not filtered_keys:
+            raise ValueError(f"No attention map keys found for place_in_unet='{place_in_unet}', level={level}")
+
+        return filtered_keys
+
+    def resize_attention_map(self, attn_map, scale_factor, downsample_mode="bilinear", upsample_mode="bilinear"):
+        """
+        Up/downsample to change resolution of attention maps
+        """
+        if scale_factor <= 0:
+            raise ValueError(f"Invalid scale_factor={scale_factor}. Must be a positive value.")
+        height, width = attn_map.shape[1:3]
+        target_res = int(height * scale_factor), int(width * scale_factor)
         
-        if not filtered_maps:
-            raise ValueError(f"No attention maps found for place_in_unet='{place_in_unet}', level={level}")
+        # Permute to (B, C, H, W) format for interpolation
+        attn_map = attn_map.permute(0, 3, 1, 2)
 
-        return filtered_maps, list(set(res_factors))
+        # Handle upsampling
+        if scale_factor > 1:
+            if upsample_mode not in ["bilinear", "nearest", "bicubic"]:
+                raise ValueError(f"Invalid upsample_mode='{upsample_mode}'. Choose 'bilinear', 'nearest', or 'bicubic'.")
+            resized_map = F.interpolate(attn_map, size=target_res, mode=upsample_mode, align_corners=False)
 
-    def resize_attention_maps(self, attn_maps, resolution=None, downsample_mode="bilinear"):
-        """
-        Resizes attention maps to a common resolution.
+        # Handle downsampling
+        else:
+            if downsample_mode == "max":
+                resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
+            elif downsample_mode in ["bilinear", "nearest", "bicubic"]:
+                resized_map = F.interpolate(attn_map, size=target_res, mode=downsample_mode, align_corners=False)
+            else:
+                raise ValueError(f"Invalid downsample_mode='{downsample_mode}'. Choose 'bilinear', 'nearest', 'bicubic', or 'max'.")
 
-        Args:
-            attn_maps (list of torch.Tensor): List of attention maps.
-            resolution (tuple, optional): Target resolution (H, W). Defaults to the minimum resolution.
-            downsample_mode (str): Downsampling mode - "bilinear" (default) or "max".
-
-        Returns:
-            list of torch.Tensor: Resized attention maps.
-        """
-        # Determine target resolution if not provided
-        if resolution is None:
-            min_H = min([attn.shape[1] for attn in attn_maps])
-            min_W = min([attn.shape[2] for attn in attn_maps])
-            resolution = (min_H, min_W)
-
-        resized_maps = []
-        for attn_map in attn_maps:
-            H, W = attn_map.shape[1:3]  # Original size
-            if (H, W) != resolution:
-                if H > resolution[0] or W > resolution[1]:  # Downsampling
-                    if downsample_mode == "max":
-                        pool_size = (H // resolution[0], W // resolution[1])
-                        attn_map = F.adaptive_max_pool2d(attn_map.permute(0, 3, 1, 2), resolution).permute(0, 2, 3, 1)
-                    else:
-                        attn_map = F.interpolate(attn_map.permute(0, 3, 1, 2), size=resolution, mode="bilinear", align_corners=False).permute(0, 2, 3, 1)
-                else:  # Upsampling
-                    attn_map = F.interpolate(attn_map.permute(0, 3, 1, 2), size=resolution, mode="bilinear", align_corners=False).permute(0, 2, 3, 1)
-
-            resized_maps.append(attn_map.unsqueeze(0))  # Unsqueeze at dim=0 for aggregation
-
-        return resized_maps
-
-    def aggregate_attention(self, filter_keys=None, resolution=None, mode="mean", downsample_mode="bilinear"):
+        # Permute back to (B, H, W, C)
+        return resized_map.permute(0, 2, 3, 1)
+    
+    def aggregate_attention(self, place_in_unet, level=True,res=None, aggregation_mode="mean", downsample_mode="bilinear"):
         """
         Aggregates filtered attention maps at a specified resolution.
 

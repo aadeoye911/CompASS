@@ -166,12 +166,23 @@ class CompASSPipeline(StableDiffusionPipeline):
             
         generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        noise = torch.randn(latents.shape, generator=generator, dtype=self.dtype)
+        noise = torch.randn(latents.shape, generator=generator, device=self.device)
         
         # Apply timestep-dependent noise across batch channel
         noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
         
         return noisy_latents
+
+    # def init_latent(size, generator=None, dtype=torch.float32):
+    #     """
+    #     Generate random noise latent tensor for Stable Diffusion.
+    #     """
+    #     if isinstance(generator, list):
+    #         if len(generator) > batch_size:
+    #             print(f'generator longer than batch size. truncationg list to match batch')
+    #             generator = generator[:batch_size]
+
+    #     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
 
     def extract_reference_attn_maps(self, image, timesteps, seed=42):

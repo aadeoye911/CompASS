@@ -1,13 +1,5 @@
 import matplotlib as plt
 
-def view_images(input_image):
-    plt.figure(figsize=(6, 3))  # Adjust overall figure size
-    plt.imshow(input_image)
-    plt.title("Input Image")
-    plt.axis('off')
-
-    plt.show()
-
 # def view_images(input_image, diffused_image)
 #     plt.figure(figsize=(6, 3))  # Adjust overall figure size
 
@@ -32,12 +24,14 @@ def visualize_latents(sampler):
     rows = (T + cols - 1) // cols
     fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
 
+
     # Plot images in grid
     for i, ax in enumerate(axes.flatten()):
         if i < len(sampler.decoded_images):
             ax.imshow(sampler.decoded_images[i])
             ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
         ax.axis("off")
+
 
     # Tight layout for better spacing
     plt.tight_layout()
@@ -50,13 +44,6 @@ def visualize_cross_attention(sampler, token_index, aggregation=False, group_by_
     Rows: Timesteps (or cumulative if cumulative_timestep=True)
     Columns: Layers grouped by block type and level (if group_by_level=True)
     """
-
-    # Reorder layers based on 'down', 'mid', 'up' order
-    def order_layers(layers):
-        def layer_sort_key(name):
-            block_type, level, sub_level = sampler.parse_layer_name(name)
-            return ({"down": 0, "mid": 1, "up": 2}[block_type], level, sub_level)
-        return sorted(layers, key=layer_sort_key)
 
     ordered_layers = order_layers(sampler.cross_attention_maps.keys())
 
