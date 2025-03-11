@@ -48,7 +48,7 @@ class AttentionStore:
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
     
 
-    def store(self, attn_probs, layer_key, latent_height=None, latent_width=None):
+    def store(self, attn_probs, layer_key, latent_height, latent_width):
         """
         Store attention scores using a dictionary-based key format.
         """

@@ -45,8 +45,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.setup_hooks()
         
         self.diffused_images = []
-        self.height = None
-        self.width = None
+        self.latent_height = None
+        self.latent_width = None
         self.empty_embeds = None
         self.get_empty_embeddings()
 
@@ -100,13 +100,10 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         def hook(module, input, output):
             try:
-                print(f"Processsing attention with key: {layer_key} with input of length {len(input)}")
-                if len(input) > 1:
-                    print(input[0].shape, input[1].shape)
                 query = module.to_q(input[0])
                 key = module.to_k(self.empty_embeds[0] if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
-                self.attnstore.store(attn_probs, layer_key)
+                self.attnstore.store(attn_probs, layer_key, self.latent_height, self.latent_width)
             except Exception as e:
                 print(f"Error processing attention scores for layer {layer_key}: {e}")
         return hook
@@ -189,6 +186,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         image = image.to(self.device)
         timesteps.to(self.device)
         latents = self.image2latent(image, timesteps)
+
+        self.latent_height, self.latent_width = latents.shape[2:]
 
         if self.empty_embeds[0].shape[0] != batch_size:
             # prompt_embeds, no_embeds = self.empty_embeds
