@@ -131,8 +131,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         Tokenize the prompt and get text embeddings.
         """
         self.empty_embeds = self.encode_prompt(prompt, self.device, batch_size, False)
-        self.empty_embeds.to(device=self.device, dtype=self.dtype)
-        # Output is tuple
         print("Initiatilized empty embeddings")
 
 
