@@ -100,6 +100,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         def hook(module, input, output):
             try:
+                print(f"Processsing attention with key: {layer_key} with input dimensions {input.shape}")
                 query = module.to_q(input[0])
                 key = module.to_k(self.empty_embeds[0] if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
@@ -197,4 +198,5 @@ class CompASSPipeline(StableDiffusionPipeline):
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.empty_embeds[0], return_dict=True)
             noise_pred = unet_output["sample"]
             latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
-            torch.cuda.empty_cache()
+            if self.device == "cuda":
+                torch.cuda.empty_cache()
