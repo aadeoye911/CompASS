@@ -100,7 +100,9 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         def hook(module, input, output):
             try:
-                print(f"Processsing attention with key: {layer_key} with input dimensions {input.shape}")
+                print(f"Processsing attention with key: {layer_key} with input of length {len(input)}")
+                if len(input) > 1:
+                    print(input[0].shape, input[1].shape)
                 query = module.to_q(input[0])
                 key = module.to_k(self.empty_embeds[0] if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
