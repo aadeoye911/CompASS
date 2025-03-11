@@ -100,8 +100,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         def hook(module, input, output):
             try:
                 query = module.to_q(input[0])
-                key = module.to_k(self.empty_embeds.chunk(2, dim=0)[0] if layer_key[0] == "cross" else input[0])
-                # key = module.to_k(self.text_embeddings.chunk(2, dim=0)[1] if is_cross else input[0])
+                key = module.to_k(self.empty_embeds[0] if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
                 self.attnstore.store(attn_probs, layer_key)
             except Exception as e:
