@@ -152,7 +152,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         return transform(image).unsqueeze(0).to(self.dtype)
     
 
-    def image2latent(self, image, timesteps, num_images_per_prompt, seed=42):
+    def image2latent(self, image, timesteps, num_images_per_prompt=None, seed=42):
         """
         Prepare latents from an image or random noise.
         """
