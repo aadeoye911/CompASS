@@ -74,7 +74,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                 attn_type = "cross" if module.is_cross_attention else "self"
                 place_in_unet, level, instance = extract_attention_info(name)
                 layer_key = (attn_type, place_in_unet, level, instance)
-                self.attnstore.attention_metadata[attn_type][layer_key] = (2**down_exp, name)
+                self.attnstore.attn_metadata[attn_type][layer_key] = (2**down_exp, name)
                 self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
 
             # Track resolution through downsampling/upsampling modules
@@ -86,10 +86,10 @@ class CompASSPipeline(StableDiffusionPipeline):
         assert max_exp == self.unet_depth, "Invalid UNet depth calculation"
         
         # Reassign resolution factor for midblocks
-        for attn_type, layer_metadata in self.attnstore.attention_metadata.items():
+        for attn_type, layer_metadata in self.attnstore.attn_metadata.items():
             for layer_key, (res_factor, name) in layer_metadata.items():
                 if layer_key[1] == "mid":  # Ensure it's a midblock
-                    self.attnstore.attention_metadata[attn_type][layer_key] = (2**max_exp, name)
+                    self.attnstore.attn_metadata[attn_type][layer_key] = (2**max_exp, name)
 
         print(f"Number of hooks initialised: {len(self.hooks)}")
     
@@ -183,7 +183,7 @@ class CompASSPipeline(StableDiffusionPipeline):
     #     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
 
-    def extract_reference_attn_maps(self, image, timesteps, seed=42):
+    def extract_attention(self, image, timesteps, seed=42):
         batch_size = len(timesteps)
         image = image.to(self.device)
         timesteps.to(self.device)
