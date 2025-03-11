@@ -4,8 +4,8 @@ from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
 from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection
 from torchvision.transforms import Normalize, ToTensor, Compose
-from attention import AttentionStore
-from utils.sd_utils import resize_image, extract_attention_info, init_latent
+from utils.attn_utils import AttentionStore
+from utils.sd_utils import resize_image, extract_attention_info
 
 class CompASSPipeline(StableDiffusionPipeline):
     """

@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
 from typing import Any, Callable, Dict, List, Optional, Union
+import matplotlib.pyplot as plt
 
 
 def resize_image(image, min_dim=512, factor=64):
@@ -97,3 +98,20 @@ def extract_attention_info(module_name):
         return place_in_unet, level, instance
     except Exception as e:
         raise ValueError(f"Failed to parse module name '{module_name}': {e}")
+    
+    def visualize_latents(sampler):
+        T = len(sampler.decoded_images)
+        cols = min(10, T)  # Max 10 columns
+        rows = (T + cols - 1) // cols
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
+
+        # Plot images in grid
+        for i, ax in enumerate(axes.flatten()):
+            if i < len(sampler.decoded_images):
+                ax.imshow(sampler.decoded_images[i])
+                ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
+            ax.axis("off")
+
+        # Tight layout for better spacing
+        plt.tight_layout()
+        plt.show()
