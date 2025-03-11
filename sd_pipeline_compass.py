@@ -47,8 +47,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.diffused_images = []
         self.height = None
         self.width = None
-        self.empty_embeds = None
-        self.get_empty_embeddings()
+        self.empty_embeds = self.get_empty_embeddings()
 
 
     def get_resolution_defaults(self):
@@ -184,7 +183,7 @@ class CompASSPipeline(StableDiffusionPipeline):
     #     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
 
 
-    def extract_attention(self, image, timesteps, seed=42):
+    def extract_attention_maps(self, image, timesteps, seed=42):
         batch_size = len(timesteps)
         image = image.to(self.device)
         timesteps.to(self.device)
