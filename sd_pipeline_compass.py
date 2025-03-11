@@ -101,7 +101,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         def hook(module, input, output):
             try:
                 query = module.to_q(input[0])
-                key = module.to_k(self.empty_embeddings)
+                key = module.to_k(self.empty_embeds.chunk(2, dim=0)[0] if layer_key[0] == "cross" else input[0])
                 # key = module.to_k(self.text_embeddings.chunk(2, dim=0)[1] if is_cross else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
                 self.attnstore.store(attn_probs, layer_key)
@@ -132,6 +132,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         Tokenize the prompt and get text embeddings.
         """
         self.empty_embeds = self.encode_prompt(prompt, self.device, batch_size, False)
+        self.empty_embeds.to(device=self.device, dtype=self.dtype)
         # Output is tuple
         print("Initiatilized empty embeddings")
 
@@ -190,11 +191,11 @@ class CompASSPipeline(StableDiffusionPipeline):
         latents = self.image2latent(image, timesteps)
 
         if self.empty_embeds[0].shape[0] != batch_size:
-            self.empty_embeds = (self.empty_embeds[0].repeat(batch_size, 1, 1), self.empty_embeds[1])
+            self.empty_embeds = self.get_empty_embeddings(batch_size=batch_size)
 
         latents = self.image2latent(image, timesteps, seed)
         with torch.no_grad():
-            unet_output = self.pipe.unet(latents, timesteps, self.text_embeddings, return_dict=True)
+            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.empty_embeds, return_dict=True)
             noise_pred = unet_output["sample"]
-            latents = self.pipe.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
+            latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
             torch.cuda.empty_cache()
