@@ -194,7 +194,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         latents = self.image2latent(image, timesteps, seed)
         with torch.no_grad():
-            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.empty_embeds, return_dict=True)
+            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.empty_embeds[0], return_dict=True)
             noise_pred = unet_output["sample"]
             latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
             torch.cuda.empty_cache()
