@@ -99,19 +99,19 @@ def extract_attention_info(module_name):
     except Exception as e:
         raise ValueError(f"Failed to parse module name '{module_name}': {e}")
     
-    def visualize_latents(sampler):
-        T = len(sampler.decoded_images)
-        cols = min(10, T)  # Max 10 columns
-        rows = (T + cols - 1) // cols
-        fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
+# def visualize_latents(sampler):
+#     T = len(sampler.decoded_images)
+#     cols = min(10, T)  # Max 10 columns
+#     rows = (T + cols - 1) // cols
+#     fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
 
-        # Plot images in grid
-        for i, ax in enumerate(axes.flatten()):
-            if i < len(sampler.decoded_images):
-                ax.imshow(sampler.decoded_images[i])
-                ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
-            ax.axis("off")
+#     # Plot images in grid
+#     for i, ax in enumerate(axes.flatten()):
+#         if i < len(sampler.decoded_images):
+#             ax.imshow(sampler.decoded_images[i])
+#             ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
+#         ax.axis("off")
 
-        # Tight layout for better spacing
-        plt.tight_layout()
-        plt.show()
+#     # Tight layout for better spacing
+#     plt.tight_layout()
+#     plt.show()

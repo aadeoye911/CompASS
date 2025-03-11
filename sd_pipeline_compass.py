@@ -41,7 +41,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.get_resolution_defaults()
 
         # Additional components for attention tracking
-        self.attn_store = AttentionStore()
+        self.attnstore = AttentionStore()
         self.setup_hooks()
         
         self.diffused_images = []
@@ -65,36 +65,34 @@ class CompASSPipeline(StableDiffusionPipeline):
         Set up hooks on all cross-attention layers.
         """
         self.hooks = []
-        res_factor = 0  # Initialize resolution factor
-        max_factor = res_factor
+        down_exp = 0  # Initialize resolution factor
+        max_exp = down_exp
         for name, module in self.unet.named_modules():
 
-            # Place hook on cross attention modules
-            if getattr(module, "is_cross_attention", False):
+            # Place hook on attention modules
+            if "Attention" in type(module).__name__:
+                attn_type = "cross" if module.is_cross_attention else "self"
                 place_in_unet, level, instance = extract_attention_info(name)
-                layer_key = (place_in_unet, level, instance)
-                self.attn_store.attn_metadata[layer_key] = (2**res_factor, name)
+                layer_key = (attn_type, place_in_unet, level, instance)
+                self.attnstore.attention_metadata[attn_type][layer_key] = (2**down_exp, name)
                 self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
 
             # Track resolution through downsampling/upsampling modules
-            if "sample" in name.split(".")[-1]:
-                res_factor = res_factor + 1 if "down" in name else res_factor - 1
-                max_factor = max(max_factor, res_factor)
+            elif "sample" in name.split(".")[-1]:
+                down_exp = down_exp + 1 if "down" in name else down_exp - 1
+                max_exp = max(max_exp, down_exp)
 
         # Ensure consistency between up/down resolutions
-        max_downblock_factor = max(value[0] for layer_key, value in self.attn_store.attn_metadata.items() if layer_key[0] == "down")
-        max_upblock_factor = max(value[0] for layer_key, value in self.attn_store.attn_metadata.items() if layer_key[0] == "up")
-        assert (max_upblock_factor == max_downblock_factor, "Mismatch between upblock and downblock resolution factors")
-        assert (max_factor == self.unet_depth, "Invalid UNet depth calculation")
+        assert max_exp == self.unet_depth, "Invalid UNet depth calculation"
         
         # Reassign resolution factor for midblocks
-        for layer_key in self.attn_store.attn_metadata:
-            if layer_key[0] == "mid":
-                _, name = self.attn_store.attn_metadata[layer_key]
-                self.attn_store.attn_metadata[layer_key] = (2**max_factor, name)  # Reassign the tuple
-  
-        print(f"Number of hooks initialised: {len(self.hooks)}")
+        for attn_type, layer_metadata in self.attnstore.attention_metadata.items():
+            for layer_key, (res_factor, name) in layer_metadata.items():
+                if layer_key[1] == "mid":  # Ensure it's a midblock
+                    self.attnstore.attention_metadata[attn_type][layer_key] = (2**max_exp, name)
 
+        print(f"Number of hooks initialised: {len(self.hooks)}")
+    
     
     def _hook_fn(self, layer_key):
         """
@@ -106,7 +104,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                 key = module.to_k(self.empty_embeddings)
                 # key = module.to_k(self.text_embeddings.chunk(2, dim=0)[1] if is_cross else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
-                self.attn_store.store(attn_probs, layer_key, self.height, self.width)
+                self.attnstore.store(attn_probs, layer_key)
             except Exception as e:
                 print(f"Error processing attention scores for layer {layer_key}: {e}")
         return hook
@@ -125,8 +123,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         Reset stored latents, images, and attention maps.
         """
+        self.attnstore.reset()
         self.diffused_images.clear()
-        self.attn_store.reset()
 
 
     def get_empty_embeddings(self, prompt="", batch_size=1):

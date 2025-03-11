@@ -3,53 +3,60 @@ import torch
 import torch.nn.functional as F
 from collections import defaultdict
 
-class AttentionStore():
-
+class AttentionStore:
     def __init__(self, save_global_store=True):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
-        self.attn_store = defaultdict(list)  # Stores attention in a nested dictionary format
-        self.attn_metadata = defaultdict(list)
+        self.cross_attn_store = defaultdict(list)  # Stores cross-attention maps
+        self.self_attn_store = defaultdict(list)   # Stores self-attention maps
 
+        # Ensures layer metadata is properly structured
+        self.attn_metadata = { "cross": {}, "self": {} }
 
     def reset(self):
         """
         Reset attention storage.
         """
-        self.attn_store = self.get_empty_store()
+        self.cross_attn_store = self.get_empty_store("cross")
+        self.self_attn_store = self.get_empty_store("self")
 
-
-    def get_empty_store(self):
+    def get_empty_store(self, attn_type="cross"):
         """
         Returns an empty attention store.
         """
-        return {layer_key: [] for layer_key in self.attn_metadata.keys()}
-    
+        return {layer_key: [] for layer_key in self.attn_metadata[attn_type].keys()}
 
-    def print_attention_metadata(self):
+    def print_attn_metadata(self):
         """
-        Print layer metadata.
+        Print formatted metadata for stored attention layers.
         """
-        print(f"Total Cross-Attention Layers: {len(self.attn_metadata)}")
+        # Print Cross-Attention Metadata
+        print(f"Total Cross-Attention Layers: {self.attn_metadata["cross"]}")
         print("\nCross-Attention Layers:")
-        for layer_key, value in self.attn_metadata.items():
-            print(f"Key: {layer_key}:, Downsample Factor: {value[0]}, Module Name: {value[1]}")
+        for layer_key, (res_factor, name) in self.attn_metadata["cross"].items():
+            print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
 
-        return
+        # Print Self-Attention Metadata
+        print(f"Total Self-Attention Layers: {self.attn_metadata["self"]}")
+        print("\nSelf-Attention Layers:")
+        for layer_key, (res_factor, name) in self.attn_metadata["self"].items():
+            print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
     
     def store(self, attn_probs, layer_key, latent_height, latent_width):
         """
         Store attention scores using a dictionary-based key format.
         """
-        res_factor = self.attn_metadata[layer_key][0]
-        attn_map = self.reshape_attention_map(attn_probs, latent_height, latent_width, res_factor)
-        print(f"Storing attn for layer: {layer_key} with shape {attn_map.shape}")
-        self.attn_store[layer_key].append(attn_map)  # Store as tuple (attn_map, res_factor)
-
-        return
+        attn_type = layer_key[0]
+        if attn_type == "cross":
+            res_factor = self.attn_metadata[attn_type][layer_key][0]
+            attn_map = self.reshape_attention_map(attn_probs, latent_height, latent_width, res_factor)
+        else:
+            attn_map = attn_probs
+        print(f"Storing attention map for layer: {layer_key} with shape {attn_map.shape}")
+        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
     
-    def reshape_attention_map(self, attn_probs, latent_height, latent_width, res_factor):
+    def reshape_cross_attention(self, attn_probs, latent_height, latent_width, res_factor):
         if (latent_height % res_factor != 0) or (latent_width % res_factor != 0):
             raise ValueError(f"Downsampling produced non-integer dimensions.")
         attn_height, attn_width = latent_height // res_factor, latent_width // res_factor
@@ -58,19 +65,19 @@ class AttentionStore():
         return attn_map
     
 
-    def filter_layer_keys(self, separate_levels=False):
+    def group_layers_by_block(self, attn_type, group_by_level=True):
         """
         Filters keys for attention maps based on place in unet (down, mid, up) and level.
         """
-        filtered_layers = defaultdict(list)
-        for layer_key in self.attn_store.keys():
-            group_key = layer_key[:2] if separate_levels else layer_key[:1]
-            filtered_layers[group_key].append(layer_key)
+        grouped_layers = defaultdict(list)
+        for layer_key in self.layer_metadata[attn_type].keys():
+            group_key = layer_key[:3] if group_by_level else layer_key[:2]
+            grouped_layers[group_key].append(layer_key)
 
-        return filtered_layers
+        return grouped_layers
 
 
-    def modify_attention_resolution(self, attn_map, scale_factor, mode="bilinear"):
+    def modify_resolution(self, attn_map, scale_factor, sampling_mode="bilinear"):
         """
         Up/downsample to change resolution of attention maps
         """
@@ -83,37 +90,33 @@ class AttentionStore():
         target_res = int(height * scale_factor), int(width * scale_factor)
         
         attn_map = attn_map.permute(0, 3, 1, 2) # Permute to (B, C, H, W) 
-        if mode not in ["bilinear", "nearest", "bicubic"]:
+        if sampling_mode not in ["bilinear", "nearest", "bicubic"]:
             if scale_factor > 1:
-                raise ValueError(f"Invalid upsamping mode='{mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")
-            elif mode != "max":
-                raise ValueError(f"Invalid downsamping mode='{mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")   
+                raise ValueError(f"Invalid upsamping mode='{sampling_mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")
+            elif sampling_mode != "max":
+                raise ValueError(f"Invalid downsamping mode='{sampling_mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")   
             else:
                 resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
         else:
-            resized_map = F.interpolate(attn_map, size=target_res, mode=mode)
+            resized_map = F.interpolate(attn_map, size=target_res, mode=sampling_mode)
 
         return resized_map.permute(0, 2, 3, 1)
     
 
-    def aggregate_attention(self, place_in_unet, level=None, res_factor=None, aggregation_mode="mean", sampling_mode="bilinear"):
+    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="mean", downsampling_mode="bilinear", upsampling_mode="bilinear"):
         """
-        Aggregates the attention across filtered layers at the specified resolution.
+        Aggregates the attention across subset of layers at the specified resolution factor.
         """
-        filtered_layers = self.filter_attention_maps(place_in_unet, level)  # {layer_name: metadata_tuple}
-        if not filtered_layers:
-            raise ValueError(f"No attention maps found for place_in_unet='{place_in_unet}', level={level}")
-
         if res_factor == None:
-            filtered_factors = [self.attn_metadata[layer_key][0] for layer_key in filtered_layers[(place_in_unet, level)]]
-            res_factor = min(filtered_factors)
+            res_factor = min([self.layer_metadata[layer_key][0] for layer_key in layer_keys])
 
-        # Step 5: Resize attention maps using computed scale factors
         resized_maps = []
-        for layer_key in filtered_layers:
-            scale_factor = self.attn_metadata[layer_key][0] / res_factor   # Get corresponding scale factor
-            attn_map = self.attn_store[layer_key]  # Retrieve actual tensor [B, H, W, C]
-            resized_map = self.modify_attention_resolution(attn_map, scale_factor, sampling_mode)
+        for layer_key in layer_keys:
+            attn_type = layer_key[0]
+            scale_factor = res_factor / self.attn_metadata[attn_type][layer_key][0]
+            attn_map = getattr(self, f"{attn_type}_attention_maps")[layer_key]
+            sampling_mode = downsampling_mode if scale_factor <  1 else upsampling_mode
+            resized_map = self.modify_attention_resolution(attn_map, scale_factor, mode=sampling_mode)
             resized_maps.append(resized_map)
 
         stacked_maps = torch.cat(resized_maps, dim=0)  # Stack along new dimension for aggregation
