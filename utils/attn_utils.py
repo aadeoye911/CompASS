@@ -9,8 +9,8 @@ class AttentionStore:
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
-        self.cross_attn_store = defaultdict(list)  # Stores cross-attention maps
-        self.self_attn_store = defaultdict(list)   # Stores self-attention maps
+        self.cross_attention_maps = defaultdict(list)  # Stores cross-attention maps
+        self.self_attention_maps = defaultdict(list)   # Stores self-attention maps
 
         # Ensures layer metadata is properly structured
         self.attn_metadata = { "cross": {}, "self": {} }
@@ -20,8 +20,8 @@ class AttentionStore:
         """
         Reset attention storage.
         """
-        self.cross_attn_store = self.get_empty_store("cross")
-        self.self_attn_store = self.get_empty_store("self")
+        self.cross_attention_maps = self.get_empty_store("cross")
+        self.self_attention_maps = self.get_empty_store("self")
 
 
     def get_empty_store(self, attn_type="cross"):
@@ -36,13 +36,13 @@ class AttentionStore:
         Print formatted metadata for stored attention layers.
         """
         # Print Cross-Attention Metadata
-        print(f"Total Cross-Attention Layers: {self.attn_metadata["cross"]}")
+        print(f"Total Cross-Attention Layers: {len(self.attn_metadata["cross"])}")
         print("\nCross-Attention Layers:")
         for layer_key, (res_factor, name) in self.attn_metadata["cross"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
 
         # Print Self-Attention Metadata
-        print(f"Total Self-Attention Layers: {self.attn_metadata["self"]}")
+        print(f"Total Self-Attention Layers: {len(self.attn_metadata["self"])}")
         print("\nSelf-Attention Layers:")
         for layer_key, (res_factor, name) in self.attn_metadata["self"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
@@ -114,7 +114,7 @@ class AttentionStore:
         Aggregates the attention across subset of layers at the specified resolution factor.
         """
         if res_factor == None:
-            res_factor = min([self.layer_metadata[layer_key][0] for layer_key in layer_keys])
+            res_factor = min([self.attn_metadata[layer_key[0]][layer_key][0] for layer_key in layer_keys])
 
         resized_maps = []
         for layer_key in layer_keys:
