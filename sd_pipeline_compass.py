@@ -47,7 +47,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.diffused_images = []
         self.height = None
         self.width = None
-        self.empty_embeds = self.get_empty_embeddings()
+        self.empty_embeds = None
+        self.get_empty_embeddings()
 
 
     def get_resolution_defaults(self):
@@ -130,7 +131,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         Tokenize the prompt and get text embeddings.
         """
         self.empty_embeds = self.encode_prompt(prompt, self.device, batch_size, False)
-        print("Initiatilized empty embeddings")
+        print(f"Initiatilized empty embeddings where ({self.empty_embeds[0].shape}, {self.empty_embeds[1]})")
 
 
     def preprocess_image(self, image, min_dim=None, factor=None):
@@ -187,9 +188,9 @@ class CompASSPipeline(StableDiffusionPipeline):
         latents = self.image2latent(image, timesteps)
 
         if self.empty_embeds[0].shape[0] != batch_size:
-            prompt_embeds, no_embeds = self.empty_embeds
-            prompt_embeds = torch.cat([prompt_embeds] * batch_size, dim=0)
-            self.empty_embeds = (prompt_embeds, no_embeds)
+            # prompt_embeds, no_embeds = self.empty_embeds
+            # prompt_embeds = torch.cat([prompt_embeds] * batch_size, dim=0)
+            self.get_empty_embeddings(batch_size=batch_size)
 
         latents = self.image2latent(image, timesteps, seed)
         with torch.no_grad():
