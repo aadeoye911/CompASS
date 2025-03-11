@@ -36,13 +36,13 @@ class AttentionStore:
         Print formatted metadata for stored attention layers.
         """
         # Print Cross-Attention Metadata
-        print(f"Total Cross-Attention Layers: {len(self.attn_metadata["cross"])}")
+        print(f"Total Cross-Attention Layers: {len(self.attn_metadata['cross'])}")
         print("\nCross-Attention Layers:")
         for layer_key, (res_factor, name) in self.attn_metadata["cross"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
 
         # Print Self-Attention Metadata
-        print(f"Total Self-Attention Layers: {len(self.attn_metadata["self"])}")
+        print(f"Total Self-Attention Layers: {len(self.attn_metadata['self'])}")
         print("\nSelf-Attention Layers:")
         for layer_key, (res_factor, name) in self.attn_metadata["self"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
