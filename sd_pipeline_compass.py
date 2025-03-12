@@ -96,7 +96,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         def hook(module, input, output):
             try:
-                print(f"Module output has shape {output.shape} with max {torch.max(output)} and min{torch.min(output)}")
                 query = module.to_q(input[0])
                 key = module.to_k(self.prompt_embeds if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
