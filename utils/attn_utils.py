@@ -75,12 +75,12 @@ class AttentionStore:
 
         return attn_map
     
-    def reduce_token_dimension(self, attn_probs, last_idx=1, sum_padding=True):
+    def reduce_token_dimension(self, attn_probs, eot_idx=1, sum_padding=True):
         """
         Reduces the num_tokens dimension by:
         """
-        prompt_tokens = attn_probs[:, :, :last_idx + 1]  
-        summed_padding = attn_probs[:, :, last_idx:].sum(dim=-1, keepdim=True)  
+        prompt_tokens = attn_probs[:, :, :eot_idx + 1]  
+        summed_padding = attn_probs[:, :, eot_idx:].sum(dim=-1, keepdim=True)  
         reduced_attn_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
 
         return reduced_attn_probs
