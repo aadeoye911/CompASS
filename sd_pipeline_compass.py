@@ -167,7 +167,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
         self.latent_height, self.latent_width = latents.shape[2:]
 
-        print(latents.device, self.prompt_embeds.device, timesteps.device)
         # if self.prompt_embeds.shape[0] != batch_size:
         #     self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
         #     self.prompt_embeds = self.prompt_embeds.to(self.device)
