@@ -47,8 +47,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.diffused_images = []
         self.latent_height = None
         self.latent_width = None
-        self.empty_embeds = None
-        self.get_empty_embeddings()
+        self.prompt_embeds = self.get_empty_embeddings()
 
 
     def get_resolution_defaults(self):
@@ -101,7 +100,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         def hook(module, input, output):
             try:
                 query = module.to_q(input[0])
-                key = module.to_k(self.empty_embeds[0] if layer_key[0] == "cross" else input[0])
+                key = module.to_k(self.prompt_embeds if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
                 self.attnstore.store(attn_probs, layer_key, self.latent_height, self.latent_width)
             except Exception as e:
@@ -130,8 +129,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         Tokenize the prompt and get text embeddings.
         """
-        self.empty_embeds = self.encode_prompt(prompt, self.device, batch_size, False)
-        print(f"Initiatilized empty embeddings where ({self.empty_embeds[0].shape}, {self.empty_embeds[1]})")
+        empty_prompt = self.encode_prompt(prompt, self.device, batch_size, False)
+        return empty_prompt[0]
 
 
     def preprocess_image(self, image, min_dim=None, factor=None):
@@ -140,7 +139,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         """
         min_dim = min_dim if min_dim is not None else self.default_output_resolution
         factor = factor if factor is not None else self.total_downsample_factor
-        if image.mode == "RGBA":
+        if image.mode != "RGB":
             image = image.convert("RGB")
         image = resize_image(image, min_dim, factor)
         transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
@@ -163,8 +162,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
         noise = torch.randn(latents.shape, generator=generator, device=self.device)
-        
-        # Apply timestep-dependent noise across batch channel
         noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
         
         return noisy_latents
@@ -189,14 +186,12 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         self.latent_height, self.latent_width = latents.shape[2:]
 
-        if self.empty_embeds[0].shape[0] != batch_size:
-            # prompt_embeds, no_embeds = self.empty_embeds
-            # prompt_embeds = torch.cat([prompt_embeds] * batch_size, dim=0)
-            self.get_empty_embeddings(batch_size=batch_size)
+        if self.prompt_embeds.shape[0] != batch_size:
+            prompt_embeds = torch.cat([prompt_embeds[0]] * batch_size, dim=0)
 
         latents = self.image2latent(image, timesteps, seed)
         with torch.no_grad():
-            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.empty_embeds[0], return_dict=True)
+            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
             noise_pred = unet_output["sample"]
             latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
             if self.device == "cuda":
