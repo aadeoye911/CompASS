@@ -1,4 +1,5 @@
 import torch
+from PIL import Image
 from diffusers import StableDiffusionPipeline, AutoencoderKL, UNet2DConditionModel
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
@@ -140,39 +141,39 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         return transform(image).unsqueeze(0).to(self.dtype)
 
-    def image2latent(self, image, timesteps, num_images_per_prompt=1, seed=42):
+    def image2latent(self, image, timesteps=None, num_images_per_prompt=1, seed=42):
         """
         Prepare latents from an image or random noise.
         """
         image = image.to(device=self.device, dtype=self.dtype)
-        batch_size = len(timesteps)
-        if image.shape[0] < batch_size:
-            if batch_size % image.shape[0] == 0:
-                image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
-            else: 
-                raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
+        # batch_size = len(timesteps)
+        # if image.shape[0] < batch_size:
+        #     if batch_size % image.shape[0] == 0:
+        #         image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
+        #     else: 
+        #         raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
             
         # generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        noise = torch.randn(latents.shape, device=self.device)
-        noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
+        # noise = torch.randn(latents.shape, device=self.device)
+        # noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
         
-        return noisy_latents
+        return latents
 
-    def extract_attention_maps(self, image, timesteps, batch_size=1, num_images_per_prompt=1, seed=42):
-        batch_size = len(timesteps)
-        timesteps = timesteps.to(self.device)
-        latents = self.image2latent(image, timesteps, seed)
+    def extract_attention_maps(self, image_path, timesteps=None, num_images_per_prompt=1, seed=42):
+        image = Image.open(image_path)
+        image = self.preprocess_image(image)
+        image = image.to(device=self.device, dtype=self.dtype)
+        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
         self.latent_height, self.latent_width = latents.shape[2:]
 
-        if self.prompt_embeds.shape[0] != batch_size:
-            self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
-            self.prompt_embeds = self.prompt_embeds.to(self.device)
-        print(self.prompt_embeds.device)
+        # if self.prompt_embeds.shape[0] != batch_size:
+        #     self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
+        #     self.prompt_embeds = self.prompt_embeds.to(self.device)
 
+        # t = self.scheduler.timesteps[-1].to(self.device)
         with torch.no_grad():
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
             # noise_pred = unet_output["sample"]
             # latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
-            if self.device == "cuda":
-                torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
