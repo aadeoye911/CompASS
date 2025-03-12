@@ -161,13 +161,14 @@ class CompASSPipeline(StableDiffusionPipeline):
 
     def extract_attention_maps(self, image, timesteps, batch_size=1, num_images_per_prompt=1, seed=42):
         batch_size = len(timesteps)
-        timesteps.to(self.device)
+        timesteps = timesteps.to(self.device)
         latents = self.image2latent(image, timesteps, seed)
         self.latent_height, self.latent_width = latents.shape[2:]
 
         if self.prompt_embeds.shape[0] != batch_size:
             self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
             self.prompt_embeds = self.prompt_embeds.to(self.device)
+        print(self.prompt_embeds.device)
 
         with torch.no_grad():
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
