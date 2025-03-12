@@ -172,5 +172,5 @@ class CompASSPipeline(StableDiffusionPipeline):
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
             # noise_pred = unet_output["sample"]
             # latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
-            # if self.device == "cuda":
-            #     torch.cuda.empty_cache()
+            if self.device == "cuda":
+                torch.cuda.empty_cache()
