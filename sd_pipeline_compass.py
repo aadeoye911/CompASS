@@ -144,7 +144,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         image = resize_image(image, min_dim, factor)
         transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
-        return transform(image.unsqueeze(0)).to(self.dtype)
+        return transform(image).unsqueeze(0).to(self.dtype)
     
 
     def image2latent(self, image, timesteps, num_images_per_prompt=1, seed=42):
