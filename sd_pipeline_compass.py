@@ -149,7 +149,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         if image.shape[0] < batch_size:
             if batch_size % image.shape[0] == 0:
                 image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
-                print(image.shape)
             else: 
                 raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
             
@@ -166,8 +165,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.latent_height, self.latent_width = latents.shape[2:]
 
         if self.prompt_embeds.shape[0] != batch_size:
-            self.prompt_embeds = torch.cat([self.prompt_embeds[0]] * batch_size, dim=0)
-        print(self.prompt_embeds.shape)
+            self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
+
         with torch.no_grad():
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
             noise_pred = unet_output["sample"]
