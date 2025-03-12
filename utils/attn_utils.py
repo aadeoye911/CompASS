@@ -82,9 +82,9 @@ class AttentionStore:
         print(attn_probs.shape)
         prompt_tokens = attn_probs[:, :, :eot_idx + 1]  
         summed_padding = attn_probs[:, :, eot_idx:].sum(dim=-1, keepdim=True)  
-        reduced_attn_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
+        special_token_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
 
-        return reduced_attn_probs
+        return special_token_probs
 
     def reduce_dimensionality_pca(self, attn_probs, n_components=3):
         """
