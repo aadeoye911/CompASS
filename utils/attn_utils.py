@@ -93,7 +93,7 @@ class AttentionStore:
         Applies PCA to self-attention maps 
         """
         batch_size = attn_probs.shape[0]
-        attn_probs = attn_probs.to(torch.float32)
+        attn_probs = attn_probs.to(torch.float32).to(self.device)
         pca_reduced = []
         for i in range(batch_size):
             _, _, V = torch.pca_lowrank(attn_probs[i], q=n_components)  # Compute PCA
