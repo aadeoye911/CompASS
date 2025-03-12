@@ -55,9 +55,12 @@ class AttentionStore:
         attn_type = layer_key[0]
         if attn_type == "self":
             attn_probs = self.reduce_dimensionality_pca(attn_probs)
+        else:
+            attn_probs = self.reduce_token_dimension(attn_probs)
         
         res_factor = self.layer_metadata[attn_type][layer_key][0]
-        attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)        
+        attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)
+            
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
 
 
@@ -72,8 +75,17 @@ class AttentionStore:
 
         return attn_map
     
+    def reduce_token_dimension(self, attn_probs, last_idx=1, sum_padding=True):
+        """
+        Reduces the num_tokens dimension by:
+        """
+        prompt_tokens = attn_probs[:, :, :last_idx + 1]  
+        summed_padding = attn_probs[:, :, last_idx:].sum(dim=-1, keepdim=True)  
+        reduced_attn_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
 
-    def reduce_dimensionality_pca(self, attn_probs, n_components=6):
+        return reduced_attn_probs
+
+    def reduce_dimensionality_pca(self, attn_probs, n_components=3):
         """
         Applies PCA to self-attention maps 
         """
