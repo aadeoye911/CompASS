@@ -167,6 +167,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         if self.prompt_embeds.shape[0] != batch_size:
             self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
+            self.prompt_embeds = self.prompt_embeds.to(self.device)
 
         with torch.no_grad():
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
