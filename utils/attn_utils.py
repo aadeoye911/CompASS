@@ -83,9 +83,9 @@ class AttentionStore:
         for i in range(batch_size):
             _, _, V = torch.pca_lowrank(attn_probs[i], q=n_components)  # Compute PCA
             reduced_map = attn_probs[i] @ V  # Project to new basis
-            pca_reduced.append(reduced_map.unsqueeze(0))
+            pca_reduced.append(reduced_map)
 
-        return torch.cat(pca_reduced, dim=0)
+        return torch.stack(pca_reduced, dim=0)
     
 
     def group_attention_layers(self, attn_type, group_by_level=True):
