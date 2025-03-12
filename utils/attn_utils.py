@@ -79,7 +79,6 @@ class AttentionStore:
         """
         Reduces the num_tokens dimension by:
         """
-        print(attn_probs.shape)
         prompt_tokens = attn_probs[:, :, :eot_idx + 1]  
         summed_padding = attn_probs[:, :, eot_idx:].sum(dim=-1, keepdim=True)  
         special_token_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
