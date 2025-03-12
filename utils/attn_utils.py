@@ -92,15 +92,24 @@ class AttentionStore:
         """
         Applies PCA to self-attention maps 
         """
-        batch_size = attn_probs.shape[0]
-        attn_probs = attn_probs.to(torch.float32).to(self.device)
+        batch_size, seq_len, _ = attn_probs.shape  # Get dimensions
+
+        # ✅ Ensure tensor is in `float32` and on the correct device
+        attn_probs = attn_probs.to(self.device, dtype=torch.float32)
+
         pca_reduced = []
         for i in range(batch_size):
-            _, _, V = torch.pca_lowrank(attn_probs[i], q=n_components)  # Compute PCA
-            reduced_map = attn_probs[i] @ V  # Project to new basis
+            try:
+                # ✅ Apply PCA safely (with error handling)
+                U, S, V = torch.pca_lowrank(attn_probs[i], q=n_components)
+                reduced_map = attn_probs[i] @ V  # Project to new PCA basis
+            except RuntimeError as e:
+                print(f"⚠️ PCA failed for sample {i}: {e}")
+                reduced_map = attn_probs[i][..., :n_components]  # Fallback to slicing
+
             pca_reduced.append(reduced_map)
 
-        return torch.stack(pca_reduced, dim=0)
+        return torch.stack(pca_reduced, dim=0).to(self.dtype)  # ✅ 
     
 
     def group_attention_layers(self, attn_type, group_by_level=True):
