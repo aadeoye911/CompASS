@@ -19,7 +19,6 @@ def resize_image(image, min_dim=512, factor=64):
 
     return image.resize((new_width, new_height), Image.LANCZOS)
 
-
 def round_to_multiple(value, factor, mode="nearest"):
     """
     Round a given value to the nearest multiple of `factor`.
@@ -33,13 +32,11 @@ def round_to_multiple(value, factor, mode="nearest"):
     else:
         raise ValueError("mode must be 'up', 'down', or 'nearest'")
 
-
 def generate_seeds(num_seeds=1):
     """
     Generate a list of random seeds.
     """
     return [torch.randint(0, 2**32 - 1, (1,)).item() for _ in range(num_seeds)]
-
 
 def seed2generator(device, seed=42, batch_size=1):
     """
@@ -56,7 +53,6 @@ def seed2generator(device, seed=42, batch_size=1):
         raise ValueError(f"Seed list length ({len(seed)}) does not match batch size ({batch_size}).")
 
     return [torch.Generator(device=device).manual_seed(s) for s in seed]
-
 
 def token2idx(tokenizer, prompts, eot_only=True):
     """
@@ -81,7 +77,6 @@ def token2idx(tokenizer, prompts, eot_only=True):
         token_indices.append(prompt_map)
 
     return token_indices
-
 
 def extract_attention_metadata(module_name):
     """

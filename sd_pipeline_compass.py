@@ -49,7 +49,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.latent_width = None
         self.prompt_embeds = self.get_empty_embeddings()
 
-
     def get_resolution_defaults(self):
         """
         Compute and store default model parameters.
@@ -57,7 +56,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.default_output_resolution = self.unet.config.sample_size * self.vae_scale_factor
         self.unet_depth = len(self.unet.config.block_out_channels) - 1
         self.total_downsample_factor = 2**self.unet_depth * self.vae_scale_factor
-
 
     def setup_hooks(self):
         """
@@ -92,7 +90,6 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         print(f"Number of hooks initialised: {len(self.hooks)}")
     
-    
     def _hook_fn(self, layer_key):
         """
         Hook function to capture attention scores.
@@ -106,7 +103,6 @@ class CompASSPipeline(StableDiffusionPipeline):
             except Exception as e:
                 print(f"Error processing attention scores for layer {layer_key}: {e}")
         return hook
-    
 
     def clear_hooks(self):
         """
@@ -116,7 +112,6 @@ class CompASSPipeline(StableDiffusionPipeline):
             hook.remove()
         self.hooks = []
 
-
     def reset(self):
         """
         Reset stored latents, images, and attention maps.
@@ -124,14 +119,13 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.attnstore.reset()
         self.diffused_images.clear()
 
-
     def get_empty_embeddings(self, prompt="", batch_size=1):
         """
         Tokenize the prompt and get text embeddings.
         """
         empty_prompt = self.encode_prompt(prompt, self.device, batch_size, False)
+        
         return empty_prompt[0]
-
 
     def preprocess_image(self, image, min_dim=None, factor=None):
         """
@@ -145,7 +139,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
         return transform(image).unsqueeze(0).to(self.dtype)
-    
 
     def image2latent(self, image, timesteps, num_images_per_prompt=1, seed=42):
         """
@@ -166,17 +159,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         
         return noisy_latents
 
-
     def extract_attention_maps(self, image, timesteps, batch_size=1, num_images_per_prompt=1, seed=42):
         batch_size = len(timesteps)
-        latents = self.image2latent(image, timesteps)
-
+        latents = self.image2latent(image, timesteps, seed)
         self.latent_height, self.latent_width = latents.shape[2:]
 
         if self.prompt_embeds.shape[0] != batch_size:
             self.prompt_embeds = torch.cat([self.prompt_embeds[0]] * batch_size, dim=0)
-
-        latents = self.image2latent(image, timesteps, seed)
+        print(self.prompt_embeds.shape)
         with torch.no_grad():
             unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
             noise_pred = unet_output["sample"]
