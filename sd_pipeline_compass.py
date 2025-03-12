@@ -187,7 +187,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.latent_height, self.latent_width = latents.shape[2:]
 
         if self.prompt_embeds.shape[0] != batch_size:
-            prompt_embeds = torch.cat([prompt_embeds[0]] * batch_size, dim=0)
+            self.prompt_embeds = torch.cat([self.prompt_embeds[0]] * batch_size, dim=0)
 
         latents = self.image2latent(image, timesteps, seed)
         with torch.no_grad():
