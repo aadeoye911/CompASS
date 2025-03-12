@@ -161,6 +161,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
     def extract_attention_maps(self, image, timesteps, batch_size=1, num_images_per_prompt=1, seed=42):
         batch_size = len(timesteps)
+        timesteps.to(self.device)
         latents = self.image2latent(image, timesteps, seed)
         self.latent_height, self.latent_width = latents.shape[2:]
 
