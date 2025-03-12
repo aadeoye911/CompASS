@@ -61,6 +61,9 @@ class AttentionStore:
         res_factor = self.layer_metadata[attn_type][layer_key][0]
         attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)
             
+        if (attn_map.shape[0] == 1):
+            attn_map = attn_map.squeeze(0)
+            
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
 
 
