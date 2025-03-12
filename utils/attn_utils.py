@@ -59,7 +59,6 @@ class AttentionStore:
         res_factor = self.layer_metadata[attn_type][layer_key][0]
         attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)        
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
-        print(f"Stored attention map for layer: {layer_key} with shape {attn_map.shape}")
 
 
     def reshape_attention(self, attn_probs, latent_height, latent_width, res_factor):
