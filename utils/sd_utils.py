@@ -83,7 +83,7 @@ def token2idx(tokenizer, prompts, eot_only=True):
     return token_indices
 
 
-def extract_layer_metadata(module_name):
+def extract_attention_metadata(module_name):
     """
     Parse attention module name to determine its place-in-Unet ("down", "up", "mid"), level, and instance.
     """

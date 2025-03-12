@@ -5,7 +5,7 @@ from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionS
 from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection
 from torchvision.transforms import Normalize, ToTensor, Compose
 from utils.attn_utils import AttentionStore
-from utils.sd_utils import resize_image, extract_layer_metadata
+from utils.sd_utils import resize_image, extract_attention_metadata
 
 class CompASSPipeline(StableDiffusionPipeline):
     """
@@ -71,7 +71,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             # Place hook on attention modules
             if "Attention" in type(module).__name__:
                 attn_type = "cross" if module.is_cross_attention else "self"
-                place_in_unet, level, instance = extract_layer_metadata(name)
+                place_in_unet, level, instance = extract_attention_metadata(name)
                 layer_key = (attn_type, place_in_unet, level, instance)
                 self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                 self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
