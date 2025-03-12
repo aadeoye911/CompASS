@@ -149,6 +149,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         if image.shape[0] < batch_size:
             if batch_size % image.shape[0] == 0:
                 image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
+                print(image.shape)
             else: 
                 raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
             
