@@ -64,7 +64,7 @@ class AttentionStore:
         if (attn_map.shape[0] == 1):
             attn_map = attn_map.squeeze(0)
 
-        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
+        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map.cpu())
 
 
     def reshape_attention(self, attn_probs, latent_height, latent_width, res_factor):
@@ -95,7 +95,7 @@ class AttentionStore:
         batch_size, seq_len, _ = attn_probs.shape  # Get dimensions
 
         # ✅ Ensure tensor is in `float32` and on the correct device
-        attn_probs = attn_probs.to(self.device, dtype=torch.float32)
+        # attn_probs = attn_probs.to(self.device, dtype=torch.float32)
 
         pca_reduced = []
         for i in range(batch_size):

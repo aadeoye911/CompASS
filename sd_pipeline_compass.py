@@ -99,7 +99,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             try:
                 query = module.to_q(input[0])
                 key = module.to_k(self.prompt_embeds if layer_key[0] == "cross" else input[0])
-                attn_probs = (module.get_attention_scores(query, key)).detach().cpu()
+                attn_probs = (module.get_attention_scores(query, key)).detach()
                 self.attnstore.store(attn_probs, layer_key, self.latent_height, self.latent_width)
             except Exception as e:
                 print(f"Error processing attention scores for layer {layer_key}: {e}")
