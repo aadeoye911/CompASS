@@ -53,6 +53,7 @@ class AttentionStore:
         Store attention scores using a dictionary-based key format.
         """
         attn_type = layer_key[0]
+        print(attn_probs.device, attn_probs.dtype)
         if attn_type == "self":
             attn_probs = self.reduce_dimensionality_pca(attn_probs)
         else:
