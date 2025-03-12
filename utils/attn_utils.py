@@ -53,22 +53,39 @@ class AttentionStore:
         Store attention scores using a dictionary-based key format.
         """
         attn_type = layer_key[0]
-        if attn_type == "cross":
-            res_factor = self.attn_metadata[attn_type][layer_key][0]
-            attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)
-        else:
-            attn_map = attn_probs
-        print(f"Storing attention map for layer: {layer_key} with shape {attn_map.shape}")
+        if attn_type == "self":
+            attn_probs = self.reduce_dimensionality_pca(attn_probs)
+        
+        res_factor = self.attn_metadata[attn_type][layer_key][0]
+        attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)        
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
-    
+        print(f"Stored attention map for layer: {layer_key} with shape {attn_map.shape}")
+
 
     def reshape_attention(self, attn_probs, latent_height, latent_width, res_factor):
+        """
+        Reshape attention to spatial dimensions
+        """
         if (latent_height % res_factor != 0) or (latent_width % res_factor != 0):
             raise ValueError(f"Downsampling produced non-integer dimensions.")
         attn_height, attn_width = latent_height // res_factor, latent_width // res_factor
         attn_map = attn_probs.reshape(attn_probs.shape[0], attn_height, attn_width, -1)
 
         return attn_map
+    
+
+    def reduce_dimensionality_pca(self, attn_probs, n_components=6):
+        """
+        Applies PCA to self-attention maps 
+        """
+        batch_size = attn_probs.shape[0]
+        pca_reduced = []
+        for i in range(batch_size):
+            _, _, V = torch.pca_lowrank(attn_probs[i], q=n_components)  # Compute PCA
+            reduced_map = attn_probs[i] @ V  # Project to new basis
+            pca_reduced.append(reduced_map.unsqueeze(0))
+
+        return torch.cat(pca_reduced, dim=0)
     
 
     def group_attention_layers(self, attn_type, group_by_level=True):
