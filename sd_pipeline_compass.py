@@ -5,7 +5,7 @@ from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionS
 from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection
 from torchvision.transforms import Normalize, ToTensor, Compose
 from utils.attn_utils import AttentionStore
-from utils.sd_utils import resize_image, extract_attention_info
+from utils.sd_utils import resize_image, extract_layer_metadata
 
 class CompASSPipeline(StableDiffusionPipeline):
     """
@@ -71,9 +71,9 @@ class CompASSPipeline(StableDiffusionPipeline):
             # Place hook on attention modules
             if "Attention" in type(module).__name__:
                 attn_type = "cross" if module.is_cross_attention else "self"
-                place_in_unet, level, instance = extract_attention_info(name)
+                place_in_unet, level, instance = extract_layer_metadata(name)
                 layer_key = (attn_type, place_in_unet, level, instance)
-                self.attnstore.attn_metadata[attn_type][layer_key] = (2**down_exp, name)
+                self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                 self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
 
             # Track resolution through downsampling/upsampling modules
@@ -85,10 +85,10 @@ class CompASSPipeline(StableDiffusionPipeline):
         assert max_exp == self.unet_depth, "Invalid UNet depth calculation"
         
         # Reassign resolution factor for midblocks
-        for attn_type, layer_metadata in self.attnstore.attn_metadata.items():
-            for layer_key, (res_factor, name) in layer_metadata.items():
+        for attn_type, metadata in self.attnstore.layer_metadata.items():
+            for layer_key, (res_factor, name) in metadata.items():
                 if layer_key[1] == "mid":  # Ensure it's a midblock
-                    self.attnstore.attn_metadata[attn_type][layer_key] = (2**max_exp, name)
+                    self.attnstore.layer_metadata[attn_type][layer_key] = (2**max_exp, name)
 
         print(f"Number of hooks initialised: {len(self.hooks)}")
     
@@ -144,10 +144,10 @@ class CompASSPipeline(StableDiffusionPipeline):
         image = resize_image(image, min_dim, factor)
         transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
-        return transform(image).to(self.dtype)
+        return transform(image.unsqueeze(0)).to(self.dtype)
     
 
-    def image2latent(self, image, timesteps, num_images_per_prompt=None, seed=42):
+    def image2latent(self, image, timesteps, num_images_per_prompt=1, seed=42):
         """
         Prepare latents from an image or random noise.
         """
@@ -159,29 +159,16 @@ class CompASSPipeline(StableDiffusionPipeline):
             else: 
                 raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
             
-        generator = torch.Generator(device=self.device).manual_seed(seed)
+        # generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        noise = torch.randn(latents.shape, generator=generator, device=self.device)
+        noise = torch.randn(latents.shape, device=self.device)
         noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
         
         return noisy_latents
 
-    # def init_latent(size, generator=None, dtype=torch.float32):
-    #     """
-    #     Generate random noise latent tensor for Stable Diffusion.
-    #     """
-    #     if isinstance(generator, list):
-    #         if len(generator) > batch_size:
-    #             print(f'generator longer than batch size. truncationg list to match batch')
-    #             generator = generator[:batch_size]
 
-    #     return torch.randn((batch_size, num_channels, height, width), generator=generator, dtype=dtype)
-
-
-    def extract_attention_maps(self, image, timesteps, seed=42):
+    def extract_attention_maps(self, image, timesteps, batch_size=1, num_images_per_prompt=1, seed=42):
         batch_size = len(timesteps)
-        image = image.to(self.device)
-        timesteps.to(self.device)
         latents = self.image2latent(image, timesteps)
 
         self.latent_height, self.latent_width = latents.shape[2:]

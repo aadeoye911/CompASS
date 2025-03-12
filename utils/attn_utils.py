@@ -13,7 +13,7 @@ class AttentionStore:
         self.self_attention_maps = defaultdict(list)   # Stores self-attention maps
 
         # Ensures layer metadata is properly structured
-        self.attn_metadata = { "cross": {}, "self": {} }
+        self.layer_metadata = { "cross": {}, "self": {} }
 
 
     def reset(self):
@@ -28,23 +28,23 @@ class AttentionStore:
         """
         Returns an empty attention store.
         """
-        return {layer_key: [] for layer_key in self.attn_metadata[attn_type].keys()}
+        return {layer_key: [] for layer_key in self.layer_metadata[attn_type].keys()}
 
 
-    def print_attn_metadata(self):
+    def print_attention_metadata(self):
         """
         Print formatted metadata for stored attention layers.
         """
         # Print Cross-Attention Metadata
-        print(f"Total Cross-Attention Layers: {len(self.attn_metadata['cross'])}")
+        print(f"Total Cross-Attention Layers: {len(self.layer_metadata['cross'])}")
         print("\nCross-Attention Layers:")
-        for layer_key, (res_factor, name) in self.attn_metadata["cross"].items():
+        for layer_key, (res_factor, name) in self.layer_metadata["cross"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
 
         # Print Self-Attention Metadata
-        print(f"Total Self-Attention Layers: {len(self.attn_metadata['self'])}")
+        print(f"Total Self-Attention Layers: {len(self.layer_metadata['self'])}")
         print("\nSelf-Attention Layers:")
-        for layer_key, (res_factor, name) in self.attn_metadata["self"].items():
+        for layer_key, (res_factor, name) in self.layer_metadata["self"].items():
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
     
 
@@ -56,7 +56,7 @@ class AttentionStore:
         if attn_type == "self":
             attn_probs = self.reduce_dimensionality_pca(attn_probs)
         
-        res_factor = self.attn_metadata[attn_type][layer_key][0]
+        res_factor = self.layer_metadata[attn_type][layer_key][0]
         attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)        
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
         print(f"Stored attention map for layer: {layer_key} with shape {attn_map.shape}")
@@ -93,7 +93,7 @@ class AttentionStore:
         Filters keys for attention maps based on place in unet (down, mid, up) and level.
         """
         grouped_layers = defaultdict(list)
-        for layer_key in self.attn_metadata[attn_type].keys():
+        for layer_key in self.layer_metadata[attn_type].keys():
             group_key = layer_key[:3] if group_by_level else layer_key[:2]
             grouped_layers[group_key].append(layer_key)
 
@@ -131,12 +131,12 @@ class AttentionStore:
         Aggregates the attention across subset of layers at the specified resolution factor.
         """
         if res_factor == None:
-            res_factor = min([self.attn_metadata[layer_key[0]][layer_key][0] for layer_key in layer_keys])
+            res_factor = min([self.layer_metadata[layer_key[0]][layer_key][0] for layer_key in layer_keys])
 
         resized_maps = []
         for layer_key in layer_keys:
             attn_type = layer_key[0]
-            scale_factor = res_factor / self.attn_metadata[attn_type][layer_key][0]
+            scale_factor = res_factor / self.layer_metadata[attn_type][layer_key][0]
             attn_map = getattr(self, f"{attn_type}_attention_maps")[layer_key]
             sampling_mode = downsampling_mode if scale_factor <  1 else upsampling_mode
             resized_map = self.rescale_attention(attn_map, scale_factor, mode=sampling_mode)
