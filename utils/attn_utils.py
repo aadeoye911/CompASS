@@ -63,7 +63,7 @@ class AttentionStore:
             
         if (attn_map.shape[0] == 1):
             attn_map = attn_map.squeeze(0)
-            
+
         getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map)
 
 
@@ -93,6 +93,7 @@ class AttentionStore:
         Applies PCA to self-attention maps 
         """
         batch_size = attn_probs.shape[0]
+        attn_probs = attn_probs.to(torch.float32)
         pca_reduced = []
         for i in range(batch_size):
             _, _, V = torch.pca_lowrank(attn_probs[i], q=n_components)  # Compute PCA
