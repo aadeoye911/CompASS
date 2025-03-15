@@ -125,7 +125,7 @@ class AttentionStore:
         return grouped_layers
 
 
-    def rescale_attention(self, attn_map, scale_factor, sampling_mode="bilinear"):
+    def rescale_attention(self, attn_map, scale_factor, sampling_mode="nearest"):
         """
         Up/downsample to change resolution of attention maps
         """
@@ -138,20 +138,15 @@ class AttentionStore:
         target_res = int(height * scale_factor), int(width * scale_factor)
         
         attn_map = attn_map.permute(0, 3, 1, 2) # Permute to (B, C, H, W) 
-        if sampling_mode not in ["bilinear", "nearest", "bicubic"]:
-            if scale_factor > 1:
-                raise ValueError(f"Invalid upsamping mode='{sampling_mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")
-            elif sampling_mode != "max":
-                raise ValueError(f"Invalid downsamping mode='{sampling_mode}'. Choose 'bilinear', 'nearest', or 'bicubic' ")   
-            else:
-                resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
+        if scale_factor < 1 and sampling_mode == "max":
+            resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
         else:
             resized_map = F.interpolate(attn_map, size=target_res, mode=sampling_mode)
 
         return resized_map.permute(0, 2, 3, 1)
     
 
-    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="max", downsampling_mode="max", upsampling_mode="bilinear"):
+    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="max", sampling_mode="nearest"):
         """
         Aggregates the attention across subset of layers at the specified resolution factor.
         """
@@ -163,7 +158,6 @@ class AttentionStore:
             attn_type = layer_key[0]
             scale_factor = res_factor / self.layer_metadata[attn_type][layer_key][0]
             attn_map = getattr(self, f"{attn_type}_attention_maps")[layer_key]
-            sampling_mode = downsampling_mode if scale_factor <  1 else upsampling_mode
             resized_map = self.rescale_attention(attn_map, scale_factor, mode=sampling_mode)
             resized_maps.append(resized_map)
 

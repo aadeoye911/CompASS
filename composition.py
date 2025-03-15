@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import torch.nn.functional as F
 
 def normalize_map(map):
+    """ 
+    Min-max normalization
+    """
     min = map.min()
     max = map.max()
     if max == min:
@@ -12,15 +15,19 @@ def normalize_map(map):
 
     return map
 
-
 def softmax_normalization(attn_map, temperature=1.0):
+    """ 
+    Softmax normational
+    """
     attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
     attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
 
     return attn_map
 
-
 def generate_normalized_grid(H, W, keep_aspect=True):
+    """ 
+    Grid coordinates
+    """
     aspect = H / W if keep_aspect else 1
     x_coords, y_coords = torch.meshgrid(torch.linspace(-1, 1, steps=W),
                                         torch.linspace(-aspect, aspect, steps=H),
@@ -28,8 +35,10 @@ def generate_normalized_grid(H, W, keep_aspect=True):
      
     return torch.stack((x_coords, y_coords), dim=-1)    
 
-
 def distance_to_point(positions, point, method="manhattan"):
+    """ 
+    Compute distances to a point 
+    """
     displacement = positions - point
     if method == "manhattan":
         distances = torch.sum(torch.abs(displacement), dim=-1)  # Scaled L1 norm
@@ -40,8 +49,10 @@ def distance_to_point(positions, point, method="manhattan"):
 
     return distances
 
-
 def distance_to_line(positions, line_normal, line_point=None, signed=True):
+    """ 
+    Compute distance to a line.
+    """
     line_point = torch.Tensor([0, 0]) if line_point is None else line_point
     line_normal = normalize_vector(line_normal)                    
     distances = torch.sum(line_normal * (positions - line_point), dim=-1)
@@ -50,8 +61,10 @@ def distance_to_line(positions, line_normal, line_point=None, signed=True):
 
     return distances
 
-
 def normalize_vector(vector, eps=1e-8):
+    """ 
+    Normalize vector
+    """
     vector = vector.to(dtype=torch.float32) 
     norm = torch.norm(vector, p=2)
     if norm < eps:
@@ -60,12 +73,11 @@ def normalize_vector(vector, eps=1e-8):
 
     return vector
 
-
 def vector2normal(vector):
-    normal = torch.tensor([-vector[1], vector[0]])
-
-    return normalize_vector(normal)
-
+    """ 
+    Generate perpendicular normal vectorl.
+    """
+    return normalize_vector(torch.tensor([-vector[1], vector[0]]))
 
 def get_standard_normal(type="horizontal", H=None, W=None):
     """
@@ -166,8 +178,10 @@ def compute_flow_around_point(gradients, positions, point):
 
     return radial_flow, angular_flow
 
-
 def balance_measures(attn_map, keep_aspect=True, sigma=1):
+    """
+    MEasure balance.
+    """
     H, W = attn_map.shape
     attn_map = attn_map.to(dtype=torch.float32)
     # attn_map = normalize_map(attn_map)
@@ -206,8 +220,10 @@ def gaussian_weighting(distances, sigma=1):
     """
     return torch.exp(- (distances ** 2) / (2 * sigma))
 
-
 def visualise_attn(attn_map, centroid=None, cmap='Blues'):
+    """ 
+    attention
+    """
     plt.figure(figsize=(3, 4))
     plt.imshow(attn_map, cmap=cmap)
     plt.colorbar()
@@ -217,7 +233,6 @@ def visualise_attn(attn_map, centroid=None, cmap='Blues'):
         plt.scatter(centroid[0], centroid[1], color='red', marker='+', s=100, linewidths=2, label="Centroid")
 
     plt.show()
-
 
 def rot_lines(H, W):
     positions = generate_normalized_grid(H, W)
@@ -239,7 +254,6 @@ def rot_lines(H, W):
 
     return distances
 
-
 def rot_points(H, W):
     positions = generate_normalized_grid(H, W, keep_aspect=False)
     dist_1 = distance_to_point(positions, torch.tensor([-1/3, 1/3]))
@@ -253,7 +267,6 @@ def rot_points(H, W):
     visualise_attn(distances)
 
     return distances
-
 
 def symmetry_mse(attn_map, sigma=1):
     H, W = attn_map.shape
@@ -274,5 +287,4 @@ def symmetry_gaussian(attn_map):
 
 # APPROACHES TO CONSIDER
 # Moments (centroid, variance, skewness) → Physics/Statistics balance.
-# Fourier transform → Spatial balance, symmetry, rule-of-thirds.
 # Divergence & curl → Vector field balance, spread, and rotational asymmetry.
