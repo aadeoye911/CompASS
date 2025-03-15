@@ -1,6 +1,7 @@
 # Ignore dataset folders and csv files
 shotdeck_data/
 shotdeck_resized/
+shotdeck_csv/
 *.csv
 *.ipynb
 

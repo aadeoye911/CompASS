@@ -172,10 +172,8 @@ class AttentionStore:
             aggregated_map = stacked_maps.mean(dim=0)
         elif aggregation_mode == "max":
             aggregated_map = stacked_maps.max(dim=0)[0]
-        elif aggregation_mode == "sum":
-            aggregated_map = stacked_maps.sum(dim=0)
         else:
-            raise ValueError(f"Invalid aggregation mode: {aggregation_mode}. Choose 'mean', 'max', or 'sum.")
+            raise ValueError(f"Invalid aggregation mode: {aggregation_mode}. Choose 'mean' or 'max'")
 
         return aggregated_map
       
