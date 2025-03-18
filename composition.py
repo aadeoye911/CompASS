@@ -3,17 +3,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 
-def normalize_map(map):
+def minmax_normalization(attn_map):
     """ 
     Min-max normalization
     """
-    min = map.min()
-    max = map.max()
-    if max == min:
-        return torch.zeros_like(map) # Avoid division by zero
-    map = (map - min) / (max - min)
+    min = attn_map.min()
+    max = attn_map.max()
+    # if max == min:
+    #     return torch.zeros_like(attn_map) # Avoid division by zero
 
-    return map
+    return (attn_map - min) / (max - min)
+
+def z_normalization(attn_map):
+    """ 
+    Z normalization
+    """
+    mean = attn_map.mean()
+    std = attn_map.std()
+    # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
+    #     return torch.zeros_like(attn_map) # Avoid division by zero
+    return (attn_map - mean) / std
 
 def softmax_normalization(attn_map, temperature=1.0):
     """ 
@@ -24,16 +33,28 @@ def softmax_normalization(attn_map, temperature=1.0):
 
     return attn_map
 
-def generate_normalized_grid(H, W, keep_aspect=True):
-    """ 
-    Grid coordinates
+def get_grid_step_size(H, W, uniform = True):
     """
-    aspect = H / W if keep_aspect else 1
-    x_coords, y_coords = torch.meshgrid(torch.linspace(-1, 1, steps=W),
-                                        torch.linspace(-aspect, aspect, steps=H),
-                                        indexing="xy")
-     
-    return torch.stack((x_coords, y_coords), dim=-1)    
+    Computes the spatial step size (grid spacing) for consistent divergence and curl calculations."
+    """
+    delta_x = (W - 1) / 2
+    delta_y = delta_x if uniform else (H - 1) / 2
+
+    return delta_x, delta_y
+
+def generate_grid(H, W, normalize=False, aspect_aware=False):
+    """
+    Generates a grid with unit spacing and centered at (0,0).
+    """
+    x_coords = (torch.arange(W, dtype=torch.float32) - (W - 1) / 2).view(1, W).expand(H, W)
+    y_coords = (torch.arange(H, dtype=torch.float32) - (H - 1) / 2).view(H, 1).expand(H, W)
+
+    if normalize:
+        delta_x, delta_y = get_grid_step_size(H, W, uniform = aspect_aware)
+        x_coords = x_coords / delta_x
+        y_coords = y_coords / delta_y
+
+    return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
 def distance_to_point(positions, point, method="manhattan"):
     """ 
@@ -106,43 +127,93 @@ def get_standard_normal(type="horizontal", H=None, W=None):
     
     return normalize_vector(normal)
 
-def compute_gradients(attn_map, keep_aspect=True):
+def get_grid_step_size(H, W, uniform=True):
+    """
+    Computes the spatial step size (grid spacing) for consistent divergence and curl calculations."
+    """
+    delta_x = (W - 1) / 2
+    delta_y = delta_x if uniform else (H - 1) / 2
+
+    return delta_x, delta_y
+
+def generate_grid(H, W, normalize=False, aspect_aware=False):
+    """
+    Generates a grid with unit spacing and centered at (0,0).
+    """
+    x_coords = (torch.arange(W, dtype=torch.float32) - (W - 1) / 2).view(1, W).expand(H, W)
+    y_coords = (torch.arange(H, dtype=torch.float32) - (H - 1) / 2).view(H, 1).expand(H, W)
+
+    if normalize:
+        delta_x, delta_y = get_grid_step_size(H, W, uniform = aspect_aware)
+        x_coords = x_coords / delta_x
+        y_coords = y_coords / delta_y
+
+    return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
+
+def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
+    """
+    Returns the correct kernel for the given filter type.
+    """
+    if filter == "central":
+        kernel_dx = torch.tensor([[-0.5, 0, 0.5]], dtype=dtype, device=device)
+        kernel_dy = torch.tensor([[-0.5], [0], [0.5]], dtype=dtype, device=device)
+    elif filter == "sobel":
+        kernel_dx = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=dtype, device=device)
+        kernel_dy = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=dtype, device=device)
+    elif filter == "prewitt":
+        kernel_dx = torch.tensor([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=dtype, device=device)
+        kernel_dy = torch.tensor([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=dtype, device=device)
+    elif filter == "scharr":
+        kernel_dx = torch.tensor([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]], dtype=dtype, device=device)
+        kernel_dy = torch.tensor([[-3, -10, -3], [0, 0, 0], [3, 10, 3]], dtype=dtype, device=device)
+    else:
+        raise ValueError(f"Unsupported filter operator: {filter}. Choose from 'central', 'sobel', 'prewitt', 'scharr'.")
+
+    return kernel_dx.unsqueeze(0).unsqueeze(0), kernel_dy.unsqueeze(0).unsqueeze(0)  # Ensure shape (1, 1, kH, kW)
+
+def kernel2padding(kernel):
+    """
+    Computes correct padding dimension for kernel.
+    """
+    H, W = kernel.shape[-2:]
+    top = (H - 1) // 2
+    bottom = top if H % 2 == 1 else top + 1
+    left = (W - 1) // 2
+    right = left if W % 2 == 1 else left + 1
+
+    return (left, right, top, bottom)
+
+def compute_gradients(attn_map, filter="sobel", dtype=torch.float32):
     """
     Computes gradients using Sobel filters.
     """
-    H, W = attn_map.shape
-    attn_map = attn_map.to(dtype=torch.float32)  # Ensure float32
+    attn_map = attn_map.to(dtype=dtype).unsqueeze(0).unsqueeze(0)  # Add batch & channel dims
+    kernel_dx, kernel_dy = get_filter_kernels(filter=filter, dtype=dtype)
 
-    sobel_x = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device=attn_map.device).unsqueeze(0).unsqueeze(0)
-    sobel_y = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32, device=attn_map.device).unsqueeze(0).unsqueeze(0)
+    grad_x = F.conv2d(F.pad(attn_map, kernel2padding(kernel_dx), mode='reflect'), kernel_dx)
+    grad_y = F.conv2d(F.pad(attn_map, kernel2padding(kernel_dy), mode='reflect'), kernel_dy)
 
-    attn_map = attn_map.unsqueeze(0).unsqueeze(0)  # Add batch & channel dims
-    grad_x = F.conv2d(F.pad(attn_map, (1, 1, 1, 1), mode='replicate'), sobel_x)
-    grad_y = F.conv2d(F.pad(attn_map, (1, 1, 1, 1), mode='replicate'), sobel_y)
+    return torch.cat([grad_x, grad_y], dim=1) # Shape (1, 2, H, W)
 
-    if keep_aspect:
-        grad_x = grad_x * (2 / W)       # Scale by grid range [-1, 1] in x-direction
-        grad_y = grad_y * (2*(H/W) / H) # Scale by grid range [-H/W, H/W] in y-direction
-
-    gradients = torch.cat([grad_x, grad_y], dim=1) # Shape (1, 2, H, W)
-    
-    return gradients
-
-def compute_divergence_and_curl(gradients):
+def compute_divergence_and_curl(gradients, dtype=torch.float32, scale_to_grid=True):
     """
     Computes divergence and curl from gradients using grouped convolutions.
     """
     # Define convolution kernels
-    kernel_dx = torch.tensor([[-0.5, 0, 0.5]], dtype=torch.float32, device=gradients.device).unsqueeze(0)  # (1, 3)
-    kernel_dy = torch.tensor([[-0.5], [0], [0.5]], dtype=torch.float32, device=gradients.device).unsqueeze(0)  # (3, 1)
+    kernel_dx, kernel_dy = get_filter_kernels(filter="central", dtype=dtype)
 
     # Stack kernels correctly: (2, 1, kH, kW) for group conv
-    stacked_dx = torch.stack([kernel_dx, kernel_dx], dim=0)  # Shape: (2, 1, 1, 3)
-    stacked_dy = torch.stack([kernel_dy, kernel_dy], dim=0)  # Shape: (2, 1, 3, 1)
+    stacked_dx = torch.cat([kernel_dx, kernel_dx], dim=0)  # Shape: (2, 1, 1, 3)
+    stacked_dy = torch.cat([kernel_dy, kernel_dy], dim=0)  # Shape: (2, 1, 3, 1)
 
     # Apply grouped convolution to compute all four partial derivatives
-    partials_dx = F.conv2d(F.pad(gradients, (1, 1, 0, 0), mode='replicate'), stacked_dx, groups=2).squeeze(0)  # Shape: (1, 2, H, W)
-    partials_dy = F.conv2d(F.pad(gradients, (0, 0, 1, 1), mode='replicate'), stacked_dy, groups=2).squeeze(0)  # Shape: (1, 2, H, W)
+    partials_dx = F.conv2d(F.pad(gradients, kernel2padding(stacked_dx), mode='replicate'), stacked_dx, groups=2).squeeze(0)  # Shape: (1, 2, H, W)
+    partials_dy = F.conv2d(F.pad(gradients, kernel2padding(stacked_dy), mode='replicate'), stacked_dy, groups=2).squeeze(0)  # Shape: (1, 2, H, W)
+
+    if scale_to_grid:
+        delta_x, delta_y = get_grid_step_size(gradients.shape[-2], gradients.shape[-1], uniform=True)
+        partials_dx = partials_dx / delta_x
+        partials_dy = partials_dy / delta_y
 
     # Compute divergence: div(F) = dF_x/dx + dF_y/dy
     divergence = partials_dx[0] + partials_dy[1]  # Shape: (H, W)
@@ -152,10 +223,15 @@ def compute_divergence_and_curl(gradients):
 
     return divergence, curl
 
-def get_focal_centroid(attn_map, keep_aspect=True):
-    H, W = attn_map.shape
+def compute_map_centroid(attn_map, positions, percentile=100, keep_aspect=True):
+    """
+    Compute centroid.
+    """
     attn_map = attn_map.to(dtype=torch.float32)
-    positions = generate_normalized_grid(H, W, keep_aspect=keep_aspect)
+    if percentile < 100:
+        threshold = torch.quantile(attn_map, percentile / 100.0)  # Compute threshold value
+        mask = attn_map >= threshold  # Create binary mask
+        attn_map = attn_map * mask  # Zero out non-salient pixels
     moments = torch.sum(attn_map.unsqueeze(-1) * positions, dim=(0,1))
     centroid = moments / torch.sum(attn_map)
 
@@ -178,41 +254,26 @@ def compute_flow_around_point(gradients, positions, point):
 
     return radial_flow, angular_flow
 
-def balance_measures(attn_map, keep_aspect=True, sigma=1):
+def balance_measures(attn_map, positions, sigma = 1, percentile=100):
     """
     MEasure balance.
     """
     H, W = attn_map.shape
     attn_map = attn_map.to(dtype=torch.float32)
-    # attn_map = normalize_map(attn_map)
-    focal_strength = torch.max(attn_map) / torch.mean(attn_map)
-
-    attn_map = softmax_normalization(attn_map, temperature=focal_strength)
-    positions = generate_normalized_grid(H, W, keep_aspect=keep_aspect)
-    attn_mass = torch.sum(attn_map)
-
-    
-    # Compute center of mass
-    moments = torch.sum(attn_map.unsqueeze(-1) * focal_strength * positions, dim=(0,1))
-    centroid = moments / attn_mass
-    d_VB = torch.sum(torch.abs(centroid ))
+    centroid = compute_map_centroid(attn_map, positions, percentile=percentile)
+    d_VB = torch.sum(torch.abs(centroid))
     e_VB = gaussian_weighting(d_VB, sigma=sigma)
 
-    # Compute moment of inertia
-    # squared_distances = torch.sum(attn_map.unsqueeze(-1) * ((positions - centroid)** 2), dim=(0, 1))
-    # variance = squared_distances / attn_mass
-    # moment_of_inertia = torch.sum(squared_distances / (H * W))
+    return centroid, e_VB
 
-    # Compute moment of inertia
-    # right_diag = get_standard_normal(type="right_diag", H=H, W=W)
-    # left_diag = get_standard_normal(type="left_diag", H=H, W=W)
-    # angular_right = torch.sum(attn_map * distance_to_line(positions, right_diag, line_point=centroid, signed=True))
-    # angular_left = torch.sum(attn_map * distance_to_line(positions, left_diag, line_point=centroid, signed=True))
+def momentum(attn_map, positions):
 
     vertical = get_standard_normal(type="vertical", H=H, W=W)
-    vertical_momentum = torch.sum(attn_map * distance_to_line(positions, vertical, line_point=centroid, signed=True))
+    angular_y = torch.sum(attn_map * distance_to_line(positions, vertical, signed=True))
+    print(f"Momentum about center: {angular_y}")
+
+    return angular_y
     
-    return centroid, e_VB, vertical_momentum
 
 def gaussian_weighting(distances, sigma=1):
     """ 
@@ -235,7 +296,7 @@ def visualise_attn(attn_map, centroid=None, cmap='Blues'):
     plt.show()
 
 def rot_lines(H, W):
-    positions = generate_normalized_grid(H, W)
+    positions = generate_grid(H, W)
     horizontal_normal = get_standard_normal(type="horizontal")
     vertical_normal = get_standard_normal(type="vertical")
 
@@ -255,28 +316,22 @@ def rot_lines(H, W):
     return distances
 
 def rot_points(H, W):
-    positions = generate_normalized_grid(H, W, keep_aspect=False)
+    positions = generate_grid(H, W, normalize=True, keep_aspect=False)
     dist_1 = distance_to_point(positions, torch.tensor([-1/3, 1/3]))
     dist_2 = distance_to_point(positions, torch.tensor([1/3, 1/3]))
     dist_3 = distance_to_point(positions, torch.tensor([1/3, -1/3]))
     dist_4 = distance_to_point(positions, torch.tensor([-1/3, -1/3]))
 
     distances = torch.min(torch.stack([dist_1, dist_2, dist_3, dist_4], dim=0), dim=0).values
-    distances = gaussian_weighting(distances)
-    print("min =", distances.min().item(), "max =", distances.max().item(), "mean =", distances.mean().item())
-    visualise_attn(distances)
 
     return distances
 
 def symmetry_mse(attn_map, sigma=1):
-    H, W = attn_map.shape
-    attn_map = normalize_map(attn_map)
     mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
     score = torch.mean((attn_map - mirror)**2)
     return score
 
 def symmetry_gaussian(attn_map):
-    attn_map = normalize_map(attn_map)
     mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
     weight = gaussian_weighting((attn_map - mirror)**2, torch.var(attn_map**2)/10)
     print("min =", weight.min().item(), "max =", weight.max().item(), "mean =", weight.mean().item())
@@ -286,5 +341,4 @@ def symmetry_gaussian(attn_map):
 
 
 # APPROACHES TO CONSIDER
-# Moments (centroid, variance, skewness) → Physics/Statistics balance.
 # Divergence & curl → Vector field balance, spread, and rotational asymmetry.
