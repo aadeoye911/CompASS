@@ -124,16 +124,19 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False,
                     group_key = "_".join(layer_key.split("_")[:-1])  # Extract group key for aggregation
 
                     # Convert to Torch tensor
-                    attn_map = torch.tensor(f[image_hash][layer_key][:, :, index])
-                    H, W = attn_map.shape
+                    layer = f[image_hash][layer_key][:, :, index] if index is not None else f[image_hash][layer_key][:]
+                    attn_map = torch.tensor(layer.copy())
+                    H, W = attn_map.shape[:2]
+                    if len(attn_map.shape) == 2:
+                        attn_map = attn_map.unsqueeze(-1)
 
                     # Downsample if necessary
                     if downsample:
                         if H > res:
                             scale_factor = res / H
-                            attn_map = attn_map.unsqueeze(0).unsqueeze(-1)
+                            attn_map = attn_map.unsqueeze(0)
                             resized_map = attn.rescale_attention(attn_map, scale_factor=scale_factor, sampling_mode=sampling_mode)
-                            attn_map = resized_map.squeeze(0).squeeze(-1)
+                            attn_map = resized_map.squeeze(0)
 
                     # 🔹 Store Map Based on `aggregate_flag`
                     if aggregate:
@@ -166,7 +169,11 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False,
 
             data.append(row_data)
 
-    return pd.DataFrame(data)
+    attn_df = pd.DataFrame(data)
+    attn_df = attn_df.dropna()
+    attn_df = attn_df.set_index("image_hash")
+    
+    return attn_df
 
 if __name__ == "__main__":
     # Define composition and frame size categories

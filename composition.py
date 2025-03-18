@@ -264,15 +264,10 @@ def balance_measures(attn_map, positions, sigma = 1, percentile=100):
     d_VB = torch.sum(torch.abs(centroid))
     e_VB = gaussian_weighting(d_VB, sigma=sigma)
 
-    return centroid, e_VB
-
-def momentum(attn_map, positions):
-
     vertical = get_standard_normal(type="vertical", H=H, W=W)
     angular_y = torch.sum(attn_map * distance_to_line(positions, vertical, signed=True))
-    print(f"Momentum about center: {angular_y}")
 
-    return angular_y
+    return centroid, e_VB, angular_y
     
 
 def gaussian_weighting(distances, sigma=1):
