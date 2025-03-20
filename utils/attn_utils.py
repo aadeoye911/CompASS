@@ -125,28 +125,24 @@ class AttentionStore:
         return grouped_layers
 
 
-    def rescale_attention(self, attn_map, scale_factor, sampling_mode="nearest"):
+    def rescale_attention(self, attn_map, scale_factor):
         """
         Up/downsample to change resolution of attention maps
         """
         if scale_factor <= 0:
             raise ValueError(f"Invalid scale_factor={scale_factor}. Must be a positive value.")
-        if scale_factor == 1:
+        elif scale_factor == 1:
             return attn_map
-        
-        height, width = attn_map.shape[1:3]
-        target_res = int(height * scale_factor), int(width * scale_factor)
-        
-        attn_map = attn_map.permute(0, 3, 1, 2) # Permute to (B, C, H, W) 
-        if scale_factor < 1 and sampling_mode == "max":
-            resized_map = F.adaptive_max_pool2d(attn_map, output_size=target_res)
         else:
-            resized_map = F.interpolate(attn_map, size=target_res, mode=sampling_mode)
+            height, width = attn_map.shape[1:3]
+            target_res = int(height * scale_factor), int(width * scale_factor)
+            attn_map = attn_map.permute(0, 3, 1, 2) # Permute to (B, C, H, W) 
+            rescale_map = F.interpolate(attn_map, size=target_res, mode="bilinear")
 
-        return resized_map.permute(0, 2, 3, 1)
+        return rescale_map.permute(0, 2, 3, 1)
     
 
-    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="max", sampling_mode="nearest"):
+    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="max"):
         """
         Aggregates the attention across subset of layers at the specified resolution factor.
         """
@@ -158,7 +154,7 @@ class AttentionStore:
             attn_type = layer_key[0]
             scale_factor = res_factor / self.layer_metadata[attn_type][layer_key][0]
             attn_map = getattr(self, f"{attn_type}_attention_maps")[layer_key]
-            resized_map = self.rescale_attention(attn_map, scale_factor, mode=sampling_mode)
+            resized_map = self.rescale_attention(attn_map, scale_factor)
             resized_maps.append(resized_map)
 
         stacked_maps = torch.cat(resized_maps, dim=0)

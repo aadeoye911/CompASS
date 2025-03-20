@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import torch.nn.functional as F
 
 def minmax_normalization(attn_map):
@@ -136,19 +137,26 @@ def get_grid_step_size(H, W, uniform=True):
 
     return delta_x, delta_y
 
-def generate_grid(H, W, normalize=False, aspect_aware=False):
+def generate_grid(H, W, centered=False, grid_aspect="auto"):
     """
-    Generates a grid with unit spacing and centered at (0,0).
+    Generates a 2D coordinate grid with optional centering and aspect-aware normalization.
     """
-    x_coords = (torch.arange(W, dtype=torch.float32) - (W - 1) / 2).view(1, W).expand(H, W)
-    y_coords = (torch.arange(H, dtype=torch.float32) - (H - 1) / 2).view(H, 1).expand(H, W)
+    y_coords, x_coords = torch.meshgrid(torch.arange(H, dtype=torch.float32) + 0.5,
+                                        torch.arange(W, dtype=torch.float32) + 0.5,
+                                        indexing="ij")
+    if centered:
+        x_coords = x_coords - W / 2
+        y_coords = y_coords - H / 2
 
-    if normalize:
-        delta_x, delta_y = get_grid_step_size(H, W, uniform = aspect_aware)
-        x_coords = x_coords / delta_x
-        y_coords = y_coords / delta_y
+    if grid_aspect == "equal":
+        x_coords = x_coords / max(H, W)
+        y_coords = y_coords / max(H, W)
+    elif grid_aspect == "scaled":
+        x_coords = x_coords / W
+        y_coords = y_coords / H
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
+
 
 def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
     """
@@ -268,7 +276,6 @@ def balance_measures(attn_map, positions, sigma = 1, percentile=100):
     angular_y = torch.sum(attn_map * distance_to_line(positions, vertical, signed=True))
 
     return centroid, e_VB, angular_y
-    
 
 def gaussian_weighting(distances, sigma=1):
     """ 
@@ -333,6 +340,24 @@ def symmetry_gaussian(attn_map):
     visualise_attn(weight, cmap='hot')
     score = torch.mean(weight)
     return score
+
+
+def plot_image(image_path, axes, third_lines=True):
+    """
+    Plots an image on the given axes with an option to overlay third lines.
+    """
+    img = mpimg.imread(image_path)  # Load image as a NumPy array
+    axes.imshow(img)
+    axes.axis("off")
+    
+    if third_lines:
+        height, width = img.shape[:2]  # Extract dimensions
+        # Draw vertical third lines
+        axes.axvline(x=width / 3, color='red', linestyle='--')
+        axes.axvline(x=2 * width / 3, color='red', linestyle='--')
+        # Draw horizontal third lines
+        axes.axhline(y=height / 3, color='red', linestyle='--')
+        axes.axhline(y=2 * height / 3, color='red', linestyle='--')
 
 
 # APPROACHES TO CONSIDER
