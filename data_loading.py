@@ -103,7 +103,7 @@ def update_dataframe(df, image_data):
 
     return df
 
-def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False, aggregation_mode="max", downsample=False, sampling_mode="max", res=16):
+def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False, aggregation_mode="max"):
     """
     Loads and optionally aggregates attention maps from an HDF5 file.
     """
@@ -129,15 +129,7 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False,
                     H, W = attn_map.shape[:2]
                     if len(attn_map.shape) == 2:
                         attn_map = attn_map.unsqueeze(-1)
-
-                    # Downsample if necessary
-                    if downsample:
-                        if H > res:
-                            scale_factor = res / H
-                            attn_map = attn_map.unsqueeze(0)
-                            resized_map = attn.rescale_attention(attn_map, scale_factor=scale_factor, sampling_mode=sampling_mode)
-                            attn_map = resized_map.squeeze(0)
-
+                   
                     # 🔹 Store Map Based on `aggregate_flag`
                     if aggregate:
                         grouped_maps.setdefault(group_key, []).append(attn_map)

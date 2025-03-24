@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import torch.nn.functional as F
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 
 def minmax_normalization(attn_map):
     """ 
@@ -15,24 +16,24 @@ def minmax_normalization(attn_map):
 
     return (attn_map - min) / (max - min)
 
-def z_normalization(attn_map):
-    """ 
-    Z normalization
-    """
-    mean = attn_map.mean()
-    std = attn_map.std()
-    # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
-    #     return torch.zeros_like(attn_map) # Avoid division by zero
-    return (attn_map - mean) / std
+# def z_normalization(attn_map):
+#     """ 
+#     Z normalization
+#     """
+#     mean = attn_map.mean()
+#     std = attn_map.std()
+#     # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
+#     #     return torch.zeros_like(attn_map) # Avoid division by zero
+#     return (attn_map - mean) / std
 
-def softmax_normalization(attn_map, temperature=1.0):
-    """ 
-    Softmax normational
-    """
-    attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
-    attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
+# def softmax_normalization(attn_map, temperature=1.0):
+#     """ 
+#     Softmax normational
+#     """
+#     attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
+#     attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
 
-    return attn_map
+#     return attn_map
 
 def get_grid_step_size(H, W, uniform = True):
     """
@@ -42,20 +43,6 @@ def get_grid_step_size(H, W, uniform = True):
     delta_y = delta_x if uniform else (H - 1) / 2
 
     return delta_x, delta_y
-
-def generate_grid(H, W, normalize=False, aspect_aware=False):
-    """
-    Generates a grid with unit spacing and centered at (0,0).
-    """
-    x_coords = (torch.arange(W, dtype=torch.float32) - (W - 1) / 2).view(1, W).expand(H, W)
-    y_coords = (torch.arange(H, dtype=torch.float32) - (H - 1) / 2).view(H, 1).expand(H, W)
-
-    if normalize:
-        delta_x, delta_y = get_grid_step_size(H, W, uniform = aspect_aware)
-        x_coords = x_coords / delta_x
-        y_coords = y_coords / delta_y
-
-    return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
 def distance_to_point(positions, point, method="manhattan"):
     """ 
@@ -231,7 +218,7 @@ def compute_divergence_and_curl(gradients, dtype=torch.float32, scale_to_grid=Tr
 
     return divergence, curl
 
-def compute_map_centroid(attn_map, positions, percentile=100, keep_aspect=True):
+def compute_map_centroid(attn_map, positions, percentile=100):
     """
     Compute centroid.
     """
@@ -342,22 +329,35 @@ def symmetry_gaussian(attn_map):
     return score
 
 
-def plot_image(image_path, axes, third_lines=True):
+def plot_image(image_path, ax, third_lines=True):
     """
     Plots an image on the given axes with an option to overlay third lines.
     """
     img = mpimg.imread(image_path)  # Load image as a NumPy array
-    axes.imshow(img)
-    axes.axis("off")
+    ax.imshow(img)
     
     if third_lines:
         height, width = img.shape[:2]  # Extract dimensions
-        # Draw vertical third lines
-        axes.axvline(x=width / 3, color='red', linestyle='--')
-        axes.axvline(x=2 * width / 3, color='red', linestyle='--')
-        # Draw horizontal third lines
-        axes.axhline(y=height / 3, color='red', linestyle='--')
-        axes.axhline(y=2 * height / 3, color='red', linestyle='--')
+        ax.axvline(x=width / 3, color='red', linestyle='--')
+        ax.axvline(x=2 * width / 3, color='red', linestyle='--')
+        ax.axhline(y=height / 3, color='red', linestyle='--')
+        ax.axhline(y=2 * height / 3, color='red', linestyle='--')
+    
+    ax.axis("off")
+
+def plot_third_lines(ax):
+    ax.axvline(x=ax.get_xlim()[0] + (ax.get_xlim()[1] - ax.get_xlim()[0]) / 3, color='red', linestyle='--')
+    ax.axhline(y=ax.get_ylim()[0] + (ax.get_ylim()[1] - ax.get_ylim()[0]) / 3, color='red', linestyle='--')
+    ax.axvline(x=ax.get_xlim()[0] + 2 * (ax.get_xlim()[1] - ax.get_xlim()[0]) / 3, color='red', linestyle='--')
+    ax.axhline(y=ax.get_ylim()[0] + 2 * (ax.get_ylim()[1] - ax.get_ylim()[0]) / 3, color='red', linestyle='--')
+
+    return
+
+def plot_colorbar(img, fig, ax, location="bottom", orientation="horizontal"):
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes(location, size="7%", pad="10%")
+    fig.colorbar(img, cax=cax, orientation="horizontal")
+
 
 
 # APPROACHES TO CONSIDER
