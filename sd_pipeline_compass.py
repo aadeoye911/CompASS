@@ -6,7 +6,7 @@ from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionS
 from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection
 from torchvision.transforms import Normalize, ToTensor, Compose
 from utils.attn_utils import AttentionStore
-from utils.sd_utils import resize_image, extract_attention_metadata
+from utils.sd_utils import resize_image, extract_attention_metadata, seed2generator
 
 class CompASSPipeline(StableDiffusionPipeline):
     """
@@ -46,9 +46,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.setup_hooks()
         
         self.diffused_images = []
-        self.latent_height = None
-        self.latent_width = None
         self.prompt_embeds = self.get_empty_embeddings()
+        self.num_inference_steps = 50
+
+    def set_output_dimensions(self, height, width):
+        self.img_height = height
+        self.img_width = width
+        self.latent_height = height // self.vae_scale_factor
+        self.latent_width = width // self.vae_scale_factor
 
     def get_resolution_defaults(self):
         """
@@ -67,13 +72,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         max_exp = down_exp
         for name, module in self.unet.named_modules():
 
-            # Place hook on attention modules
+            # Place hook on cross attention modules and self mid
             if "Attention" in type(module).__name__:
                 attn_type = "cross" if module.is_cross_attention else "self"
                 place_in_unet, level, instance = extract_attention_metadata(name)
-                layer_key = (attn_type, place_in_unet, level, instance)
-                self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
-                self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
+                if attn_type == "cross" or place_in_unet == "mid":
+                    layer_key = (attn_type, place_in_unet, level, instance)
+                    self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
+                    self.hooks.append(module.register_forward_hook(self._hook_fn(layer_key)))
 
             # Track resolution through downsampling/upsampling modules
             elif "sample" in name.split(".")[-1]:
@@ -141,40 +147,53 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         return transform(image).unsqueeze(0).to(self.dtype)
 
-    def image2latent(self, image, timesteps=None, num_images_per_prompt=1, seed=42):
+    def image2latent(self, image):
         """
         Prepare latents from an image or random noise.
         """
         image = image.to(device=self.device, dtype=self.dtype)
-        # batch_size = len(timesteps)
-        # if image.shape[0] < batch_size:
-        #     if batch_size % image.shape[0] == 0:
-        #         image = torch.cat([image] * (batch_size // image.shape[0]), dim=0)
-        #     else: 
-        #         raise ValueError(f"Cannot duplicate `image` of batch size {image.shape[0]} to batch_size {batch_size} ")
-            
-        # generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        # noise = torch.randn(latents.shape, device=self.device)
-        # noisy_latents = self.scheduler.add_noise(latents, noise, timesteps)
         
         return latents
+    
+    def perform_diffusion(self, batch_size, height, width, prompt=""):
+        self.set_output_dimensions(height, width)
+        generator = seed2generator(self.device, batch_size=batch_size)
+        latents = self.prepare_latents(batch_size, self.unet.config.in_channels, height, width, self.dtype, self.device, generator)
+        
+        # Encode prompt into CLIP embeddings
+        prompt_embeds = self.encode_prompt(prompt, self.device, batch_size, True)
 
-    def extract_attention_maps(self, image_path, timesteps=None, num_images_per_prompt=1, seed=42):
-        image = Image.open(image_path)
-        image = self.preprocess_image(image)
-        image = image.to(device=self.device, dtype=self.dtype)
-        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        self.latent_height, self.latent_width = latents.shape[2:]
+        # Get timesteps and set scheduler
+        self.scheduler.set_timesteps(self.num_inference_steps, device=self.device)
+        timesteps = self.scheduler.timesteps
 
-        # print(latents.device, self.prompt_embeds.device, timesteps.device)
-        # if self.prompt_embeds.shape[0] != batch_size:
-        #     self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
-        #     self.prompt_embeds = self.prompt_embeds.to(self.device)
-
-        # t = self.scheduler.timesteps[-1].to(self.device)
+        # Perform diffusion
         with torch.no_grad():
-            unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
-            # noise_pred = unet_output["sample"]
-            # latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
-            torch.cuda.empty_cache()
+            for t in timesteps:
+                # Predict noise residual with the UNet
+                noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds).sample
+                latents = self.scheduler.step(noise_pred, t, latents, generator=generator).prev_sample
+                image = self.decode_latents(latents)
+                self.diffused_images(image)
+
+        return image
+
+    # def extract_attention_maps(self, image_path, timesteps=None, num_images_per_prompt=1, seed=42):
+    #     image = Image.open(image_path)
+    #     image = self.preprocess_image(image)
+    #     image = image.to(device=self.device, dtype=self.dtype)
+    #     latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
+    #     self.latent_height, self.latent_width = latents.shape[2:]
+
+    #     # print(latents.device, self.prompt_embeds.device, timesteps.device)
+    #     # if self.prompt_embeds.shape[0] != batch_size:
+    #     #     self.prompt_embeds = torch.cat([self.prompt_embeds] * batch_size, dim=0)
+    #     #     self.prompt_embeds = self.prompt_embeds.to(self.device)
+
+    #     # t = self.scheduler.timesteps[-1].to(self.device)
+    #     with torch.no_grad():
+    #         unet_output = self.unet(latents, timesteps, encoder_hidden_states=self.prompt_embeds, return_dict=True)
+    #         # noise_pred = unet_output["sample"]
+    #         # latents = self.scheduler.step(noise_pred, timesteps, latents)["prev_sample"]
+    #         torch.cuda.empty_cache()

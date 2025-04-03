@@ -53,14 +53,16 @@ class AttentionStore:
         Store attention scores using a dictionary-based key format.
         """
         attn_type = layer_key[0]
-        # print(attn_probs.device, attn_probs.dtype)
-        if attn_type == "self":
-            attn_probs = self.reduce_dimensionality_pca(attn_probs)
+        if attn_type == "cross":
+            attn_features = self.reduce_token_dimension(attn_probs)
         else:
-            attn_probs = self.reduce_token_dimension(attn_probs)
+            attn_pca = self.reduce_dimensionality_pca(attn_probs)
+            attn_given = attn_probs.mean(dim=-1).unsqueeze(-1)    # [B, seq_len, 1] — how each token gives attention
+            attn_received = attn_probs.mean(dim=-2).unsqueeze(-1) # [B, seq_len, 1] — how each token receives attention
+            attn_features = torch.cat([attn_pca, attn_given, attn_received], dim=-1)
         
         res_factor = self.layer_metadata[attn_type][layer_key][0]
-        attn_map = self.reshape_attention(attn_probs, latent_height, latent_width, res_factor)
+        attn_map = self.reshape_attention(attn_features, latent_height, latent_width, res_factor)
             
         if (attn_map.shape[0] == 1):
             attn_map = attn_map.squeeze(0)
@@ -83,7 +85,7 @@ class AttentionStore:
         """
         Reduces the num_tokens dimension by:
         """
-        prompt_tokens = attn_probs[:, :, :eot_idx + 1]  
+        prompt_tokens = attn_probs[:, :, :eot_idx]  
         summed_padding = attn_probs[:, :, eot_idx:].sum(dim=-1, keepdim=True)  
         special_token_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
 
@@ -94,10 +96,6 @@ class AttentionStore:
         Applies PCA to self-attention maps 
         """
         batch_size, seq_len, _ = attn_probs.shape  # Get dimensions
-
-        # ✅ Ensure tensor is in `float32` and on the correct device
-        # attn_probs = attn_probs.to(self.device, dtype=torch.float32)
-
         pca_reduced = []
         for i in range(batch_size):
             try:
