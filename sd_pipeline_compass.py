@@ -173,7 +173,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             for t in timesteps:
                 # Predict noise residual with the UNet
                 noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds[0]).sample
-                latents = self.scheduler.step(noise_pred, t, latents, generator=generator).prev_sample
+                latents = self.scheduler.step(noise_pred, t, latents).prev_sample
                 image = self.decode_latents(latents)
                 self.diffused_images(image)
 
