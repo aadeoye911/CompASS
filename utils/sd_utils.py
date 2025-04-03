@@ -43,16 +43,16 @@ def seed2generator(device, seed=42, batch_size=1):
     Generate list of generators from random seeds.
     """
     if isinstance(seed, int):
-        seeds = [seed] * batch_size  # Duplicate same seed for all batch elements
+        seed = [seed] * batch_size  # Duplicate same seed for all batch elements
     elif seed is None:
-        seeds = generate_seeds(batch_size)  # Generate random seeds
+        seed = generate_seeds(batch_size)  # Generate random seeds
     elif not isinstance(seed, list):
         raise TypeError(f"`seed` must be an int, list of ints, or None, but got {type(seed)}")
 
-    if len(seeds) != batch_size:
-        raise ValueError(f"Seed list length ({len(seeds)}) does not match batch size ({batch_size}).")
+    if len(seed) != batch_size:
+        raise ValueError(f"Seed list length ({len(seed)}) does not match batch size ({batch_size}).")
 
-    return [torch.Generator(device=device).manual_seed(s) for s in seeds]
+    return [torch.Generator(device=device).manual_seed(s) for s in seed]
 
 def token2idx(tokenizer, prompts, eot_only=True):
     """
