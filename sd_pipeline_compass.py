@@ -175,7 +175,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                 noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds[0]).sample
                 latents = self.scheduler.step(noise_pred, t, latents).prev_sample
                 image = self.decode_latents(latents)
-                self.diffused_images(image)
+                self.diffused_images.append(image)
 
         return image
 

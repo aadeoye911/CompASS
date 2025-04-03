@@ -108,7 +108,7 @@ class AttentionStore:
 
             pca_reduced.append(reduced_map)
 
-        return torch.stack(pca_reduced, dim=0).to(self.dtype)  # ✅ 
+        return torch.stack(pca_reduced, dim=0)
     
 
     def group_attention_layers(self, attn_type, group_by_level=True):
