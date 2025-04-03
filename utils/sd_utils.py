@@ -50,9 +50,9 @@ def seed2generator(device, seed=42, batch_size=1):
         raise TypeError(f"`seed` must be an int, list of ints, or None, but got {type(seed)}")
 
     if len(seeds) != batch_size:
-        raise ValueError(f"Seed list length ({len(seed)}) does not match batch size ({batch_size}).")
+        raise ValueError(f"Seed list length ({len(seeds)}) does not match batch size ({batch_size}).")
 
-    return [torch.Generator(device=device).manual_seed(s) for s in seed]
+    return [torch.Generator(device=device).manual_seed(s) for s in seeds]
 
 def token2idx(tokenizer, prompts, eot_only=True):
     """
