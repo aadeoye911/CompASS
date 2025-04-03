@@ -7,7 +7,23 @@ from collections import defaultdict
 from PIL import Image
 import h5py
 import torch
-from utils.attn_utils import AttentionStore
+from sklearn.preprocessing import MultiLabelBinarizer
+
+def load_encoded_labels(labels_path, category): 
+    labels_df = pd.read_csv(labels_path, usecols=["image_hash", category], index_col=0)
+
+    # Filter out unknown labels
+    labels_df[category] = labels_df[category].apply(lambda x: x.split(",") if isinstance(x, str) else x)
+
+    mlb = MultiLabelBinarizer()
+    labels_encoded = pd.DataFrame(
+        mlb.fit_transform(labels_df[category]),
+        columns=mlb.classes_,
+        index=labels_df.index  # Keep the original index (image_hash)
+    )
+    labels_encoded = labels_encoded.drop(columns="Unknown")
+
+    return labels_encoded
 
 def compute_image_hash(image_path):
     """Compute a hash for an image file using MD5 and extract image dimensions."""
@@ -103,12 +119,10 @@ def update_dataframe(df, image_data):
 
     return df
 
-def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False, aggregation_mode="max"):
+def load_attention_maps(hdf5_path, attn_type="cross", index=-1):
     """
     Loads and optionally aggregates attention maps from an HDF5 file.
     """
-    if aggregate:
-        attn = AttentionStore()
 
     with h5py.File(hdf5_path, "r") as f:
         data = []
@@ -116,48 +130,15 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, aggregate=False,
         # Loop through each image group (image_hash)
         for image_hash in f.keys():
             row_data = {"image_hash": image_hash}
-            grouped_maps = {}  # Stores maps for aggregation if `aggregate_flag=True`
 
             # Loop through all layers for this image
             for layer_key in f[image_hash].keys():
                 if layer_key.split("_")[0] == attn_type:
-                    group_key = "_".join(layer_key.split("_")[:-1])  # Extract group key for aggregation
 
                     # Convert to Torch tensor
                     layer = f[image_hash][layer_key][:, :, index] if index is not None else f[image_hash][layer_key][:]
                     attn_map = torch.tensor(layer.copy())
-                    H, W = attn_map.shape[:2]
-                    if len(attn_map.shape) == 2:
-                        attn_map = attn_map.unsqueeze(-1)
-                   
-                    # 🔹 Store Map Based on `aggregate_flag`
-                    if aggregate:
-                        grouped_maps.setdefault(group_key, []).append(attn_map)
-                    else:
-                        row_data[layer_key] = attn_map  # Directly store the individual layer
-
-            # 🔹 Aggregate Maps if `aggregate_flag=True`
-            if aggregate:
-                for group, attn_maps in grouped_maps.items():
-                    shapes = [attn.shape for attn in attn_maps]
-                    if len(set(shapes)) > 1:  # If there are multiple unique shapes
-                        print(f"⚠️ Runtime Error: Mismatched attention map sizes in image '{image_hash}', group '{group}'")
-                        print(f"Mismatched shapes found: {shapes}")  # Output the different shapes
-                        continue  # Skip this group to prevent crashes
-
-                    stacked_maps = torch.stack(attn_maps, dim=0)
-                    
-                    # Apply chosen aggregation mode
-                    if aggregation_mode == "mean":
-                        aggregated_map = stacked_maps.mean(dim=0)
-                    # elif aggregation_mode == "sum":
-                    #     aggregated_map = stacked_maps.sum(dim=0)
-                    elif aggregation_mode == "max":
-                        aggregated_map = stacked_maps.max(dim=0)[0]
-                    else:
-                        raise ValueError(f"Invalid aggregation mode: {aggregation_mode}. Choose 'mean' or 'max'")
-
-                    row_data[group] = aggregated_map  # Store aggregated map
+                    row_data[layer_key] = attn_map  # Directly store the individual layer
 
             data.append(row_data)
 

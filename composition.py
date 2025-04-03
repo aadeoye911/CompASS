@@ -16,24 +16,24 @@ def minmax_normalization(attn_map):
 
     return (attn_map - min) / (max - min)
 
-# def z_normalization(attn_map):
-#     """ 
-#     Z normalization
-#     """
-#     mean = attn_map.mean()
-#     std = attn_map.std()
-#     # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
-#     #     return torch.zeros_like(attn_map) # Avoid division by zero
-#     return (attn_map - mean) / std
+def z_normalization(attn_map):
+    """ 
+    Z normalization
+    """
+    mean = attn_map.mean()
+    std = attn_map.std()
+    # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
+    #     return torch.zeros_like(attn_map) # Avoid division by zero
+    return (attn_map - mean) / std
 
-# def softmax_normalization(attn_map, temperature=1.0):
-#     """ 
-#     Softmax normational
-#     """
-#     attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
-#     attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
+def softmax_normalization(attn_map, temperature=1.0):
+    """ 
+    Softmax normational
+    """
+    attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
+    attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
 
-#     return attn_map
+    return attn_map
 
 def get_grid_step_size(H, W, uniform = True):
     """
@@ -143,7 +143,6 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
         y_coords = y_coords / H
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
-
 
 def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
     """
@@ -268,7 +267,7 @@ def gaussian_weighting(distances, sigma=1):
     """ 
     Gaussian. 
     """
-    return torch.exp(- (distances ** 2) / (2 * sigma))
+    return torch.exp(- (distances ** 2) / (2 * sigma**2))
 
 def visualise_attn(attn_map, centroid=None, cmap='Blues'):
     """ 
@@ -327,7 +326,6 @@ def symmetry_gaussian(attn_map):
     visualise_attn(weight, cmap='hot')
     score = torch.mean(weight)
     return score
-
 
 def plot_image(image_path, ax, third_lines=True):
     """
