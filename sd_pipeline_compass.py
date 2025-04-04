@@ -104,8 +104,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         def hook(module, input, output):
             try:
                 query = module.to_q(input[0])
-                # key = module.to_k(self.prompt_embeds if layer_key[0] == "cross" else input[0])
-                key = module.to_k(input[1] if layer_key[0] == "cross" else input[0])
+                key = module.to_k(self.prompt_embeds if layer_key[0] == "cross" else input[0])
                 attn_probs = (module.get_attention_scores(query, key)).detach()
                 self.attnstore.store(attn_probs, layer_key, self.latent_height, self.latent_width)
             except Exception as e:
@@ -162,9 +161,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         generator = seed2generator(self.device, seed=None, batch_size=batch_size)
         latents = self.prepare_latents(batch_size, self.unet.config.in_channels, height, width, self.dtype, self.device, generator)
         
-        # Encode prompt into CLIP embeddings
-        prompt_embeds = self.encode_prompt(prompt, self.device, batch_size, True)
-
         # Get timesteps and set scheduler
         self.scheduler.set_timesteps(self.num_inference_steps, device=self.device)
         timesteps = self.scheduler.timesteps
@@ -173,7 +169,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         with torch.no_grad():
             for t in timesteps:
                 # Predict noise residual with the UNet
-                noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds[0]).sample
+                noise_pred = self.unet(latents, t, encoder_hidden_states=self.prompt_embeds).sample
                 latents = self.scheduler.step(noise_pred, t, latents).prev_sample
                 image = self.decode_latents(latents)
                 self.diffused_images.append(image)
