@@ -158,7 +158,7 @@ class CompASSPipeline(StableDiffusionPipeline):
     
     def perform_diffusion(self, batch_size, height, width, prompt=""):
         self.set_output_dimensions(height, width)
-        generator = seed2generator(self.device, batch_size=batch_size)
+        generator = seed2generator(self.device, seed=None, batch_size=batch_size)
         latents = self.prepare_latents(batch_size, self.unet.config.in_channels, height, width, self.dtype, self.device, generator)
         
         # Encode prompt into CLIP embeddings

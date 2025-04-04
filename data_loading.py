@@ -148,6 +148,37 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1):
     
     return attn_df
 
+def extract_reference_attn(pipe, images, diffused_dir, hdf5_path):
+    results = []
+
+    for _, row in images.iterrows():
+        image_hash = row["Image Hash"]
+        image_path = row["Resized Path"]
+
+        if not os.path.exists(image_path):
+            print(f"❌ File not found: {image_path}")
+            continue
+
+        try:
+            pipe.extract_reference_attn_maps(image_path)  # GPU-accelerated
+
+            diffused_image = pipe.decoded_images[0]  # Extract the diffused image
+            diffused_path = os.path.join(diffused_dir, f"{image_hash}.png")
+            diffused_image.save(diffused_path)
+
+            results.append((image_hash, pipe.attention_store))  # Store attention data
+        except Exception as e:
+            print(f"❌ Error processing {image_path}: {e}")
+
+    # Write the processed batch to HDF5
+    with h5py.File(hdf5_path, "a") as f:  # Append mode to avoid overwriting
+        for image_hash, attn_data in results:
+            if attn_data is None:
+                continue
+            img_group = f.create_group(image_hash)
+            for layer_key, attn_map in attn_data.items():
+                img_group.create_dataset(layer_key, data=attn_map, compression="lzf")
+
 if __name__ == "__main__":
     # Define composition and frame size categories
     composition_categories = ["balanced", "center", "left", "right", "symmetrical"]
