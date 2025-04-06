@@ -168,7 +168,7 @@ class AttentionStore:
         return aggregated_map
     
 
-class MyCustomAttnProcessor(AttnProcessor2_0):
+class MyCustomAttnProcessor:
     """
     Copied heavily from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
     """
