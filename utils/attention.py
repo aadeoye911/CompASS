@@ -61,7 +61,7 @@ class AttentionStore:
         attn_type = layer_key[0]
         attn_probs = attn_probs.clone().detach()
         if attn_type == "cross":
-            attn_maps = self.reduce_token_dimension(attn_probs)
+            attn_maps = attn_probs
         else:
             attn_pca = self.reduce_dimensionality_pca(attn_probs)
             attn_given = attn_probs.mean(dim=-1).unsqueeze(-1)    # [B, seq_len, 1] — how each token gives attention
@@ -84,7 +84,7 @@ class AttentionStore:
 
         return attn_map
     
-    def reduce_token_dimension(self, attn_probs, eot_idx=1, sum_padding=True):
+    def reduce_token_dimension(self, attn_probs, eot_idx=1):
         """
         Reduces the num_tokens dimension by:
         """
