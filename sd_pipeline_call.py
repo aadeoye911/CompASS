@@ -27,7 +27,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.unet_depth = len(self.unet.config.block_out_channels) - 1
         self.total_downsample_factor = 2**self.unet_depth * self.vae_scale_factor
 
-    def register_attention_control(self, img_height, img_width):
+    def register_attention_control(self):
         down_exp = 0  # Initialize resolution factor
         max_exp = down_exp
         for name, module in self.unet.named_modules():
@@ -37,9 +37,10 @@ class CompASSPipeline(StableDiffusionPipeline):
                     place_in_unet, level, instance = parse_module_name(name)
                     layer_key = (attn_type, place_in_unet, level, instance)
                     # Set custom processor 
-                    module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key, img_height, img_width))
+                    module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
                     # Log metadata information
                     self.attention_store.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
+                    logger.info(f"Registered {attn_type} attention for layer key {layer_key} with downsample factor {2**down_exp}")
                     
             # Track resolution through downsampling/upsampling modules
             elif "sample" in name.split(".")[-1]:
@@ -54,7 +55,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             for layer_key, (res_factor, name) in metadata.items():
                 if layer_key[1] == "mid":  # Ensure it's a midblock
                     self.attention_store.layer_metadata[attn_type][layer_key] = (2**max_exp, name)
-                logger.info(f"Registered {attn_type} attention for layer key {layer_key} with downsample factor {2**down_exp}")
+                    logger.info(f"Reassigned layer key {layer_key} to downsample factor {2**max_exp}")
 
     @torch.no_grad() ## Use this for now while we're just extracting
     def __call__(
@@ -133,7 +134,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         
         # CUSTOM. Register ATTENTION CONTROL 
         self.attention_store = AttentionStore()
-        self.register_attention_control(img_height, img_width)
+        self.register_attention_control()
 
         # PREPARE TOKEN INDEX TO MATCH BATCH LOGIC 
         eot_indices = prompt2idx(self.tokenizer, prompt)
