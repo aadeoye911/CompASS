@@ -54,22 +54,21 @@ class AttentionStore:
             print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
     
 
-    def store(self, attn_probs, layer_key, img_height, img_width):
+    def store(self, attn_probs, layer_key):
         """
         Store attention scores using a dictionary-based key format.
         """
         attn_type = layer_key[0]
         attn_probs = attn_probs.clone().detach()
         if attn_type == "cross":
-            attn_features = self.reduce_token_dimension(attn_probs)
+            attn_maps = self.reduce_token_dimension(attn_probs)
         else:
             attn_pca = self.reduce_dimensionality_pca(attn_probs)
             attn_given = attn_probs.mean(dim=-1).unsqueeze(-1)    # [B, seq_len, 1] — how each token gives attention
             attn_received = attn_probs.mean(dim=-2).unsqueeze(-1) # [B, seq_len, 1] — how each token receives attention
-            attn_features = torch.cat([attn_pca, attn_given, attn_received], dim=-1)
+            attn_maps = torch.cat([attn_pca, attn_given, attn_received], dim=-1)
         
-        attn_map = self.reshape_attention(attn_features, img_height, img_width)
-        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_map.cpu())
+        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_maps.cpu())
 
 
     def reshape_attention(self, attn_probs, img_height, img_width):
@@ -172,12 +171,10 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
     """
     Copied heavily from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
     """
-    def __init__(self, attnstore, layer_key, img_height, img_width):
+    def __init__(self, attnstore, layer_key):
         super().__init__()
         self.attnstore = attnstore
         self.layer_key = layer_key
-        self.img_height = img_height
-        self.img_width = img_width
         
     def __call__(
         self,
@@ -224,13 +221,8 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         value = attn.to_v(encoder_hidden_states)
 
         #### CUSTOM LOGIC ######
-        print(key.shape)
         attention_probs = attn.get_attention_scores(query, key, attention_mask)
-        
-        self.attnstore.store(attention_probs, 
-                             self.layer_key, 
-                             self.img_height, 
-                             self.img_width)
+        self.attnstore.store(attention_probs, self.layer_key)
 
         ## INJECT HERE IF NECESSARY
         # ########################
