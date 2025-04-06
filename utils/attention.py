@@ -225,14 +225,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         key = attn.to_k(encoder_hidden_states)
         value = attn.to_v(encoder_hidden_states)
 
-        inner_dim = key.shape[-1]
-        head_dim = inner_dim // attn.heads
-
-        query = query.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
-
-        key = key.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
-        value = value.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
-
         #### CUSTOM LOGIC ######
         
         attention_probs = attn.get_attention_scores(query, key, attention_mask)
@@ -244,6 +236,14 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
 
         ## INJECT HERE IF NECESSARY
         # ########################
+
+        inner_dim = key.shape[-1]
+        head_dim = inner_dim // attn.heads
+
+        query = query.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
+
+        key = key.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
+        value = value.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
 
         if attn.norm_q is not None:
             query = attn.norm_q(query)
