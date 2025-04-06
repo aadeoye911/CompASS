@@ -37,7 +37,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     place_in_unet, level, instance = parse_module_name(name)
                     layer_key = (attn_type, place_in_unet, level, instance)
                     # Set custom processor 
-                    module.set_processor(MyCustomAttnProcessor(self.attnstore, layer_key))
+                    module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
                     # Log metadata information
                     self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                     
@@ -136,7 +136,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
         
         # CUSTOM. Register ATTENTION CONTROL 
-        self.attnstore = AttentionStore()
+        self.attention_store = AttentionStore()
         self.register_attention_control()
 
         # PREPARE TOKEN INDEX TO MATCH BATCH LOGIC 
