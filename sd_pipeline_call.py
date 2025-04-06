@@ -40,7 +40,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     # Set custom processor 
                     module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
                     # Log metadata information
-                    self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
+                    self.attention_store.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                     
             # Track resolution through downsampling/upsampling modules
             elif "sample" in name.split(".")[-1]:
@@ -51,10 +51,10 @@ class CompASSPipeline(StableDiffusionPipeline):
         if max_exp != self.unet_depth:
             logger.warning(f"Calculated UNet depth ({max_exp}) does not match expected depth ({self.unet_depth}). Logic is not compatible with the model architecture.")
 
-        for attn_type, metadata in self.attnstore.layer_metadata.items():
+        for attn_type, metadata in self.attention_store.layer_metadata.items():
             for layer_key, (res_factor, name) in metadata.items():
                 if layer_key[1] == "mid":  # Ensure it's a midblock
-                    self.attnstore.layer_metadata[attn_type][layer_key] = (2**max_exp, name)
+                    self.attention_store.layer_metadata[attn_type][layer_key] = (2**max_exp, name)
                 logger.info(f"Registered {attn_type} attention for layer key {layer_key} with downsample factor {2**down_exp}")
 
     @torch.no_grad() ## Use this for now while we're just extracting
