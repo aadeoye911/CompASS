@@ -148,7 +148,7 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1):
     
     return attn_df
 
-def extract_reference_attn(pipe, images, diffused_dir, hdf5_path):
+def extract_attention_dataset(pipe, images, diffused_dir, hdf5_path):
     results = []
 
     for _, row in images.iterrows():
@@ -160,12 +160,10 @@ def extract_reference_attn(pipe, images, diffused_dir, hdf5_path):
             continue
 
         try:
-            pipe.extract_reference_attn_maps(image_path)  # GPU-accelerated
-
-            diffused_image = pipe.decoded_images[0]  # Extract the diffused image
+            # pipe.extract_reference_attn_maps(image_path)  # GPU-accelerated
+            diffused_image = pipe.diffused_images[0]  # Extract the diffused image
             diffused_path = os.path.join(diffused_dir, f"{image_hash}.png")
             diffused_image.save(diffused_path)
-
             results.append((image_hash, pipe.attention_store))  # Store attention data
         except Exception as e:
             print(f"❌ Error processing {image_path}: {e}")
