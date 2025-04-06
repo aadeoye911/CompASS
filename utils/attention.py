@@ -223,18 +223,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         key = attn.to_k(encoder_hidden_states)
         value = attn.to_v(encoder_hidden_states)
 
-        #### CUSTOM LOGIC ######
-        
-        attention_probs = attn.get_attention_scores(query, key, attention_mask)
-        
-        self.attnstore.store(attention_probs, 
-                             self.layer_key, 
-                             self.img_height, 
-                             self.img_width)
-
-        ## INJECT HERE IF NECESSARY
-        # ########################
-
         inner_dim = key.shape[-1]
         head_dim = inner_dim // attn.heads
 
@@ -247,6 +235,18 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
             query = attn.norm_q(query)
         if attn.norm_k is not None:
             key = attn.norm_k(key)
+
+        #### CUSTOM LOGIC ######
+        print(key.shape)
+        attention_probs = attn.get_attention_scores(query, key, attention_mask)
+        
+        self.attnstore.store(attention_probs, 
+                             self.layer_key, 
+                             self.img_height, 
+                             self.img_width)
+
+        ## INJECT HERE IF NECESSARY
+        # ########################
 
         # the output of sdp = (batch, num_heads, seq_len, head_dim)
         # TODO: add support for attn.scale when we move to Torch 2.1
