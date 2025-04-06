@@ -27,7 +27,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.unet_depth = len(self.unet.config.block_out_channels) - 1
         self.total_downsample_factor = 2**self.unet_depth * self.vae_scale_factor
 
-    def register_attention_control(self):
+    def register_attention_control(self, img_height, img_width):
         down_exp = 0  # Initialize resolution factor
         max_exp = down_exp
         for name, module in self.unet.named_modules():
@@ -37,7 +37,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     place_in_unet, level, instance = parse_module_name(name)
                     layer_key = (attn_type, place_in_unet, level, instance)
                     # Set custom processor 
-                    module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
+                    module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key, img_height, img_width))
                     # Log metadata information
                     self.attention_store.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                     
@@ -91,18 +91,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.get_resolution_defaults()
         height = height or self.unet.config.sample_size * self.vae_scale_factor
         width = width or self.unet.config.sample_size * self.vae_scale_factor
-        width, height = make_dims_compatible(width, height, self.total_downsample_factor, min_dim=self.default_output_resolution)
+        img_width, img_height = make_dims_compatible(width, height, self.total_downsample_factor, min_dim=self.default_output_resolution)
 
         self._guidance_scale = guidance_scale
         self._cross_attention_kwargs = cross_attention_kwargs
         self._interrupt = False
 
-        # Pass height and width to the denoising loop
-        cross_attention_kwargs = cross_attention_kwargs or {}
-        cross_attention_kwargs.update({"img_height": height, "img_width": width})
-
         # 1. Check inputs. Raise error if not correct
-        self.check_inputs(prompt, height, width, negative_prompt, prompt_embeds, negative_prompt_embeds, callback_on_step_end_tensor_inputs)
+        self.check_inputs(prompt, img_height, img_width, negative_prompt, prompt_embeds, negative_prompt_embeds, callback_on_step_end_tensor_inputs)
 
         # 2. Define call parameters
         if prompt is not None and isinstance(prompt, str):
@@ -137,7 +133,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         
         # CUSTOM. Register ATTENTION CONTROL 
         self.attention_store = AttentionStore()
-        self.register_attention_control()
+        self.register_attention_control(img_height, img_width)
 
         # PREPARE TOKEN INDEX TO MATCH BATCH LOGIC 
         eot_indices = prompt2idx(self.tokenizer, prompt)

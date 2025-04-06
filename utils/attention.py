@@ -168,14 +168,16 @@ class AttentionStore:
         return aggregated_map
     
 
-class MyCustomAttnProcessor:
+class MyCustomAttnProcessor(AttnProcessor2_0):
     """
     Copied heavily from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
     """
-    def __init__(self, attnstore, layer_key):
+    def __init__(self, attnstore, layer_key, img_height, img_width):
         super().__init__()
         self.attnstore = attnstore
         self.layer_key = layer_key
+        self.img_height = img_height
+        self.img_width = img_width
         
     def __call__(
         self,
@@ -187,10 +189,6 @@ class MyCustomAttnProcessor:
         *args,
         **kwargs,
     ) -> torch.Tensor:
-
-        img_height = kwargs.get("img_height", None)
-        img_width = kwargs.get("img_width", None)
-        print(img_height, img_width)
 
         residual = hidden_states
         if attn.spatial_norm is not None:
@@ -231,8 +229,8 @@ class MyCustomAttnProcessor:
         
         self.attnstore.store(attention_probs, 
                              self.layer_key, 
-                             img_height, 
-                             img_width)
+                             self.img_height, 
+                             self.img_width)
 
         ## INJECT HERE IF NECESSARY
         # ########################
