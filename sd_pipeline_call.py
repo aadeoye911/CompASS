@@ -36,7 +36,6 @@ class CompASSPipeline(StableDiffusionPipeline):
                     attn_type = "cross" if module.is_cross_attention else "self"
                     place_in_unet, level, instance = parse_module_name(name)
                     layer_key = (attn_type, place_in_unet, level, instance)
-                    print(layer_key)
                     # Set custom processor 
                     module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
                     # Log metadata information
