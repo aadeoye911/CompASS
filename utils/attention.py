@@ -191,6 +191,10 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
             deprecation_message = "The `scale` argument is deprecated and will be ignored. Please remove it, as passing it will raise an error in the future. `scale` should directly be passed while calling the underlying pipeline component i.e., via `cross_attention_kwargs`."
             deprecate("scale", "1.0.0", deprecation_message)
 
+        img_height = kwargs.get("img_height", None)
+        img_width = kwargs.get("img_width", None)
+        print(img_height, img_width)
+
         residual = hidden_states
         if attn.spatial_norm is not None:
             hidden_states = attn.spatial_norm(hidden_states, temb)
@@ -233,8 +237,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         value = value.view(batch_size, -1, attn.heads, head_dim).transpose(1, 2)
 
         #### CUSTOM LOGIC ######
-        img_height = kwargs.get("img_height", None)
-        img_width = kwargs.get("img_width", None)
         
         attention_probs = attn.get_attention_scores(query, key, attention_mask)
         

@@ -94,16 +94,16 @@ class CompASSPipeline(StableDiffusionPipeline):
         width = width or self.unet.config.sample_size * self.vae_scale_factor
         width, height = make_dims_compatible(width, height, self.total_downsample_factor, min_dim=self.default_output_resolution)
 
+        self._guidance_scale = guidance_scale
+        self._cross_attention_kwargs = cross_attention_kwargs
+        self._interrupt = False
+
         # Pass height and width to the denoising loop
         cross_attention_kwargs = cross_attention_kwargs or {}
         cross_attention_kwargs.update({"img_height": height, "img_width": width})
 
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(prompt, height, width, negative_prompt, prompt_embeds, negative_prompt_embeds, callback_on_step_end_tensor_inputs)
-
-        self._guidance_scale = guidance_scale
-        self._cross_attention_kwargs = cross_attention_kwargs
-        self._interrupt = False
 
         # 2. Define call parameters
         if prompt is not None and isinstance(prompt, str):
