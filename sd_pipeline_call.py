@@ -33,11 +33,12 @@ class CompASSPipeline(StableDiffusionPipeline):
         for name, module in self.unet.named_modules():
             if hasattr(module, "is_cross_attention"):
                 if module.is_cross_attention or name.startswith("mid"):
-                    module.set_processor(MyCustomAttnProcessor(self.attnstore, layer_key))
-                    # Log metadata for customised attention modules
                     attn_type = "cross" if module.is_cross_attention else "self"
                     place_in_unet, level, instance = parse_module_name(name)
                     layer_key = (attn_type, place_in_unet, level, instance)
+                    # Set custom processor 
+                    module.set_processor(MyCustomAttnProcessor(self.attnstore, layer_key))
+                    # Log metadata information
                     self.attnstore.layer_metadata[attn_type][layer_key] = (2**down_exp, name)
                     
             # Track resolution through downsampling/upsampling modules
