@@ -187,9 +187,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         *args,
         **kwargs,
     ) -> torch.Tensor:
-        if len(args) > 0 or kwargs.get("scale", None) is not None:
-            deprecation_message = "The `scale` argument is deprecated and will be ignored. Please remove it, as passing it will raise an error in the future. `scale` should directly be passed while calling the underlying pipeline component i.e., via `cross_attention_kwargs`."
-            deprecate("scale", "1.0.0", deprecation_message)
 
         img_height = kwargs.get("img_height", None)
         img_width = kwargs.get("img_width", None)
