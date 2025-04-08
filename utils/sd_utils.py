@@ -2,17 +2,6 @@ import torch
 from PIL import Image
 import matplotlib.pyplot as plt
 
-def resize_image(image, min_dim=512, factor=64):
-    """
-    Resize PIL image dimensions to model compatible dimensions
-    """
-    width, height = image.size
-    new_width, new_height = make_dims_compatible(width, height, factor, min_dim=min_dim)
-    if new_width == width and new_height == height:
-        return image # Return image as is if dimensions are already correct
-    
-    return image.resize((new_width, new_height), Image.LANCZOS)
-
 # def preprocess_image(self, image, min_dim=None, factor=None):
 #         """
 #         Convert PIL image into a torch.Tensor with model-compatible dimensions.
@@ -35,12 +24,23 @@ def resize_image(image, min_dim=512, factor=64):
     
 #     return latents
 
-def make_dims_compatible(width, height, factor, min_dim=None):
+def resize_image(image, min_dim=512, factor=64):
+    """
+    Resize PIL image dimensions to model compatible dimensions
+    """
+    width, height = image.size
+    new_width, new_height = scale_resolution_to_factor(width, height, factor, min_dim=min_dim)
+    if new_width == width and new_height == height:
+        return image # Return image as is if dimensions are already correct
+    
+    return image.resize((new_width, new_height), Image.LANCZOS)
+
+def scale_resolution_to_factor(width, height, factor, min_dim=None, rounding_mode="up"):
     """
     Resize PIL image dimensions to multiples of 'factor'.
     """
     min_dim = min(width, height) if min_dim is not None else min_dim
-    min_dim = round_to_multiple(min_dim, factor, mode="up")
+    min_dim = round_to_multiple(min_dim, factor, mode=rounding_mode)
     scale = min_dim / min(width, height)
     if scale == 1 and width % factor == 0 and height % factor == 0:
         return width, height
