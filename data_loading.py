@@ -8,7 +8,6 @@ from collections import defaultdict
 from PIL import Image
 import h5py
 import torch
-from fractions import Fraction
 from sklearn.preprocessing import MultiLabelBinarizer
 
 def load_encoded_labels(labels_path, category): 
@@ -156,16 +155,12 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False,
                     attn_map = torch.tensor(layer.copy())
                     row_data[layer_key] = attn_map
 
-            first_ratio = Fraction(heights[0], widths[0])
-            ratios = [Fraction(h, w) for h, w in zip(heights, widths)]
-
             # Check proportionality of all maps (same aspect ratio)
-            if all(r == first_ratio for r in ratios):
-                row_data["output_dims"] = (heights[0], widths[0])
+            if all(h * widths[0] == w * heights[0] for h, w in zip(heights, widths)):
+                row_data["latent_dims"] = (heights[0], widths[0])
                 valid_data.append(row_data)
             else:
                 dropped_hashes.append(image_hash)
-                
     if verbose:
         print(f"✅ Loaded {len(valid_data)} valid samples.")
         print(f"❌ Dropped {len(dropped_hashes)} samples due to mismatched aspect ratios.")
