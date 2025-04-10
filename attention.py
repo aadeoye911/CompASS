@@ -1,13 +1,7 @@
 from typing import Optional
 import torch
 import torch.nn.functional as F
-from diffusers.utils import deprecate
 from diffusers.models.attention_processor import Attention, AttnProcessor2_0
-
-import numpy as np
-import torch
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 from collections import defaultdict
 
 class AttentionStore:
@@ -35,7 +29,12 @@ class AttentionStore:
         Returns an empty attention store.
         """
         return {layer_key: [] for layer_key in self.layer_metadata[attn_type].keys()}
-
+    
+    def set_null_resolutions(self, attn_type="cross"):
+        """
+        Returns an empty attention store.
+        """
+        return {layer_key: (None, None) for layer_key in self.layer_metadata[attn_type].keys()}
 
     def print_attention_metadata(self):
         """

@@ -2,29 +2,18 @@ import torch
 from PIL import Image
 import matplotlib.pyplot as plt
 
-# def preprocess_image(self, image, min_dim=None, factor=None):
-#         """
-#         Convert PIL image into a torch.Tensor with model-compatible dimensions.
-#         """
-#         min_dim = min_dim if min_dim is not None else self.default_output_resolution
-#         factor = factor if factor is not None else self.total_downsample_factor
-#         if image.mode != "RGB":
-#             image = image.convert("RGB")
-#         image = resize_image(image, min_dim, factor)
-#         transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
+def preprocess_image(image, min_dim, factor):
+    """
+    Convert PIL image into a torch.Tensor with model-compatible dimensions.
+    """
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+    image = resize_image(image, min_dim, factor)
+    transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
-#         return transform(image).unsqueeze(0).to(self.dtype)
+    return transform(image).unsqueeze(0).to(self.dtype)
 
-# def image2latent(self, image):
-#     """
-#     Prepare latents from an image or random noise.
-#     """
-#     image = image.to(device=self.device, dtype=self.dtype)
-#     latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-    
-#     return latents
-
-def resize_image(image, min_dim=512, factor=64):
+def resize_image(image, factor=64, min_dim=512):
     """
     Resize PIL image dimensions to model compatible dimensions
     """

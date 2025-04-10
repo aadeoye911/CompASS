@@ -9,7 +9,8 @@ def plot_image(image_path, ax, third_lines=True):
     img = mpimg.imread(image_path)  # Load image as a NumPy array
     ax.imshow(img)
     if third_lines:
-        plot_third_lines
+        plot_third_lines(ax)
+    ax.axis("off")
 
 def plot_third_lines(ax, color='red', style='--'):
     ax.axvline(x=ax.get_xlim()[0] + (ax.get_xlim()[1] - ax.get_xlim()[0]) / 3, color=color, linestyle=style)

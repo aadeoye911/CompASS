@@ -1,4 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional, Union
+from types import MethodType
 import torch
 from PIL import Image
 from diffusers.utils import is_torch_xla_available, logging, replace_example_docstring

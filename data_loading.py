@@ -3,6 +3,7 @@
 import os
 import hashlib
 import pandas as pd
+import numpy as np
 from collections import defaultdict
 from PIL import Image
 import h5py
@@ -21,6 +22,10 @@ def load_encoded_labels(labels_path, category):
         columns=mlb.classes_,
         index=labels_df.index  # Keep the original index (image_hash)
     )
+    num_dropped = (labels_encoded["Unknown"] == 1).sum()
+    print(f"Dropped {num_dropped} samples with unknown {category} labels.")
+
+    labels_encoded = labels_encoded[labels_encoded["Unknown"] != 1]
     labels_encoded = labels_encoded.drop(columns="Unknown")
 
     return labels_encoded
@@ -119,17 +124,20 @@ def update_dataframe(df, image_data):
 
     return df
 
-def load_attention_maps(hdf5_path, attn_type="cross", index=-1):
+def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False, verbose=True):
     """
     Loads and optionally aggregates attention maps from an HDF5 file.
     """
 
     with h5py.File(hdf5_path, "r") as f:
-        data = []
+        valid_data = []
+        dropped_hashes = []
         
         # Loop through each image group (image_hash)
         for image_hash in f.keys():
             row_data = {"image_hash": image_hash}
+            heights = []
+            widths = []
 
             # Loop through all layers for this image
             for layer_key in f[image_hash].keys():
@@ -137,12 +145,28 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1):
 
                     # Convert to Torch tensor
                     layer = f[image_hash][layer_key][:, :, index] if index is not None else f[image_hash][layer_key][:]
+                    if keep_dims and layer.ndim == 2:
+                        layer = layer[:, :, np.newaxis]
+                    
+                    H, W = layer.shape[:2]
+                    heights.append(H)
+                    widths.append(W)
+
                     attn_map = torch.tensor(layer.copy())
-                    row_data[layer_key] = attn_map  # Directly store the individual layer
+                    row_data[layer_key] = attn_map
 
-            data.append(row_data)
-
-    attn_df = pd.DataFrame(data)
+            # Check proportionality of all maps (same aspect ratio)
+            if all(h * widths[0] == w * heights[0] for h, w in zip(heights, widths)):
+                valid_data.append(row_data)
+            else:
+                dropped_hashes.append(image_hash)
+    if verbose:
+        print(f"✅ Loaded {len(valid_data)} valid samples.")
+        print(f"❌ Dropped {len(dropped_hashes)} samples due to mismatched aspect ratios.")
+        if dropped_hashes:
+            print("Dropped hashes (first 10):", dropped_hashes[:10])
+            
+    attn_df = pd.DataFrame(valid_data)
     attn_df = attn_df.dropna()
     attn_df = attn_df.set_index("image_hash")
     

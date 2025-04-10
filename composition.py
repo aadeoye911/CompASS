@@ -86,10 +86,7 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
-def compute_map_centroid(attn_map, positions, percentile=100):
-    """
-    Compute centroid.
-    """
+def compute_centroid(attn_map, positions, percentile=100):
     attn_map = attn_map.to(dtype=torch.float32)
     if percentile < 100:
         threshold = torch.quantile(attn_map, percentile / 100.0)  # Compute threshold value
@@ -98,9 +95,9 @@ def compute_map_centroid(attn_map, positions, percentile=100):
     moments = torch.sum(attn_map.unsqueeze(-1) * positions, dim=(0,1))
     centroid = moments / torch.sum(attn_map)
 
-    return 
+    return centroid
 
-def compute_attention_torque(attn_map):
+def compute_torque(attn_map):
     H, W = attn_map.shape
     positions = generate_grid(H, W, grid_aspect="equal", centered=True)
 
