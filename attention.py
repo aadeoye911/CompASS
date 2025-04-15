@@ -3,173 +3,67 @@ import torch
 import torch.nn.functional as F
 from diffusers.models.attention_processor import Attention, AttnProcessor2_0
 from collections import defaultdict
+from utils.attn_utils import aggregate_padding_tokens
 
 class AttentionStore:
     def __init__(self, save_global_store=True):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
-        self.cross_attention_maps = defaultdict(list)  # Stores cross-attention maps
-        self.self_attention_maps = defaultdict(list)   # Stores self-attention maps
-
-        # Ensures layer metadata is properly structured
-        self.layer_metadata = { "cross": {}, "self": {} }
-
+        self.layer_metadata = {}
+        self.resolutions = {}      # resolution tracking per layer
+        self.save_global_store = save_global_store
+        self.attention_store = {}
+        self.global_store = {}
+        
+        self.centroids = []
+        self.initialized = False
+        
+    def register_keys(self):
+        """
+        Called once after layer keys are known
+        """
+        self.step_store = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
+        self.resolutions = {k: None for k in self.layer_metadata.keys()}
+        self.initialized = True
 
     def reset(self):
-        """
-        Reset attention storage.
-        """
-        self.cross_attention_maps = self.get_empty_store("cross")
-        self.self_attention_maps = self.get_empty_store("self")
+        self.step_store = self.get_empty_store()
+        self.attention_store = {}
+        self.global_store = {}
 
-
-    def get_empty_store(self, attn_type="cross"):
-        """
-        Returns an empty attention store.
-        """
-        return {layer_key: [] for layer_key in self.layer_metadata[attn_type].keys()}
+    def get_empty_store(self):
+        return {layer_key: [] for layer_key in self.layer_metadata.keys()}
     
-    def set_null_resolutions(self, attn_type="cross"):
-        """
-        Returns an empty attention store.
-        """
-        return {layer_key: (None, None) for layer_key in self.layer_metadata[attn_type].keys()}
+    def __call__(self, attn_probs, layer_key):
+        if not self.initialized:
+            raise RuntimeError("AttentionStore not initialized.")
 
-    def print_attention_metadata(self):
-        """
-        Print formatted metadata for stored attention layers.
-        """
-        # Print Cross-Attention Metadata
-        print(f"Total Cross-Attention Layers: {len(self.layer_metadata['cross'])}")
-        print("\nCross-Attention Layers:")
-        for layer_key, (res_factor, name) in self.layer_metadata["cross"].items():
-            print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
+        # Set resolution if it's not recorded yet
+        batch_size, seq_len, num_tokens = attn_probs.shape
+        if self.resolutions[layer_key] is None:
+            self.resolutions[layer_key] = attention_map.shape[1:3]  # e.g., (height, width)
 
-        # Print Self-Attention Metadata
-        print(f"Total Self-Attention Layers: {len(self.layer_metadata['self'])}")
-        print("\nSelf-Attention Layers:")
-        for layer_key, (res_factor, name) in self.layer_metadata["self"].items():
-            print(f"Layer Key: {layer_key}, Resolution Downsampling Factor: {res_factor}, Module Name: {name}")
-    
+        # Store the attention map
+        self.step_store[layer_key].append(attention_map)
+        self.attention_store[layer_key].append(attention_map.cpu())
 
     def store(self, attn_probs, layer_key):
         """
         Store attention scores using a dictionary-based key format.
         """
-        attn_type = layer_key[0]
-        attn_probs = attn_probs.clone().detach()
-        if attn_type == "cross":
-            attn_maps = attn_probs
-        else:
-            attn_pca = self.reduce_dimensionality_pca(attn_probs)
-            attn_given = attn_probs.mean(dim=-1).unsqueeze(-1)    # [B, seq_len, 1] — how each token gives attention
-            attn_received = attn_probs.mean(dim=-2).unsqueeze(-1) # [B, seq_len, 1] — how each token receives attention
-            attn_maps = torch.cat([attn_pca, attn_given, attn_received], dim=-1)
+        # attn_probs = attn_probs.clone().detach()
         
-        getattr(self, f"{attn_type}_attention_maps")[layer_key].append(attn_maps.cpu())
-
-
-    def reshape_attention(self, attn_probs, img_height, img_width):
-        """
-        Reshape attention to spatial dimensions
-        """
-        batch_size, seq_len, _ = attn_probs.shape
-        downsample_factor = img_height * img_width / seq_len
-        if (img_height % downsample_factor != 0) or (img_width % downsample_factor != 0):
-            raise ValueError(f"Downsampling produced non-integer dimensions.")
-        map_height, map_width = img_height // downsample_factor, img_width // downsample_factor
-        attn_map = attn_probs.reshape(batch_size, map_height, map_width, -1)
-
-        return attn_map
+        eot_indices = torch.ones(batch_size)  # [B, seq_len, num_tokens]
+        eot_maps = aggregate_padding_tokens(attn_probs, eot_indices)
+        
+        self.attention_store[layer_key].append(eot_maps.cpu())
     
-    def reduce_token_dimension(self, attn_probs, eot_idx=1):
-        """
-        Reduces the num_tokens dimension by:
-        """
-        prompt_tokens = attn_probs[:, :, :eot_idx]  
-        summed_padding = attn_probs[:, :, eot_idx:].sum(dim=-1, keepdim=True)  
-        special_token_probs = torch.cat([prompt_tokens, summed_padding], dim=-1)
-
-        return special_token_probs
-
-    def reduce_dimensionality_pca(self, attn_probs, n_components=3):
-        """
-        Applies PCA to self-attention maps 
-        """
-        batch_size, seq_len, _ = attn_probs.shape  # Get dimensions
-        pca_reduced = []
-        for i in range(batch_size):
-            try:
-                # ✅ Apply PCA safely (with error handling)
-                U, S, V = torch.pca_lowrank(attn_probs[i], q=n_components)
-                reduced_map = attn_probs[i] @ V  # Project to new PCA basis
-            except RuntimeError as e:
-                print(f"⚠️ PCA failed for sample {i}: {e}")
-                reduced_map = attn_probs[i][..., :n_components]  # Fallback to slicing
-
-            pca_reduced.append(reduced_map)
-
-        return torch.stack(pca_reduced, dim=0)
-    
-
-    def group_attention_layers(self, attn_type, group_by_level=True):
-        """
-        Filters keys for attention maps based on place in unet (down, mid, up) and level.
-        """
-        grouped_layers = defaultdict(list)
-        for layer_key in self.layer_metadata[attn_type].keys():
-            group_key = layer_key[:3] if group_by_level else layer_key[:2]
-            grouped_layers[group_key].append(layer_key)
-
-        return grouped_layers
-
-
-    def rescale_attention(self, attn_map, scale_factor):
-        """
-        Up/downsample to change resolution of attention maps
-        """
-        if scale_factor == 1:
-            return attn_map
-        else:
-            height, width = attn_map.shape[1:3]
-            target_res = int(height * scale_factor), int(width * scale_factor)
-            attn_map = attn_map.permute(0, 3, 1, 2) # Permute to (B, C, H, W) 
-            rescaled_map = F.interpolate(attn_map, size=target_res, mode="bilinear")
-
-        return rescaled_map.permute(0, 2, 3, 1)
-    
-
-    def aggregate_attention(self, layer_keys, res_factor=None, aggregation_mode="max"):
-        """
-        Aggregates the attention across subset of layers at the specified resolution factor.
-        """
-        if res_factor == None:
-            res_factor = min([self.layer_metadata[layer_key[0]][layer_key][0] for layer_key in layer_keys])
-
-        resized_maps = []
-        for layer_key in layer_keys:
-            attn_type = layer_key[0]
-            scale_factor = res_factor / self.layer_metadata[attn_type][layer_key][0]
-            attn_map = getattr(self, f"{attn_type}_attention_maps")[layer_key]
-            resized_map = self.rescale_attention(attn_map, scale_factor)
-            resized_maps.append(resized_map)
-
-        stacked_maps = torch.cat(resized_maps, dim=0)
-        if aggregation_mode == "mean":
-            aggregated_map = stacked_maps.mean(dim=0)
-        elif aggregation_mode == "max":
-            aggregated_map = stacked_maps.max(dim=0)[0]
-        else:
-            raise ValueError(f"Invalid aggregation mode: {aggregation_mode}. Choose 'mean' or 'max'")
-
-        return aggregated_map
-    
-
+"""
+Adapted from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
+"""
 class MyCustomAttnProcessor(AttnProcessor2_0):
-    """
-    Copied heavily from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
-    """
     def __init__(self, attnstore, layer_key):
         super().__init__()
         self.attnstore = attnstore
@@ -219,12 +113,10 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         key = attn.to_k(encoder_hidden_states)
         value = attn.to_v(encoder_hidden_states)
 
-        #### CUSTOM LOGIC ######
+        ################ CUSTOM LOGIC ########################################
         attention_probs = attn.get_attention_scores(query, key, attention_mask)
         self.attnstore.store(attention_probs, self.layer_key)
-
-        ## INJECT HERE IF NECESSARY
-        # ########################
+        ######################################################################
 
         inner_dim = key.shape[-1]
         head_dim = inner_dim // attn.heads
@@ -262,29 +154,3 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         hidden_states = hidden_states / attn.rescale_output_factor
 
         return hidden_states
-
-    # def __init__(self,
-    #              scheduler: object = None,
-    #              injection_steps: int = None,
-    #              token_injection_tensors: IndexTensorPair = None,
-    #              attn_store: dict = None,
-    #              nu: float = 0.0) -> None:
-        
-    #     self.injection_steps = injection_steps
-    #     self.nu = nu
-    #     self.scheduler = scheduler
-    #     self.token_injection_tensors = token_injection_tensors
-    #     self.attn_store = attn_store
-
-    # def get_injection_scale(self):
-    #     return self.nu * np.log(1 + self.scheduler.sigmas[self.scheduler.step_index].cpu().numpy())
-    
-    # def resize_injection_tensors(self, attention_dim):
-    #     resize_factor = int(64 // np.sqrt(attention_dim))
-    #     token_injection_tensors = copy.deepcopy(self.token_injection_tensors) 
-
-    #     for token_injection_tensor in token_injection_tensors:
-            
-    #         token_injection_tensor.tensor = token_injection_tensor.tensor[0::resize_factor, 0::resize_factor]           
-            
-    #     return token_injection_tensors

@@ -2,9 +2,11 @@
 shotdeck_data/
 shotdeck_resized/
 shotdeck_csv/
+outputs/
 *.csv
 *.ipynb
 *.png
+*.h5
 
 # Ignore unwanted files
 shotdeck_attention_maps.h5

@@ -4,13 +4,16 @@ import os
 import hashlib
 import pandas as pd
 import numpy as np
+import h5py
+import torch
 from collections import defaultdict
 from PIL import Image
 import h5py
 import torch
+from fractions import Fraction
 from sklearn.preprocessing import MultiLabelBinarizer
 
-def load_encoded_labels(labels_path, category): 
+def load_encoded_labels(labels_path, category, drop_unknown=True): 
     labels_df = pd.read_csv(labels_path, usecols=["image_hash", category], index_col=0)
 
     # Filter out unknown labels
@@ -25,7 +28,8 @@ def load_encoded_labels(labels_path, category):
     num_dropped = (labels_encoded["Unknown"] == 1).sum()
     print(f"Dropped {num_dropped} samples with unknown {category} labels.")
 
-    labels_encoded = labels_encoded[labels_encoded["Unknown"] != 1]
+    if drop_unknown:
+        labels_encoded = labels_encoded[labels_encoded["Unknown"] != 1]
     labels_encoded = labels_encoded.drop(columns="Unknown")
 
     return labels_encoded
@@ -80,17 +84,14 @@ def create_dataframe(image_data):
     """Create a DataFrame from the collected image data."""
     data = []
     for img_hash, img_metadata in image_data.items():
-        composition = ", ".join(img_metadata["composition"]) if img_metadata["composition"] else "Unknown"
-        frame_size = ", ".join(img_metadata["frame_size"]) if img_metadata["frame_size"] else "Unknown"
+        composition = ",".join(img_metadata["composition"]) if img_metadata["composition"] else None
+        frame_size = ",".join(img_metadata["frame_size"]) if img_metadata["frame_size"] else None
         width = img_metadata["width"]
         height = img_metadata["height"]
         data.append([img_hash, composition, frame_size, img_metadata["file_paths"], width, height])
     
     df = pd.DataFrame(data, columns=['image_hash', 'composition', 'frame_size', 'file_paths', 'width', 'height'])
-    
-    # Compute aspect ratio on the whole DataFrame and round to 2 decimal places
-    df["aspect_ratio"] = (df["width"] / df["height"]).round(2)
-    
+        
     return df
 
 def update_dataframe(df, image_data):
@@ -101,10 +102,8 @@ def update_dataframe(df, image_data):
             # Only keep file paths that exist
             valid_paths = [path for path in image_data[img_hash]["file_paths"] if os.path.exists(path)]
             df.at[idx, "file_paths"] = ",".join(valid_paths)  # Update the file paths column
-
-            # Update the composition and frame size
-            df.at[idx, "composition"] = ",".join(image_data[img_hash]["composition"]) if image_data[img_hash]["composition"] else "Unknown"
-            df.at[idx, "frame_size"] = ",".join(image_data[img_hash]["frame_size"]) if image_data[img_hash]["frame_size"] else "Unknown"
+            df.at[idx, "composition"] = ",".join(image_data[img_hash]["composition"]) if image_data[img_hash]["composition"] else None
+            df.at[idx, "frame_size"] = ",".join(image_data[img_hash]["frame_size"]) if image_data[img_hash]["frame_size"] else None
     
     # Handle new images (those not in the original DataFrame)
     existing_hashes = set(df['image_hash'])
@@ -113,12 +112,11 @@ def update_dataframe(df, image_data):
             # Add new row for this image
             new_row = {
                 'image_hash': img_hash,
-                'composition': ",".join(metadata["composition"]) if metadata["composition"] else "Unknown",
-                'frame_size': ",".join(metadata["frame_size"]) if metadata["frame_size"] else "Unknown",
+                'composition': ",".join(metadata["composition"]) if metadata["composition"] else None,
+                'frame_size': ",".join(metadata["frame_size"]) if metadata["frame_size"] else None,
                 'file_paths': ",".join(metadata["file_paths"]),
                 'width': metadata["width"],
                 'height': metadata["height"],
-                'aspect_ratio': round(metadata["width"] / metadata["height"], 2) if metadata["width"] and metadata["height"] else None
             }
             df = df.append(new_row, ignore_index=True)
 
@@ -173,35 +171,6 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False,
     
     return attn_df
 
-def extract_attention_dataset(pipe, images, diffused_dir, hdf5_path):
-    results = []
-
-    for _, row in images.iterrows():
-        image_hash = row["Image Hash"]
-        image_path = row["Resized Path"]
-
-        if not os.path.exists(image_path):
-            print(f"❌ File not found: {image_path}")
-            continue
-
-        try:
-            # pipe.extract_reference_attn_maps(image_path)  # GPU-accelerated
-            diffused_image = pipe.diffused_images[0]  # Extract the diffused image
-            diffused_path = os.path.join(diffused_dir, f"{image_hash}.png")
-            diffused_image.save(diffused_path)
-            results.append((image_hash, pipe.attention_store))  # Store attention data
-        except Exception as e:
-            print(f"❌ Error processing {image_path}: {e}")
-
-    # Write the processed batch to HDF5
-    with h5py.File(hdf5_path, "a") as f:  # Append mode to avoid overwriting
-        for image_hash, attn_data in results:
-            if attn_data is None:
-                continue
-            img_group = f.create_group(image_hash)
-            for layer_key, attn_map in attn_data.items():
-                img_group.create_dataset(layer_key, data=attn_map, compression="lzf")
-
 if __name__ == "__main__":
     # Define composition and frame size categories
     composition_categories = ["balanced", "center", "left", "right", "symmetrical"]
@@ -209,12 +178,8 @@ if __name__ == "__main__":
     
     base_folder = "shotdeck_data"  # Root folder containing subfolders for composition and frame size
     image_data = scan_folders(base_folder, composition_categories, frame_size_categories)
-    output_dir = "shotdeck_csv"
-    output_csv = os.path.join(output_dir, "shotdeck_updated.csv")
-    data_file = os.path.join(output_dir, "shotdeck_data.csv")
-    # df = create_dataframe(image_data)
-    df = pd.read_csv(data_file)
-    df = update_dataframe(df, image_data)
-    # # Save or display the DataFrame
-    df.to_csv(output_csv, index=False)
-    print("DataFrame saved to shotdeck_updated.csv")
+    
+    df = create_dataframe(image_data)
+    output_path = "shotdeck_master_v2.csv"
+    df.to_csv(output_path, index=False)
+    print(f"DataFrame saved to {output_path}.csv")

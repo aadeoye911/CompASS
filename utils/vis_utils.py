@@ -22,3 +22,20 @@ def plot_colorbar(img, fig, ax, location="bottom", orientation="horizontal"):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes(location, size="7%", pad="10%")
     fig.colorbar(img, cax=cax, orientation="horizontal")
+
+# def visualize_latents(sampler):
+#     T = len(sampler.decoded_images)
+#     cols = min(10, T)  # Max 10 columns
+#     rows = (T + cols - 1) // cols
+#     fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
+
+#     # Plot images in grid
+#     for i, ax in enumerate(axes.flatten()):
+#         if i < len(sampler.decoded_images):
+#             ax.imshow(sampler.decoded_images[i])
+#             ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
+#         ax.axis("off")
+
+#     # Tight layout for better spacing
+#     plt.tight_layout()
+#     plt.show()
