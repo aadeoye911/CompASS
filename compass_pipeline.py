@@ -190,7 +190,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, final_t)
             null_pred = self.unet(latent_model_input, final_t, encoder_hidden_states=prompt_embeds, cross_attention_kwargs=self.cross_attention_kwargs).sample
-
+            torch.cuda.empty_cache()
         #     for i, t in enumerate(timesteps):
                 
         #         ######### CUSTOM LOGIC HERE ################ 
