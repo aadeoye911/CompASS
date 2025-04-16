@@ -94,7 +94,7 @@ class AttentionStore:
         batch_size, seq_len, num_tokens = attn_probs.shape
         eot_indices = torch.ones(batch_size).to(attn_probs.device)  # [B, seq_len, num_tokens]
         eot_maps = aggregate_padding_tokens(attn_probs, eot_indices)
-        eot_maps = reshape_attention(eot_maps, *self.resolutions[layer_key])
+        eot_maps = attn_probs.reshape(batch_size, *self.resolutions[layer_key], -1)
         self.attention_store[layer_key].append(eot_maps.detach().cpu())
     
 """
@@ -214,13 +214,13 @@ def apply_pca_reduction(attn_probs, n_components=3):
 
     return torch.stack(pca_reduced, dim=0)
 
-def reshape_attention(attn_probs, img_height, img_width):
+def reshape_attention(attn_probs, ref_height, ref_width):
     batch_size, seq_len, _ = attn_probs.shape
-    scale_factor = img_height * img_width / seq_len
+    scale_factor = ref_height * ref_width / seq_len
     # Aspect ratio of attention maps must match aspect ratio of output image
-    if (img_height % scale_factor != 0) or (img_width % scale_factor != 0):
+    if (ref_height % scale_factor != 0) or (ref_width % scale_factor != 0):
         raise ValueError(f"Downsampling produced non-integer dimensions.")
-    map_height, map_width = img_height // scale_factor, img_width // scale_factor
+    map_height, map_width = int(ref_height // scale_factor), int(ref_width // scale_factor)
 
     return attn_probs.reshape(batch_size, map_height, map_width, -1)
 
