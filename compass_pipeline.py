@@ -116,11 +116,11 @@ class CompASSPipeline(StableDiffusionPipeline):
             callback_on_step_end_tensor_inputs
         )
         # Additional check if latents are provided
-        if latents:
-            if latents.shape[-2] != height // self.vae_scale_factor or latents.shape[-1] != width // self.vae_scale_factor:
-                raise ValueError(
-                    f"Inputs latents have shape {latents.shape[-2:]} must equal (H, W) {height, width} divided by {self.vae_scale_factor}."
-                )
+        # if latents:
+        #     if latents.shape[-2] != height // self.vae_scale_factor or latents.shape[-1] != width // self.vae_scale_factor:
+        #         raise ValueError(
+        #             f"Inputs latents have shape {latents.shape[-2:]} must equal (H, W) {height, width} divided by {self.vae_scale_factor}."
+        #         )
 
         # 2. Define call parameters
         if prompt is not None and isinstance(prompt, str):
