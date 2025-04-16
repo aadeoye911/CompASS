@@ -51,8 +51,8 @@ class AttentionStore:
     
     def get_layer_resolution(self, attn_probs, layer_key):
         batch_size, seq_len, num_tokens = attn_probs.shape
-        H = seq_len / self.img_size * self.img_height
-        W = seq_len / self.img_size * self.img_width
+        H = self.latent_height // (self.latent_size // seq_len) 
+        W = self.latent_width // (self.latent_size // seq_len) 
         self.resolutions[layer_key] = (int(H), int(W))
     
     def get_meshgrid(self, H, W, flatten=True):
