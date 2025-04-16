@@ -12,7 +12,7 @@ def resize_image(image, factor=64, target_dim=512):
     Resize PIL image dimensions to model compatible dimensions
     """
     width, height = image.size
-    new_width, new_height = scale_resolution_to_multiple(width, height, factor, target_dim=target_dim)
+    new_height, new_width = scale_resolution_to_multiple(height, width, factor, target_dim=target_dim)
     if new_width == width and new_height == height:
         return image # Return image as is if dimensions are already correct
     

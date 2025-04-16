@@ -6,8 +6,8 @@ from diffusers.utils import is_torch_xla_available, logging, replace_example_doc
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline, StableDiffusionPipelineOutput
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
-from attention import MyCustomAttnProcessor, AttentionStore
-from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_factor
+from utils.attn_utils import MyCustomAttnProcessor, AttentionStore
+from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -30,11 +30,9 @@ class CompASSPipeline(StableDiffusionPipeline):
     def get_model_compatible_resolution(self, height=None, width=None, scale_to_default=True):
         if not height or not width:
             return self.default_output_resolution, self.default_output_resolution
-        
-        scale = self.default_output_resolution / min(width, height) if scale_to_default else 1
-        factor  = self.total_downscale_factor
-        height, width = (int(round(x * scale / factor) * factor) for x in (height, width))  
-        
+        # Optionally scale minimum dimension to default output resolution
+        min_dim = self.default_output_resolution if scale_to_default else None
+        height, width = scale_resolution_to_multiple(height, width, self.total_downscale_factor, min_dim)
         return height, width
     
     def image2latent(self, image, device):
@@ -48,11 +46,11 @@ class CompASSPipeline(StableDiffusionPipeline):
             if hasattr(module, "is_cross_attention") and module.is_cross_attention:
                 place_in_unet, level, instance = parse_module_name(name)
                 layer_key = f"cross_{place_in_unet}_{level}_{instance}"
-                self.attention_store.layer_metadata[layer_key] = name
+                self.attn_store.layer_metadata[layer_key] = name
                 logger.info(f"Registering custom cross-attention control for layer key {layer_key}")
-                module.set_processor(MyCustomAttnProcessor(self.attention_store, layer_key))
+                module.set_processor(MyCustomAttnProcessor(self.attn_store, layer_key))
         
-        self.attention_store.register_keys()
+        self.attn_store.register_keys()
                     
     def denoising_step(self, latents, t, prompt_embeds):
         latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
@@ -176,7 +174,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         ############################# CUSTOM LOGIC ####################################
         # Register attention control
-        self.attention_store = AttentionStore()
+        self.attn_store = AttentionStore(height, width, device, False)
         self.register_attention_control()
     
         # R
@@ -189,6 +187,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             #  If guiding by reference extract attention distribution from one timestep
             final_t = timesteps[-1]
+            latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, final_t)
             null_pred = self.unet(latent_model_input, final_t, encoder_hidden_states=prompt_embeds, cross_attention_kwargs=self.cross_attention_kwargs).sample
 

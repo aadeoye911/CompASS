@@ -5,32 +5,28 @@ import hashlib
 import pandas as pd
 import numpy as np
 import h5py
-import torch
 from collections import defaultdict
 from PIL import Image
 import h5py
 import torch
-from fractions import Fraction
 from sklearn.preprocessing import MultiLabelBinarizer
 
 def load_encoded_labels(labels_path, category, drop_unknown=True): 
     labels_df = pd.read_csv(labels_path, usecols=["image_hash", category], index_col=0)
 
-    # Filter out unknown labels
-    labels_df[category] = labels_df[category].apply(lambda x: x.split(",") if isinstance(x, str) else x)
-
+    # Turn comma separate entries into binarized multilabels
+    labels_df[category] = labels_df[category].apply(lambda x: x.split(",") if isinstance(x, str) else [])
     mlb = MultiLabelBinarizer()
     labels_encoded = pd.DataFrame(
         mlb.fit_transform(labels_df[category]),
         columns=mlb.classes_,
         index=labels_df.index  # Keep the original index (image_hash)
     )
-    num_dropped = (labels_encoded["Unknown"] == 1).sum()
-    print(f"Dropped {num_dropped} samples with unknown {category} labels.")
 
     if drop_unknown:
-        labels_encoded = labels_encoded[labels_encoded["Unknown"] != 1]
-    labels_encoded = labels_encoded.drop(columns="Unknown")
+        num_dropped = (labels_encoded.sum(axis=1) == 0).sum()
+        print(f"Dropped {num_dropped} samples with unknown {category} labels.")
+        labels_encoded = labels_encoded[labels_encoded.sum(axis=1) > 0]
 
     return labels_encoded
 
@@ -88,9 +84,11 @@ def create_dataframe(image_data):
         frame_size = ",".join(img_metadata["frame_size"]) if img_metadata["frame_size"] else None
         width = img_metadata["width"]
         height = img_metadata["height"]
-        data.append([img_hash, composition, frame_size, img_metadata["file_paths"], width, height])
+        ref_path = img_metadata["file_paths"][0]
+        file_paths = ",".join(img_metadata["file_paths"])
+        data.append([img_hash, composition, frame_size, width, height, ref_path, file_paths])
     
-    df = pd.DataFrame(data, columns=['image_hash', 'composition', 'frame_size', 'file_paths', 'width', 'height'])
+    df = pd.DataFrame(data, columns=['image_hash', 'composition', 'frame_size', 'width', 'height', 'ref_path', 'file_paths'])
         
     return df
 
@@ -101,22 +99,24 @@ def update_dataframe(df, image_data):
         if img_hash in image_data:
             # Only keep file paths that exist
             valid_paths = [path for path in image_data[img_hash]["file_paths"] if os.path.exists(path)]
-            df.at[idx, "file_paths"] = ",".join(valid_paths)  # Update the file paths column
             df.at[idx, "composition"] = ",".join(image_data[img_hash]["composition"]) if image_data[img_hash]["composition"] else None
             df.at[idx, "frame_size"] = ",".join(image_data[img_hash]["frame_size"]) if image_data[img_hash]["frame_size"] else None
-    
+            df.at[idx, "ref_path"] = valid_paths[0]
+            df.at[idx, "file_paths"] = ",".join(valid_paths)  # Update the file paths column
+
     # Handle new images (those not in the original DataFrame)
     existing_hashes = set(df['image_hash'])
-    for img_hash, metadata in image_data.items():
+    for img_hash, img_metadata in image_data.items():
         if img_hash not in existing_hashes:
             # Add new row for this image
             new_row = {
                 'image_hash': img_hash,
-                'composition': ",".join(metadata["composition"]) if metadata["composition"] else None,
-                'frame_size': ",".join(metadata["frame_size"]) if metadata["frame_size"] else None,
-                'file_paths': ",".join(metadata["file_paths"]),
-                'width': metadata["width"],
-                'height': metadata["height"],
+                'composition': ",".join(img_metadata["composition"]) if img_metadata["composition"] else None,
+                'frame_size': ",".join(img_metadata["frame_size"]) if img_metadata["frame_size"] else None,
+                'width': img_metadata["width"],
+                'height': img_metadata["height"],
+                'ref_path': img_metadata["file_paths"][0],
+                'file_paths': ",".join(img_metadata["file_paths"]),
             }
             df = df.append(new_row, ignore_index=True)
 
@@ -126,60 +126,69 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False,
     """
     Loads and optionally aggregates attention maps from an HDF5 file.
     """
+    corrupted_hashes = []
+    valid_data = []
 
     with h5py.File(hdf5_path, "r") as f:
-        valid_data = []
-        dropped_hashes = []
-        
-        # Loop through each image group (image_hash)
         for image_hash in f.keys():
+        # Loop through each image group (image_hash)
             row_data = {"image_hash": image_hash}
-            heights = []
-            widths = []
+            ref_height, ref_width = None, None
+            corrupted = False
 
             # Loop through all layers for this image
             for layer_key in f[image_hash].keys():
-                if layer_key.split("_")[0] == attn_type:
-
-                    # Convert to Torch tensor
-                    layer = f[image_hash][layer_key][:, :, index] if index is not None else f[image_hash][layer_key][:]
-                    if keep_dims and layer.ndim == 2:
-                        layer = layer[:, :, np.newaxis]
-                    
-                    H, W = layer.shape[:2]
-                    heights.append(H)
-                    widths.append(W)
-
-                    attn_map = torch.tensor(layer.copy())
-                    row_data[layer_key] = attn_map
-
-            # Check proportionality of all maps (same aspect ratio)
-            if all(h * widths[0] == w * heights[0] for h, w in zip(heights, widths)):
-                row_data["latent_dims"] = (heights[0], widths[0])
-                valid_data.append(row_data)
-            else:
-                dropped_hashes.append(image_hash)
-    if verbose:
-        print(f"✅ Loaded {len(valid_data)} valid samples.")
-        print(f"❌ Dropped {len(dropped_hashes)} samples due to mismatched aspect ratios.")
-        if dropped_hashes:
-            print("Dropped hashes (first 10):", dropped_hashes[:10])
+                if layer_key.split("_")[0] != attn_type:
+                    continue
+                
+                # Load attention map as numpy array
+                attn_map = f[image_hash][layer_key][:] 
+                if index is not None:
+                    attn_map = attn_map[:, :, index]
+                    if keep_dims:
+                        attn_map = attn_map[:, :, np.newaxis]
+                
+                H, W = attn_map.shape[:2]
+                # Use first maps reference for aspect ratio
+                if ref_height is None and ref_width is None:
+                    ref_height, ref_width = H, W
             
+                # Check for mismatched aspect ratio
+                elif ref_height * W != ref_width * H: 
+                    corrupted_hashes.append(image_hash)
+                    corrupted = True
+                    break
+                    
+                # Store map
+                row_data[layer_key] = torch.tensor(attn_map.copy())
+
+            if not corrupted:
+                row_data["ref_height"] = ref_height
+                row_data["ref_width"] = ref_width
+                valid_data.append(row_data)
+    
     attn_df = pd.DataFrame(valid_data)
     attn_df = attn_df.dropna()
     attn_df = attn_df.set_index("image_hash")
-    
+
+    if verbose:
+        print(f"Loaded {len(attn_df)} valid samples.")
+        if corrupted_hashes:
+            print(f"Dropped {len(corrupted_hashes)} corrupted samples with inconsistent aspect ratios.")
+            print("Printing dropped hashes (first 10):", corrupted_hashes[:10])
+            
     return attn_df
 
 if __name__ == "__main__":
     # Define composition and frame size categories
-    composition_categories = ["balanced", "center", "left", "right", "symmetrical"]
-    frame_size_categories = ["ECU", "CU", "MCU", "MS", "MWS", "WS", "EWS"]
+    composition_labels = ["balanced", "center", "left", "right", "symmetrical"]
+    frame_size_labels = ["ECU", "CU", "MCU", "MS", "MWS", "WS", "EWS"]
     
     base_folder = "shotdeck_data"  # Root folder containing subfolders for composition and frame size
-    image_data = scan_folders(base_folder, composition_categories, frame_size_categories)
+    image_data = scan_folders(base_folder, composition_labels, frame_size_labels)
     
     df = create_dataframe(image_data)
-    output_path = "shotdeck_master_v2.csv"
-    df.to_csv(output_path, index=False)
-    print(f"DataFrame saved to {output_path}.csv")
+    csv_path = "shotdeck_master.csv"
+
+    df.to_csv(csv_path, index=False)
+    print(f"DataFrame saved to {csv_path}")
