@@ -55,11 +55,12 @@ class AttentionStore:
         W = int(seq_len / self.img_size * self.img_width)
         self.resolutions[layer_key] = (H, W)
     
-    def get_meshgrid(self, H, W):
+    def get_meshgrid(self, H, W, flatten=True):
         key = (H, W)
         if key not in self.grid_cache:
-            y, x = generate_grid(H, W, centered=True, grid_aspect="equal")
-            grid = torch.stack([x, y], dim=-1).reshape(-1, 2).to(self.device)  # [HW, 2]
+            grid = generate_grid(H, W, centered=True, grid_aspect="equal")
+            if flatten:
+                grid = grid.reshape(-1, 2).to(self.device)  # [HW, 2]
             self.grid_cache[key] = grid
         return self.grid_cache[key]
     
