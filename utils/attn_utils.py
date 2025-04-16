@@ -92,7 +92,7 @@ class AttentionStore:
         """
         # attn_probs = attn_probs.clone().detach()
         batch_size, seq_len, num_tokens = attn_probs.shape
-        eot_indices = torch.ones(batch_size)  # [B, seq_len, num_tokens]
+        eot_indices = torch.ones(batch_size).to(attn_probs.device)  # [B, seq_len, num_tokens]
         eot_maps = aggregate_padding_tokens(attn_probs, eot_indices)
         eot_maps = reshape_attention(eot_maps, *self.resolutions[layer_key])
         self.attention_store[layer_key].append(eot_maps.detach().cpu())

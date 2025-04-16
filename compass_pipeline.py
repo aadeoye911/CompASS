@@ -149,7 +149,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         ################################ CUSTOM LOGIC ########################################
         # 3.1 Extract EoT token indices from prompt tokens
         eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
-        eot_indices = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt)
+        eot_indices = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt).to(device)
         #######################################################################################
 
         # 4. Prepare timesteps
