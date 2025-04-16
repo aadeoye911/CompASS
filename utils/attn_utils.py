@@ -53,7 +53,7 @@ class AttentionStore:
         batch_size, seq_len, num_tokens = attn_probs.shape
         H = self.latent_height // (self.latent_size // seq_len) 
         W = self.latent_width // (self.latent_size // seq_len) 
-        self.resolutions[layer_key] = (int(H), int(W))
+        self.resolutions[layer_key] = int(H), int(W)
     
     def get_meshgrid(self, H, W, flatten=True):
         key = (H, W)
