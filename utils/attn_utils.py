@@ -6,7 +6,7 @@ from collections import defaultdict
 from composition import generate_grid
 
 class AttentionStore:
-    def __init__(self, img_height, img_width, device, save_global_store=True):
+    def __init__(self, latent_height, latent_width, device, save_global_store=True):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
@@ -19,9 +19,9 @@ class AttentionStore:
         self.global_store = defaultdict(list)
         self.step_store = defaultdict(list)
 
-        self.img_height = img_height
-        self.img_width = img_width
-        self.img_size = img_height * img_width
+        self.latent_height = latent_height
+        self.latent_width = latent_width
+        self.latent_size = latent_height * latent_width
 
         self.centroids = defaultdict(list)
         self.grid_cache = {}
@@ -51,9 +51,9 @@ class AttentionStore:
     
     def get_layer_resolution(self, attn_probs, layer_key):
         batch_size, seq_len, num_tokens = attn_probs.shape
-        H = int(seq_len / self.img_size * self.img_height)
-        W = int(seq_len / self.img_size * self.img_width)
-        self.resolutions[layer_key] = (H, W)
+        H = seq_len / self.img_size * self.img_height
+        W = seq_len / self.img_size * self.img_width
+        self.resolutions[layer_key] = (int(H), int(W))
     
     def get_meshgrid(self, H, W, flatten=True):
         key = (H, W)

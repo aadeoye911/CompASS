@@ -174,7 +174,8 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         ############################# CUSTOM LOGIC ####################################
         # Register attention control
-        self.attn_store = AttentionStore(height, width, device, False)
+        _, _, latent_height, latent_width = latents.shape
+        self.attn_store = AttentionStore(latent_height, latent_width, device, False)
         self.register_attention_control()
     
         # R
