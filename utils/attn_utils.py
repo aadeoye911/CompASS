@@ -70,7 +70,7 @@ class AttentionStore:
         # Store resolution and initialise meshgrid or centroid computations if first time
         if self.resolutions[layer_key] is None:
             self.get_layer_resolution(attn_probs, layer_key)
-            # self.get_meshgrid(*self.resolutions[layer_key])
+            self.get_meshgrid(*self.resolutions[layer_key])
         
         # Store the attention map
         self.postprocess(attn_probs, layer_key)
