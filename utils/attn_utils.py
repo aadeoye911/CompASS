@@ -1,12 +1,13 @@
 from typing import Optional
 import torch
 import torch.nn.functional as F
+import numpy as np
 from diffusers.models.attention_processor import Attention, AttnProcessor2_0
 from collections import defaultdict
 from composition import generate_grid
 
 class AttentionStore:
-    def __init__(self, latent_height, latent_width, device, save_global_store=True):
+    def __init__(self, latent_height, latent_width, eot_tensor, device, save_global_store=True):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
@@ -21,13 +22,16 @@ class AttentionStore:
 
         self.latent_height = latent_height
         self.latent_width = latent_width
-        self.latent_size = latent_height * latent_width
+        self.eot_tensor = eot_tensor
 
         self.centroids = defaultdict(list)
         self.grid_cache = {}
         
         self.initialized = False
-        
+    
+    def get_empty_store(self):
+        return {layer_key: [] for layer_key in self.layer_metadata.keys()}
+    
     def register_keys(self):
         """
         Called once after layer keys are known
@@ -39,20 +43,18 @@ class AttentionStore:
         self.initialized = True
 
     def reset(self):
+        self.step_store = self.get_empty_store()
         self.attention_store = self.get_empty_store()
         self.global_store = self.get_empty_store()
-        self.step_store = self.get_empty_store()
+        self.resolutions = {k: None for k in self.layer_metadata}
         self.centroids = defaultdict(list)
         self.grid_cache = {}
-        self.resolutions = {k: None for k in self.layer_metadata}
         
-    def get_empty_store(self):
-        return {layer_key: [] for layer_key in self.layer_metadata.keys()}
-    
     def get_layer_resolution(self, attn_probs, layer_key):
         batch_size, seq_len, num_tokens = attn_probs.shape
-        H = self.latent_height // (self.latent_size // seq_len) 
-        W = self.latent_width // (self.latent_size // seq_len) 
+        latent_size = self.latent_height * self.latent_width
+        H = self.latent_height * np.sqrt(seq_len // latent_size) 
+        W = self.latent_width * np.sqrt(seq_len // latent_size) 
         self.resolutions[layer_key] = int(H), int(W)
     
     def get_meshgrid(self, H, W, flatten=True):
@@ -62,7 +64,6 @@ class AttentionStore:
             if flatten:
                 grid = grid.reshape(-1, 2).to(self.device)  # [HW, 2]
             self.grid_cache[key] = grid
-        return self.grid_cache[key]
     
     def __call__(self, attn_probs, layer_key):
         if not self.initialized:
@@ -90,6 +91,9 @@ class AttentionStore:
         """
         Store attention scores using a dictionary-based key format.
         """
+        if not self.initialized:
+            raise RuntimeError("AttentionStore not initialized.")
+        
         # attn_probs = attn_probs.clone().detach()
         batch_size, seq_len, num_tokens = attn_probs.shape
         eot_indices = torch.ones(batch_size).to(attn_probs.device)  # [B, seq_len, num_tokens]

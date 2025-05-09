@@ -115,12 +115,6 @@ class CompASSPipeline(StableDiffusionPipeline):
             negative_prompt_embeds, 
             callback_on_step_end_tensor_inputs
         )
-        # Additional check if latents are provided
-        # if latents:
-        #     if latents.shape[-2] != height // self.vae_scale_factor or latents.shape[-1] != width // self.vae_scale_factor:
-        #         raise ValueError(
-        #             f"Inputs latents have shape {latents.shape[-2:]} must equal (H, W) {height, width} divided by {self.vae_scale_factor}."
-        #         )
 
         # 2. Define call parameters
         if prompt is not None and isinstance(prompt, str):
@@ -146,12 +140,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         if self.do_classifier_free_guidance:
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
 
-        ################################ CUSTOM LOGIC ########################################
-        # 3.1 Extract EoT token indices from prompt tokens
-        eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
-        eot_indices = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt).to(device)
-        #######################################################################################
-
         # 4. Prepare timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps = self.scheduler.timesteps
@@ -173,12 +161,15 @@ class CompASSPipeline(StableDiffusionPipeline):
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         ############################# CUSTOM LOGIC ####################################
+        # Extract EoT token indices from prompt tokens
+        eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
+        eot_tensor = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt).to(device)
+
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
-        self.attn_store = AttentionStore(latent_height, latent_width, device, False)
+        self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_global_store=False)
         self.register_attention_control()
     
-        # R
         # Remove gradients from unet
         # for _, param in self.unet.named_parameters():
         #     param.requires_grad = False
