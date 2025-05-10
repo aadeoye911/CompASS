@@ -1,93 +1,126 @@
 from typing import Optional
+import abc
 import torch
 import torch.nn.functional as F
 import numpy as np
 from diffusers.models.attention_processor import Attention, AttnProcessor2_0
 from collections import defaultdict
-from composition import generate_grid
+from composition import generate_grid, compute_centroids
 
-class AttentionStore:
+class AttentionControl(abc.ABC):
+
+    def step_callback(self, x_t):
+        return x_t
+
+    def between_steps(self):
+        return
+
+    @abc.abstractmethod
+    def forward(self, attn, layer_key: str):
+        raise NotImplementedError
+
+    def __call__(self, attn, layer_key: str):
+        if self.cur_att_layer < self.num_att_layers:
+            self.forward(attn, layer_key)
+        self.cur_att_layer += 1
+        if self.cur_att_layer == self.num_att_layers:
+            self.cur_att_layer = 0
+            self.cur_step += 1
+            self.between_steps()
+
+    def reset(self):
+        self.cur_step = 0
+        self.cur_att_layer = 0
+
+    def __init__(self):
+        self.cur_step = 0
+        self.num_att_layers = -1
+        self.cur_att_layer = 0
+
+
+class EmptyControl(AttentionControl):
+
+    def forward(self, attn, layer_key: str):
+        return attn
+    
+class AttentionStore(AttentionControl):
     def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=True):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
+        super(AttentionStore, self).__init__()
         self.latent_height = latent_height
         self.latent_width = latent_width
         self.eot_tensor = eot_tensor
+        self.device = device
         self.save_maps = save_maps
 
         self.layer_metadata = {}
-        self.resolutions = {} # store layer resolutions for ease
-        self.centroid_store = {}
+        self.step_store = {}
+        self.centroids = None
+
         self.attention_maps = defaultdict(list)
+        self.centroid_cache = defaultdict(list)
+        self.resolutions = [] # store layer resolutions for ease
         self.grid_cache = {}
-        self.device = device
-         
+    
         self.initialized = False
     
-    def get_empty_store(self, null_entry = None):
-        return {layer_key: null_entry for layer_key in self.layer_metadata.keys()}
+    def get_empty_store(self):
+        return {layer_key: [] for layer_key in self.layer_metadata.keys()}
     
     def register_keys(self):
         """
         Called once after layer keys are known
         """
-        self.attention_maps = self.get_empty_store(null_entry=[])
-        self.resolutions = self.get_empty_store()
-        self.centroid_store = self.get_empty_store()
+        self.attention_maps = self.get_empty_store()
+        self.centroid_cache = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.attention_maps = self.get_empty_store(null_entry=[])
-        self.resolutions = self.get_empty_store()
-        self.centroid_store = self.get_empty_store()
+        super(AttentionStore, self).reset()
+        self.step_store = {}
+        self.centroids = None
+        self.attention_maps = self.get_empty_store()
+        self.centroid_cache = self.get_empty_store()
+        self.resolutions = [] # store layer resolutions for ease
         self.grid_cache = {}
-        
-    def get_meshgrid(self, batch_size, H, W, flatten=True):
-        if (H, W) not in self.grid_cache:
-            with torch.no_grad():  # Prevent gradient tracking during creation
-                grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
-                grid = grid.unsqueeze(0).repeat(batch_size, 1, 1, 1)  # [B, H, W, 2]
-                if flatten:
-                    grid = grid.reshape(batch_size, -1, 2) #[B, seq_len, 2]
-                self.grid_cache[(H, W)] = grid.to(self.device)
     
-    def __call__(self, attn_probs, layer_key):
+    def forward(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
-
-        # Store resolution and initialise meshgrid for centroid computations if unknown
-        if self.resolutions[layer_key] is None:
-            batch_size, seq_len, _ = attn_probs.shape
-            H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
-            self.resolutions[layer_key] = (H, W)
-            self.get_meshgrid(batch_size, H, W)
-        
-        padding_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        H, W = self.resolutions[layer_key]
-        step_centroids = self.compute_centroids(padding_probs, H, W).unsqueeze(1) # [B, 1, 2]
-        if self.centroid_store[layer_key] is None:
-            self.centroid_store[layer_key] = step_centroids 
-        else:
-            self.centroid_store[layer_key] = torch.cat(
-                [self.centroid_store[layer_key], step_centroids], dim=1 # [B, T+1, 2]
-            )  
-
+        batch_size, seq_len, _ = attn_probs.shape
+        if seq_len not in self.grid_cache:
+            self.get_meshgrid(seq_len)
+        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+        self.step_store[layer_key] = compute_centroids(eot_probs, self.grid_cache[seq_len])
         if self.save_maps:
-            with torch.no_grad():
-                attn_map = padding_probs.detach().cpu().reshape(-1, H, W, 1)
-                self.attention_maps[layer_key].append(attn_probs)
+            self.attention_maps[layer_key].append(eot_probs.detach())
+        return attn_probs
     
-    def compute_centroids(self, padding_probs, H, W):
-        padding_probs = normalize(padding_probs)
-        grid = self.grid_cache[(H, W)]
-        centroids = (padding_probs * grid).sum(dim=1) / padding_probs.sum(dim=1)
-        return centroids
-    
-    def collect_centroids(self, max_timestep):
-        all_centroids = [self.centroid_store[layer_key][:, :max_timestep+1, :] for layer_key in  sorted(self.centroid_store.keys())]
-        # Return all centroids in layer-major order
-        return torch.cat(all_centroids, dim=1)
+    def between_steps(self):
+        # Store resolution and initialise meshgrid for centroid computations if unknown
+        step_centroids = []
+        for layer_key in sorted(self.layer_metadata.keys()):
+            step_centroids.append(self.step_store[layer_key].unsqueeze(1))
+            self.centroid_cache[layer_key].append(self.step_store[layer_key].detach())
+        
+        step_centroids = torch.cat(step_centroids, dim=1)
+        if self.centroids is None:
+            self.centroids = step_centroids
+        else:
+            self.centroids = torch.cat(
+                [self.centroids, step_centroids], dim=1 # [B, T+1, 2]
+            )
+
+        self.step_store = self.get_empty_store()
+
+    def get_meshgrid(self, seq_len):
+        H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
+        self.resolutions.append[(H, W)]
+        with torch.no_grad():  
+            grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
+        self.grid_cache[seq_len] = grid.to(self.device)
         
 """
 Adapted from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
@@ -207,15 +240,6 @@ def apply_pca_reduction(attn_probs, n_components=3):
 def seq_len_to_spatial_dims(seq_len, ref_height, ref_width):
     scale_factor = np.sqrt(ref_height * ref_width // seq_len)
     return int(ref_height // scale_factor), int(ref_width // scale_factor)
-
-def normalize(attn_probs):
-    """
-    Min-max normalize each [seq_len, 1] map independently per batch item.
-    """
-    min_vals = attn_probs.min(dim=1, keepdim=True)[0]  # [B, 1, 1]
-    max_vals = attn_probs.max(dim=1, keepdim=True)[0]  # [B, 1, 1]
-
-    return (attn_probs - min_vals) / (max_vals - min_vals) #[B, seq_len, 1]
 
 def rescale_attention(attn_map, resolution=16):
     height, width = attn_map.shape[1:3] # shape: [B, H, W, C]

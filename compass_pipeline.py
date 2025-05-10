@@ -42,13 +42,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         return latents
     
     def register_attention_control(self):
-        # for name, module in self.unet.named_modules():
-        #     if hasattr(module, "is_cross_attention") and module.is_cross_attention:
-        #         place_in_unet, level, instance = parse_module_name(name)
-        #         layer_key = f"cross_{place_in_unet}_{level}_{instance}"
-        #         self.attn_store.layer_metadata[layer_key] = name
-        #         logger.info(f"Registering custom cross-attention control for layer key {layer_key}")
-        #         module.set_processor(MyCustomAttnProcessor(self.attn_store, layer_key))
         attn_procs = {}
         cross_attn_count = 0
         for name, processor in self.unet.attn_processors.items():

@@ -3,10 +3,8 @@ import math
 import torch.nn.functional as F
 
 def minmax_normalization(attn_map):
-    min = attn_map.min()
-    max = attn_map.max()
-    if max == min:
-        return torch.zeros_like(attn_map) # Avoid division by zero
+    min = attn_map.amin(dim=(1, 2), keepdim=True)  # [B, 1, 1, 1]
+    max = attn_map.amax(dim=(1, 2), keepdim=True)  # [B, 1, 1, 1]
 
     return (attn_map - min) / (max - min)
 
@@ -83,13 +81,25 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
-def compute_centroid(attn_map, grid):
-    attn_map = attn_map.to(dtype=torch.float32)
-    
-    moments = torch.sum(attn_map.unsqueeze(-1) * grid, dim=(0,1))
-    centroid = moments / torch.sum(attn_map)
+def compute_centroids(attn_map, grid):
+    grid = grid.unsqueeze(0)  # [1, H, W, 2]
+    attn_map = minmax_normalization(attn_map)
+    weighted_coords = attn_map * grid  # [B, H, W, 2]
+    centroids = weighted_coords.sum(dim=(1, 2)) / attn_map.sum(dim=(1, 2))
 
-    return centroid
+    return centroids # [B, 2]
+
+def centroids_to_kde(centroids, grid, sigma=1):
+    batch_size, num_samples, _ = centroids.shape
+    # Compute squared distance between each centroid and grid location
+    diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
+    dists = (diffs ** 2).sum(dim=-1)  # [B, N, H, W]
+    # Apply Gaussian kernel function
+    weights = gaussian_weighting(dists, sigma)
+    kde = weights.sum(dim=1) / (num_samples * (2 * math.pi * sigma**2))
+    # Normalise to a valid PDF
+    kde = kde / kde.sum(dim=(1, 2), keepdim=True) # [B, H, W]
+    return kde 
 
 def compute_torque(attn_map):
     H, W = attn_map.shape
@@ -137,18 +147,6 @@ def rot_points(H, W):
     distances = torch.min(torch.stack([dist_1, dist_2, dist_3, dist_4], dim=0), dim=0).values
 
     return distances
-
-def centroids_to_kde(centroids, grid, sigma=1):
-    batch_size, num_samples, _ = centroids.shape
-    # Compute squared distance between each centroid and grid location
-    diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
-    dists = (diffs ** 2).sum(dim=-1)  # [B, N, H, W]
-    # Apply Gaussian kernel function
-    weights = gaussian_weighting(dists, sigma)
-    kde = weights.sum(dim=1) / (num_samples * (2 * math.pi * sigma**2))
-    # Normalise to a valid PDF
-    kde = kde / kde.sum(dim=(1, 2), keepdim=True) # [B, H, W]
-    return kde 
 
 def symmetry_mse(attn_map, sigma=1):
     mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
