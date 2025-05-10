@@ -61,7 +61,7 @@ class AttentionStore(AttentionControl):
 
         self.attention_maps = defaultdict(list)
         self.centroid_cache = defaultdict(list)
-        self.resolutions = [] # store layer resolutions for ease
+        self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
         self.initialized = False
