@@ -76,7 +76,7 @@ class AttentionStore:
         if self.save_maps:
             with torch.no_grad():
                 attn_map = padding_probs.detach().cpu().reshape(-1, H, W, 1)
-                self.attention_maps[layer_key].append(attn_map)
+                self.attention_maps[layer_key].append(attn_probs)
     
     def compute_centroids(self, padding_probs, H, W):
         padding_probs = normalize(padding_probs)
