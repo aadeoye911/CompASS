@@ -144,7 +144,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
 
         ################ CUSTOM LOGIC ########################################
         attention_probs = attn.get_attention_scores(query, key, attention_mask)
-        print(f"{self.layer_key} id={id(attention_probs)}, mean={attention_probs.mean():.6f}")
         self.store(attention_probs, self.layer_key)
         ######################################################################
 

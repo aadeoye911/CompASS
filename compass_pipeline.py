@@ -42,14 +42,28 @@ class CompASSPipeline(StableDiffusionPipeline):
         return latents
     
     def register_attention_control(self):
-        for name, module in self.unet.named_modules():
-            if hasattr(module, "is_cross_attention") and module.is_cross_attention:
-                place_in_unet, level, instance = parse_module_name(name)
+        # for name, module in self.unet.named_modules():
+        #     if hasattr(module, "is_cross_attention") and module.is_cross_attention:
+        #         place_in_unet, level, instance = parse_module_name(name)
+        #         layer_key = f"cross_{place_in_unet}_{level}_{instance}"
+        #         self.attn_store.layer_metadata[layer_key] = name
+        #         logger.info(f"Registering custom cross-attention control for layer key {layer_key}")
+        #         module.set_processor(MyCustomAttnProcessor(self.attn_store, layer_key))
+        attn_procs = {}
+        cross_attn_count = 0
+        for name, processor in self.unet.attn_processors.items():
+            if "attn2" in name:
+                module_name = name.replace(".processor", "")
+                place_in_unet, level, instance = parse_module_name(module_name)
                 layer_key = f"cross_{place_in_unet}_{level}_{instance}"
                 self.attn_store.layer_metadata[layer_key] = name
-                logger.info(f"Registering custom cross-attention control for layer key {layer_key}")
-                module.set_processor(MyCustomAttnProcessor(self.attn_store, layer_key))
+                attn_procs[name] = MyCustomAttnProcessor(attention_store = self.attn_store, layer_key = layer_key)
+                cross_attn_count += 1
+            else:
+                attn_procs[name] = processor
         
+        self.unet.set_attn_processor(attn_procs)
+        self.attn_store.num_attn_layers = cross_attn_count
         self.attn_store.register_keys()
                     
     def denoising_step(self, latents, t, prompt_embeds):
