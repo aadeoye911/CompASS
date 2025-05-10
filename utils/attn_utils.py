@@ -20,22 +20,22 @@ class AttentionControl(abc.ABC):
         raise NotImplementedError
 
     def __call__(self, attn, layer_key: str):
-        if self.cur_att_layer < self.num_att_layers:
+        if self.cur_attn_layer < self.num_attn_layers:
             self.forward(attn, layer_key)
-        self.cur_att_layer += 1
-        if self.cur_att_layer == self.num_att_layers:
-            self.cur_att_layer = 0
+        self.cur_attn_layer += 1
+        if self.cur_attn_layer == self.num_attn_layers:
+            self.cur_attn_layer = 0
             self.cur_step += 1
             self.between_steps()
 
     def reset(self):
         self.cur_step = 0
-        self.cur_att_layer = 0
+        self.cur_attn_layer = 0
 
     def __init__(self):
         self.cur_step = 0
-        self.num_att_layers = -1
-        self.cur_att_layer = 0
+        self.num_attn_layers = -1
+        self.cur_attn_layer = 0
 
 
 class EmptyControl(AttentionControl):
