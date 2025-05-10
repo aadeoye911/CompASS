@@ -168,7 +168,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
-        self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_global_store=False)
+        self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_maps=True)
         self.register_attention_control()
     
         # Remove gradients from unet
