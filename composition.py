@@ -86,12 +86,7 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
-def compute_centroid(attn_map, positions, percentile=100):
-    attn_map = attn_map.to(dtype=torch.float32)
-    if percentile < 100:
-        threshold = torch.quantile(attn_map, percentile / 100.0)  # Compute threshold value
-        mask = attn_map >= threshold  # Create binary mask
-        attn_map = attn_map * mask  # Zero out non-salient pixels
+def compute_centroid(attn_map, positions):
     moments = torch.sum(attn_map.unsqueeze(-1) * positions, dim=(0,1))
     centroid = moments / torch.sum(attn_map)
 
@@ -148,15 +143,6 @@ def symmetry_mse(attn_map, sigma=1):
     mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
     score = torch.mean((attn_map - mirror)**2)
     return score
-
-def symmetry_gaussian(attn_map):
-    mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
-    weight = gaussian_weighting((attn_map - mirror)**2, torch.var(attn_map**2)/10)
-    print("min =", weight.min().item(), "max =", weight.max().item(), "mean =", weight.mean().item())
-    visualise_attn(weight, cmap='hot')
-    score = torch.mean(weight)
-    return score
-
 
 # def z_normalization(attn_map):
 #     """ 
