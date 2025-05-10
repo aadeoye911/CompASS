@@ -117,7 +117,7 @@ class AttentionStore(AttentionControl):
 
     def get_meshgrid(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
-        self.resolutions.append[(H, W)]
+        self.resolutions.append((H, W))
         with torch.no_grad():  
             grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
         self.grid_cache[seq_len] = grid.to(self.device)
