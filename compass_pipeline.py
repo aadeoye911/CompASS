@@ -87,6 +87,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             Union[Callable[[int, int, Dict], None], PipelineCallback, MultiPipelineCallbacks]
         ] = None,
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
+        run_compass: bool = False,
         **kwargs,
     ):
         """
@@ -171,59 +172,69 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.register_attention_control()
     
         # Remove gradients from unet
-        # for _, param in self.unet.named_parameters():
-        #     param.requires_grad = False
+        for _, param in self.unet.named_parameters():
+            param.requires_grad = False
         ###############################################################################
 
         # 7. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            #  If guiding by reference extract attention distribution from one timestep
-            final_t = timesteps[-1]
+            
+            # for i, t in enumerate(timesteps):
+            t = timesteps[-1] # Use instead of for loop to extract reference from final timestep
             latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, final_t)
-            null_pred = self.unet(latent_model_input, final_t, encoder_hidden_states=prompt_embeds, cross_attention_kwargs=self.cross_attention_kwargs).sample
-            torch.cuda.empty_cache()
-        #     for i, t in enumerate(timesteps):
+            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+
+            # predict the noise residual
+            noise_pred = self.unet(
+                latent_model_input, 
+                t, 
+                encoder_hidden_states=prompt_embeds, 
+                cross_attention_kwargs=self.cross_attention_kwargs
+            ).sample
                 
-        #         ######### CUSTOM LOGIC HERE ################ 
-        #         latents = latents.requires_grad_(True) # Must track to gradients here
-        
-        #         latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-        #         latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
-        #         noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=prompt_embeds, cross_attention_kwargs=self.cross_attention_kwargs).sample
-        #         if self.do_classifier_free_guidance:
-        #             noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-        #             noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
-        #         latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
-
-        #         self.unet.zero_grad()
-
-        #         # replaece with actuall loss functoin
-        #         # loss = compute_ca_loss(attn_map_integrated_mid, attn_map_integrated_up, bboxes=bboxes,
-        #         #                         object_positions=object_positions) * cfg.inference.loss_scale
-
-        #         grad_cond = torch.autograd.grad(loss.requires_grad_(True), [latents])[0]
-
-        #         latents = latents - grad_cond * self.scheduler.sigmas[i] ** 2
-        #         latents = latents - step_size * grad_cond
-               
-        #         torch.cuda.empty_cache()
+                # with torch.enable_grad():
+                   
+                #     if run_compass:
+                #         latents.requires_grad_(True)  # NOTE. Gradients must now be tracked
+            
+                #     latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                #     latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
                     
-        #         ####################################################
+                    
+                #     if self.do_classifier_free_guidance:
+                #         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                #         noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    
+                #     self.unet.zero_grad()
+                #     ######### CUSTOM LOGIC HERE ################ 
+                #     if run_compass:
+                #         centroids = self.attn_store.collect_centroids(i)
+                #         # replaece with actuall loss function
+                #         loss = compute_ca_loss(self.attn_store.centroids)
 
-        #         if callback_on_step_end is not None:
-        #             callback_kwargs = {}
-        #             for k in callback_on_step_end_tensor_inputs:
-        #                 callback_kwargs[k] = locals()[k]
-        #             callback_outputs = callback_on_step_end(self, i, t, callback_kwargs)
+                #         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
+                #         # loss.backward()
+                #         noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+                
+                #     ####################################################
 
-        #             latents = callback_outputs.pop("latents", latents)
-        #             prompt_embeds = callback_outputs.pop("prompt_embeds", prompt_embeds)
-        #             negative_prompt_embeds = callback_outputs.pop("negative_prompt_embeds", negative_prompt_embeds)
+                #     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
 
-        #         if XLA_AVAILABLE:
-        #             xm.mark_step()
-        
+                #     if callback_on_step_end is not None:
+                #         callback_kwargs = {}
+                #         for k in callback_on_step_end_tensor_inputs:
+                #             callback_kwargs[k] = locals()[k]
+                #         callback_outputs = callback_on_step_end(self, i, t, callback_kwargs)
+
+                #         latents = callback_outputs.pop("latents", latents)
+                #         prompt_embeds = callback_outputs.pop("prompt_embeds", prompt_embeds)
+                #         negative_prompt_embeds = callback_outputs.pop("negative_prompt_embeds", negative_prompt_embeds)
+
+                #     if XLA_AVAILABLE:
+                #         xm.mark_step()
+
+                #     torch.cuda.empty_cache()
+
         # with torch.no_grad():
         #     # Postprocess final outputs
         #     if not output_type == "latent":

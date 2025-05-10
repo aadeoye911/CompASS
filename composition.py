@@ -1,9 +1,6 @@
 import torch
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import math
 import torch.nn.functional as F
-from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 
 def minmax_normalization(attn_map):
     min = attn_map.min()
@@ -86,8 +83,10 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
 
     return torch.stack([x_coords, y_coords], dim=-1)  # Shape (H, W, 2)
 
-def compute_centroid(attn_map, positions):
-    moments = torch.sum(attn_map.unsqueeze(-1) * positions, dim=(0,1))
+def compute_centroid(attn_map, grid):
+    attn_map = attn_map.to(dtype=torch.float32)
+    
+    moments = torch.sum(attn_map.unsqueeze(-1) * grid, dim=(0,1))
     centroid = moments / torch.sum(attn_map)
 
     return centroid
@@ -139,6 +138,18 @@ def rot_points(H, W):
 
     return distances
 
+def centroids_to_kde(centroids, grid, sigma=1):
+    batch_size, num_samples, _ = centroids.shape
+    # Compute squared distance between each centroid and grid location
+    diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
+    dists = (diffs ** 2).sum(dim=-1)  # [B, N, H, W]
+    # Apply Gaussian kernel function
+    weights = gaussian_weighting(dists, sigma)
+    kde = weights.sum(dim=1) / (num_samples * (2 * math.pi * sigma**2))
+    # Normalise to a valid PDF
+    kde = kde / kde.sum(dim=(1, 2), keepdim=True) # [B, H, W]
+    return kde 
+
 def symmetry_mse(attn_map, sigma=1):
     mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
     score = torch.mean((attn_map - mirror)**2)
@@ -153,15 +164,6 @@ def symmetry_mse(attn_map, sigma=1):
 #     # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
 #     #     return torch.zeros_like(attn_map) # Avoid division by zero
 #     return (attn_map - mean) / std
-
-# def softmax_normalization(attn_map, temperature=1.0):
-#     """ 
-#     Softmax normational
-#     """
-#     attn_map = attn_map / temperature  # Optional: Adjust distribution sharpness
-#     attn_map = torch.nn.functional.softmax(attn_map.flatten(), dim=0).reshape(attn_map.shape)
-
-#     return attn_map
 
 # def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
 #     """

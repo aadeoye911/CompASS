@@ -11,45 +11,46 @@ class AttentionStore:
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
-        self.save_maps = save_maps
-        self.layer_metadata = {}
-        self.resolutions = {}      # resolution tracking per layer
-        self.device = device
-         
         self.latent_height = latent_height
         self.latent_width = latent_width
         self.eot_tensor = eot_tensor
+        self.save_maps = save_maps
 
+        self.layer_metadata = {}
+        self.resolutions = {} # store layer resolutions for ease
+        self.centroid_store = {}
         self.attention_maps = defaultdict(list)
-        self.centroids = defaultdict(list)
         self.grid_cache = {}
-        
+        self.device = device
+         
         self.initialized = False
     
-    def get_empty_store(self):
-        return {layer_key: [] for layer_key in self.layer_metadata.keys()}
+    def get_empty_store(self, null_entry = None):
+        return {layer_key: null_entry for layer_key in self.layer_metadata.keys()}
     
     def register_keys(self):
         """
         Called once after layer keys are known
         """
-        self.attention_maps = self.get_empty_store()
-        self.resolutions = {k: None for k in self.layer_metadata.keys()}
+        self.attention_maps = self.get_empty_store(null_entry=[])
+        self.resolutions = self.get_empty_store()
+        self.centroid_store = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.resolutions = {k: None for k in self.layer_metadata}
-        self.attention_maps = self.get_empty_store()
-        self.centroids = self.get_empty_store
+        self.attention_maps = self.get_empty_store(null_entry=[])
+        self.resolutions = self.get_empty_store()
+        self.centroid_store = self.get_empty_store()
         self.grid_cache = {}
         
     def get_meshgrid(self, batch_size, H, W, flatten=True):
         if (H, W) not in self.grid_cache:
-            grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
-            grid = grid.unsqueeze(0).repeat(batch_size, 1, 1, 1)  # [B, H, W, 2]
-            if flatten:
-                grid = grid.reshape(batch_size, -1, 2) #[B, seq_len, 2]
-            self.grid_cache[(H, W)] = grid.to(self.device)
+            with torch.no_grad():  # Prevent gradient tracking during creation
+                grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
+                grid = grid.unsqueeze(0).repeat(batch_size, 1, 1, 1)  # [B, H, W, 2]
+                if flatten:
+                    grid = grid.reshape(batch_size, -1, 2) #[B, seq_len, 2]
+                self.grid_cache[(H, W)] = grid.to(self.device)
     
     def __call__(self, attn_probs, layer_key):
         if not self.initialized:
@@ -62,15 +63,31 @@ class AttentionStore:
             self.resolutions[layer_key] = (H, W)
             self.get_meshgrid(batch_size, H, W)
         
-        padding = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        padding = normalize(padding)
-        grid = self.grid_cache[self.resolutions[layer_key]]
-        step_centroids = (padding * grid).sum(dim=1) / padding.sum(dim=1)
-        self.centroids[layer_key].append(step_centroids)
+        padding_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+        H, W = self.resolutions[layer_key]
+        step_centroids = self.compute_centroids(padding_probs, H, W).unsqueeze(1) # [B, 1, 2]
+        if self.centroid_store[layer_key] is None:
+            self.centroid_store[layer_key] = step_centroids 
+        else:
+            self.centroid_store[layer_key] = torch.cat(
+                [self.centroid_store[layer_key], step_centroids], dim=1 # [B, T+1, 2]
+            )  
 
         if self.save_maps:
             with torch.no_grad():
-                self.attention_maps[layer_key].append(padding.detach())
+                attn_map = padding_probs.detach().cpu().reshape(-1, H, W, 1)
+                self.attention_maps[layer_key].append(attn_map)
+    
+    def compute_centroids(self, padding_probs, H, W):
+        padding_probs = normalize(padding_probs)
+        grid = self.grid_cache[(H, W)]
+        centroids = (padding_probs * grid).sum(dim=1) / padding_probs.sum(dim=1)
+        return centroids
+    
+    def collect_centroids(self, max_timestep):
+        all_centroids = [self.centroid_store[layer_key][:, :max_timestep+1, :] for layer_key in  sorted(self.centroid_store.keys())]
+        # Return all centroids in layer-major order
+        return torch.cat(all_centroids, dim=1)
         
 """
 Adapted from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
@@ -168,14 +185,13 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         return hidden_states
     
 def aggregate_padding_tokens(attn_probs, eot_tensor, device):
-    batch_size, seq_len, num_tokens = attn_probs.shape
+    B, seq_len, num_tokens = attn_probs.shape
     # Apply mask to isolate EoT paddings along token dimension
     token_range = torch.arange(num_tokens, device=device).unsqueeze(0) # shape: [1, num_tokens]
-    token_mask = token_range >= eot_tensor.unsqueeze(1)  # shape: [batch_size, num_tokens]
-    token_mask = token_mask.unsqueeze(1)
-    masked_attn = attn_probs * token_mask.float()
+    token_mask = token_range >= eot_tensor.unsqueeze(1)                # shape: [B, num_tokens]
+    masked_attn = attn_probs * token_mask.unsqueeze(1).float()         # shape: [B, seq_len, num_tokens]
 
-    return masked_attn.sum(dim=-1, keepdim=True)  # shape: [batch_size, seq_len, 1]
+    return masked_attn.sum(dim=-1, keepdim=True)  # shape: [B, seq_len, 1]
 
 def apply_pca_reduction(attn_probs, n_components=3):
     batch_size, seq_len, _ = attn_probs.shape
@@ -200,11 +216,6 @@ def normalize(attn_probs):
     max_vals = attn_probs.max(dim=1, keepdim=True)[0]  # [B, 1, 1]
 
     return (attn_probs - min_vals) / (max_vals - min_vals) #[B, seq_len, 1]
-
-def reshape_attention(attn_probs, ref_height, ref_width):
-    batch_size, seq_len, _ = attn_probs.shape
-    height, width = seq_len_to_spatial_dims(seq_len, ref_height, ref_width)
-    return attn_probs.reshape(batch_size, height, width, -1)
 
 def rescale_attention(attn_map, resolution=16):
     height, width = attn_map.shape[1:3] # shape: [B, H, W, C]

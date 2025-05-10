@@ -11,25 +11,6 @@ import h5py
 import torch
 from sklearn.preprocessing import MultiLabelBinarizer
 
-def load_encoded_labels(labels_path, category, drop_unknown=True): 
-    labels_df = pd.read_csv(labels_path, usecols=["image_hash", category], index_col=0)
-
-    # Turn comma separate entries into binarized multilabels
-    labels_df[category] = labels_df[category].apply(lambda x: x.split(",") if isinstance(x, str) else [])
-    mlb = MultiLabelBinarizer()
-    labels_encoded = pd.DataFrame(
-        mlb.fit_transform(labels_df[category]),
-        columns=mlb.classes_,
-        index=labels_df.index  # Keep the original index (image_hash)
-    )
-
-    if drop_unknown:
-        num_dropped = (labels_encoded.sum(axis=1) == 0).sum()
-        print(f"Dropped {num_dropped} samples with unknown {category} labels.")
-        labels_encoded = labels_encoded[labels_encoded.sum(axis=1) > 0]
-
-    return labels_encoded
-
 def compute_image_hash(image_path):
     """Compute a hash for an image file using MD5 and extract image dimensions."""
     hasher = hashlib.md5()
@@ -122,7 +103,7 @@ def update_dataframe(df, image_data):
 
     return df
 
-def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False, verbose=True):
+def load_attention_maps(hdf5_path, verbose=True):
     """
     Loads and optionally aggregates attention maps from an HDF5 file.
     """
@@ -138,15 +119,9 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False,
 
             # Loop through all layers for this image
             for layer_key in f[image_hash].keys():
-                if layer_key.split("_")[0] != attn_type:
-                    continue
                 
                 # Load attention map as numpy array
                 attn_map = f[image_hash][layer_key][:] 
-                if index is not None:
-                    attn_map = attn_map[:, :, index]
-                    if keep_dims:
-                        attn_map = attn_map[:, :, np.newaxis]
                 
                 H, W = attn_map.shape[:2]
                 # Use first maps reference for aspect ratio
@@ -178,6 +153,25 @@ def load_attention_maps(hdf5_path, attn_type="cross", index=-1, keep_dims=False,
             print("Printing dropped hashes (first 10):", corrupted_hashes[:10])
             
     return attn_df
+
+def load_encoded_labels(labels_path, category, drop_unknown=True): 
+    labels_df = pd.read_csv(labels_path, usecols=["image_hash", category], index_col=0)
+
+    # Turn comma separate entries into binarized multilabels
+    labels_df[category] = labels_df[category].apply(lambda x: x.split(",") if isinstance(x, str) else [])
+    mlb = MultiLabelBinarizer()
+    labels_encoded = pd.DataFrame(
+        mlb.fit_transform(labels_df[category]),
+        columns=mlb.classes_,
+        index=labels_df.index  # Keep the original index (image_hash)
+    )
+
+    if drop_unknown:
+        num_dropped = (labels_encoded.sum(axis=1) == 0).sum()
+        print(f"Dropped {num_dropped} samples with unknown {category} labels.")
+        labels_encoded = labels_encoded[labels_encoded.sum(axis=1) > 0]
+
+    return labels_encoded
 
 if __name__ == "__main__":
     # Define composition and frame size categories
