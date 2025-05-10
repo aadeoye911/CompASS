@@ -104,54 +104,21 @@ def update_dataframe(df, image_data):
     return df
 
 def load_attention_maps(hdf5_path, verbose=True):
-    """
-    Loads and optionally aggregates attention maps from an HDF5 file.
-    """
-    corrupted_hashes = []
     valid_data = []
-
     with h5py.File(hdf5_path, "r") as f:
         for image_hash in f.keys():
-        # Loop through each image group (image_hash)
             row_data = {"image_hash": image_hash}
-            ref_height, ref_width = None, None
-            corrupted = False
-
-            # Loop through all layers for this image
             for layer_key in f[image_hash].keys():
-                
-                # Load attention map as numpy array
                 attn_map = f[image_hash][layer_key][:] 
-                
-                H, W = attn_map.shape[:2]
-                # Use first maps reference for aspect ratio
-                if ref_height is None and ref_width is None:
-                    ref_height, ref_width = H, W
-            
-                # Check for mismatched aspect ratio
-                elif ref_height * W != ref_width * H: 
-                    corrupted_hashes.append(image_hash)
-                    corrupted = True
-                    break
-                    
-                # Store map
                 row_data[layer_key] = torch.tensor(attn_map.copy())
 
-            if not corrupted:
-                row_data["ref_height"] = ref_height
-                row_data["ref_width"] = ref_width
-                valid_data.append(row_data)
+            valid_data.append(row_data)
     
     attn_df = pd.DataFrame(valid_data)
     attn_df = attn_df.dropna()
     attn_df = attn_df.set_index("image_hash")
 
-    if verbose:
-        print(f"Loaded {len(attn_df)} valid samples.")
-        if corrupted_hashes:
-            print(f"Dropped {len(corrupted_hashes)} corrupted samples with inconsistent aspect ratios.")
-            print("Printing dropped hashes (first 10):", corrupted_hashes[:10])
-            
+    print(f"Loaded {len(attn_df)} valid samples.")          
     return attn_df
 
 def load_encoded_labels(labels_path, category, drop_unknown=True): 

@@ -56,7 +56,7 @@ class AttentionStore(AttentionControl):
         self.save_maps = save_maps
 
         self.layer_metadata = {}
-        self.step_store = {}
+        self.step_store = defaultdict(list)
         self.centroids = None
 
         self.attention_maps = defaultdict(list)
@@ -73,13 +73,14 @@ class AttentionStore(AttentionControl):
         """
         Called once after layer keys are known
         """
+        self.step_store = self.get_empty_store()
         self.attention_maps = self.get_empty_store()
         self.centroid_cache = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
         super(AttentionStore, self).reset()
-        self.step_store = {}
+        self.step_store = self.get_empty_store()
         self.centroids = None
         self.attention_maps = self.get_empty_store()
         self.centroid_cache = self.get_empty_store()
@@ -96,7 +97,8 @@ class AttentionStore(AttentionControl):
         H, W = self.resolutions[seq_len]
         eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
         eot_probs = eot_probs.reshape(-1, H, W, 1)
-        self.step_store[layer_key] = compute_centroids(eot_probs, self.grid_cache[seq_len])
+        layer_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
+        self.step_store[layer_key].append(layer_centroid)
         if self.save_maps:
             self.attention_maps[layer_key].append(eot_probs.detach())
         return attn_probs
@@ -105,7 +107,7 @@ class AttentionStore(AttentionControl):
         # Store resolution and initialise meshgrid for centroid computations if unknown
         step_centroids = []
         for layer_key in sorted(self.layer_metadata.keys()):
-            step_centroids.append(self.step_store[layer_key].unsqueeze(1))
+            step_centroids.append(self.step_store[layer_key][0].unsqueeze(1))
             self.centroid_cache[layer_key].append(self.step_store[layer_key].detach())
         
         step_centroids = torch.cat(step_centroids, dim=1)
