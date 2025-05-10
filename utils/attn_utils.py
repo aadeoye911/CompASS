@@ -83,7 +83,7 @@ class AttentionStore(AttentionControl):
         self.centroids = None
         self.attention_maps = self.get_empty_store()
         self.centroid_cache = self.get_empty_store()
-        self.resolutions = [] # store layer resolutions for ease
+        self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
     def forward(self, attn_probs, layer_key: str):
@@ -92,7 +92,10 @@ class AttentionStore(AttentionControl):
         batch_size, seq_len, _ = attn_probs.shape
         if seq_len not in self.grid_cache:
             self.get_meshgrid(seq_len)
+        
+        H, W = self.resolutions[seq_len]
         eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+        eot_probs = eot_probs.reshape(-1, H, W, 1)
         self.step_store[layer_key] = compute_centroids(eot_probs, self.grid_cache[seq_len])
         if self.save_maps:
             self.attention_maps[layer_key].append(eot_probs.detach())
@@ -117,7 +120,7 @@ class AttentionStore(AttentionControl):
 
     def get_meshgrid(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
-        self.resolutions.append((H, W))
+        self.resolutions[seq_len] = (H, W)
         with torch.no_grad():  
             grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
         self.grid_cache[seq_len] = grid.to(self.device)
