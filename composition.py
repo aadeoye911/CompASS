@@ -19,13 +19,13 @@ def distance_to_point(positions, point, method="manhattan"):
 
     return distances
 
-def distance_to_line(positions, line_normal, line_point=None, signed=True):
+def distance_to_line(positions, line_normal, line_point=None, signed=True, keepdim=True):
     """ 
     Compute distance to a line.
     """
     line_point = torch.Tensor([0, 0]) if line_point is None else line_point
     line_normal = normalize_vector(line_normal)                    
-    distances = torch.sum(line_normal * (positions - line_point), dim=-1)
+    distances = torch.sum(line_normal * (positions - line_point), dim=-1, keepdim=keepdim)
     if not signed:
         return torch.abs(distances)
 
@@ -96,26 +96,31 @@ def centroids_to_kde(centroids, grid, sigma=1):
     dists = (diffs ** 2).sum(dim=-1)  # [B, N, H, W]
     # Apply Gaussian kernel function
     weights = gaussian_weighting(dists, sigma)
-    kde = weights.sum(dim=1) / (num_samples * (2 * math.pi * sigma**2))
+    kde = weights.sum(dim=1)
     # Normalise to a valid PDF
     kde = kde / kde.sum(dim=(1, 2), keepdim=True) # [B, H, W]
     return kde 
 
-def compute_torque(attn_map):
-    H, W = attn_map.shape
-    positions = generate_grid(H, W, grid_aspect="equal", centered=True)
-
-    vertical = get_standard_normal("vertical")
-    left_third = torch.Tensor([-1/6, 0])
-    right_third = torch.Tensor([1/6, 0])
-
-    left_torque = torch.sum(attn_map * distance_to_line(positions, vertical, left_third))
-    right_torque = torch.sum(attn_map * distance_to_line(positions, vertical, right_third))
-    
-    return right_torque - left_torque
-
 def gaussian_weighting(distances, sigma=1):
     return torch.exp(- (distances ** 2) / (2 * sigma**2))
+
+def gaussian_kernel(kernel_size: int, sigma: float, device='cpu'):
+    """Creates a 2D Gaussian kernel."""
+    ax = torch.arange(-kernel_size // 2 + 1., kernel_size // 2 + 1., device=device)
+    xx, yy = torch.meshgrid(ax, ax, indexing='ij')
+    kernel = torch.exp(-(xx**2 + yy**2) / (2 * sigma**2))
+    kernel = kernel / kernel.sum()
+    return kernel
+
+def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size: int = 3):
+    """Apply a Gaussian filter to a 2D tensor."""
+    tensor = tensor.permute(0, 3, 1, 2)   # Add batch and channel dims
+    device = tensor.device
+    kernel = gaussian_kernel(kernel_size, sigma, device=device)
+    kernel = kernel.view(1, 1, kernel_size, kernel_size)
+    smoothed = F.conv2d(tensor, kernel, padding=kernel_size // 2)
+
+    return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
 def rot_lines(H, W):
     positions = generate_grid(H, W)
