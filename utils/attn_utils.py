@@ -111,6 +111,7 @@ class AttentionStore(AttentionControl):
         
         # Check for classifier guidance
         if batch_size != len(self.eot_tensor):
+            print(batch_size, len(self.eot_tensor))
             assert len(self.eot_tensor) * 2 == batch_size
             attn_probs = attn_probs.chunk(2)[1]
         
