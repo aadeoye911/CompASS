@@ -48,8 +48,8 @@ class AttentionStore:
     def __call__(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
-        centroid = self.get_eot_centroid(attn_probs)
-        self.centroids[layer_key].append(centroid)
+        # centroid = self.get_eot_centroid(attn_probs)
+        # self.centroids[layer_key].append(centroid)
         if self.save_maps:
             with torch.no_grad():
                 self.attention_maps[layer_key].append(attn_probs.detach().cpu())
