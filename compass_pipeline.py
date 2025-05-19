@@ -58,16 +58,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.unet.set_attn_processor(attn_procs)
         self.attn_store.num_attn_layers = cross_attn_count
         self.attn_store.register_keys()
-                    
-    def denoising_step(self, latents, t, prompt_embeds):
-        latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-        latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
-        noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=prompt_embeds, cross_attention_kwargs=self.cross_attention_kwargs).sample
-        if self.do_classifier_free_guidance:
-            noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-            noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
-        
-        return noise_pred
 
     """
     Adapted from https://github.com/huggingface/diffusers/blob/13e48492f0aca759dda5056481d32b641af0450f/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py
@@ -173,15 +163,13 @@ class CompASSPipeline(StableDiffusionPipeline):
         # Extract EoT token indices from prompt tokens
         eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
         eot_tensor = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt).to(device)
+        if self.do_classifier_free_guidance:
+            eot_tensor = torch.cat(torch.ones_like(eot_tensor), eot_tensor)
 
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
         self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_maps=save_maps)
         self.register_attention_control()
-    
-        # Remove gradients from unet
-        for _, param in self.unet.named_parameters():
-            param.requires_grad = False
         ###############################################################################
 
         # 7. Denoising loop
