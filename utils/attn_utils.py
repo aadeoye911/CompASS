@@ -53,6 +53,7 @@ class AttentionStore:
     def __call__(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
+        print(f"Layer: {layer_key} | Shape: {attn_probs.shape}")
         if self.cur_att_layer >= 0:
             self.step_store[layer_key].append(attn_probs)
         self.cur_att_layer += 1
