@@ -23,7 +23,11 @@ class AttentionStore:
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
 
-        self.centroids = defaultdict(list)
+        self.num_att_layers = -1
+        self.cur_att_layer = 0
+
+        self.step_centroids = []
+        self.centroid_cache = defaultdict(list)
         self.attention_maps = defaultdict(list)
 
         self.initialized = False
@@ -35,12 +39,15 @@ class AttentionStore:
         """
         Called once after layer keys are known
         """
-        self.centroids = self.get_empty_store()
+        self.step_store = self.get_empty_store()
+        self.centroid_cache = self.get_empty_store()
         self.attention_maps = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.centroids = self.get_empty_store()
+        self.step_centroids = []
+        self.step_store = self.get_empty_store()
+        self.centroid_cache = self.get_empty_store()
         self.attention_maps = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
@@ -48,13 +55,31 @@ class AttentionStore:
     def __call__(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
-        # centroid = self.get_eot_centroid(attn_probs)
-        # self.centroids[layer_key].append(centroid)
-        if self.save_maps:
-            with torch.no_grad():
-                self.attention_maps[layer_key].append(attn_probs.detach().cpu())
+        if self.cur_att_layer >= 0:
+            self.step_store[layer_key].append(attn_probs)
+        self.cur_att_layer += 1
+        if self.cur_att_layer == self.num_att_layers:
+            self.cur_att_layer = 0
+            self.between_steps()
+    
+    def between_steps(self):
+        self.step_centroids = []
 
-        return attn_probs
+        for layer_key in self.step_store:
+            if not self.step_store[layer_key]:
+                continue
+            # Compute EoT centroids
+            attn_probs = self.step_store[layer_key][0]
+            centroid = self.get_eot_centroid(attn_probs)
+            self.step_centroids.append(centroid)  
+
+            # Cache centroids and maps for logging and visualisaiotn
+            self.centroid_cache[layer_key].append(centroid.detach().cpu())
+            if self.save_maps:
+                with torch.no_grad():
+                    self.attention_maps[layer_key].append(attn_probs.detach().cpu())
+
+        self.step_store = self.get_empty_store()
 
     def get_eot_centroid(self, attn_probs):
         batch_size, seq_len, _ = attn_probs.shape

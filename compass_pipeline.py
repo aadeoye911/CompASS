@@ -43,7 +43,7 @@ class CompASSPipeline(StableDiffusionPipeline):
     
     def register_attention_control(self):
         attn_procs = {}
-        cross_attn_count = 0
+        cross_att_count = 0
         for name, processor in self.unet.attn_processors.items():
             if "attn2" in name:
                 module_name = name.replace(".processor", "")
@@ -51,12 +51,12 @@ class CompASSPipeline(StableDiffusionPipeline):
                 layer_key = f"cross_{place_in_unet}_{level}_{instance}"
                 self.attn_store.layer_metadata[layer_key] = name
                 attn_procs[name] = MyCustomAttnProcessor(attention_store = self.attn_store, layer_key = layer_key)
-                cross_attn_count += 1
+                cross_att_count += 1
             else:
                 attn_procs[name] = processor
         
         self.unet.set_attn_processor(attn_procs)
-        self.attn_store.num_attn_layers = cross_attn_count
+        self.attn_store.num_att_layers = cross_att_count
         self.attn_store.register_keys()
 
     """
