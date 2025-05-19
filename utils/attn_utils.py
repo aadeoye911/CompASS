@@ -8,27 +8,24 @@ from collections import defaultdict
 from composition import generate_grid, compute_centroids
 
 class AttentionStore:
-    def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=False):
+    def __init__(self, save_maps=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
         super(AttentionStore, self).__init__()
-        self.latent_height = latent_height
-        self.latent_width = latent_width
-        self.eot_tensor = eot_tensor
-        self.device = device
+        self.layer_metadata = {}
         self.save_maps = save_maps
 
-        self.layer_metadata = {}
-        self.resolutions = {} # store layer resolutions for ease
+        self.step_store = defaultdict(list)
+        self.step_centroids = None
+        self.global_centroids = {}
+        self.attention_maps = defaultdict(list)
+
         self.grid_cache = {}
+        self.resolutions = {}
 
         self.num_att_layers = -1
         self.cur_att_layer = 0
-
-        self.step_centroids = []
-        self.centroid_cache = defaultdict(list)
-        self.attention_maps = defaultdict(list)
 
         self.initialized = False
     
@@ -40,15 +37,16 @@ class AttentionStore:
         Called once after layer keys are known
         """
         self.step_store = self.get_empty_store()
-        self.centroid_cache = self.get_empty_store()
-        self.attention_maps = self.get_empty_store()
+        self.global_centroids = self.get_empty_store()
+        if self.save_maps:
+            self.attention_maps = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.step_centroids = []
         self.step_store = self.get_empty_store()
-        self.centroid_cache = self.get_empty_store()
-        self.attention_maps = self.get_empty_store()
+        self.global_centroids = self.get_empty_store()
+        if self.save_maps:
+            self.attention_maps = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
@@ -68,15 +66,16 @@ class AttentionStore:
         for layer_key in self.step_store:
             if not self.step_store[layer_key]:
                 continue
-            # Compute EoT centroids
-            attn_probs = self.step_store[layer_key][0]
-            centroid = self.get_eot_centroid(attn_probs)
-            self.step_centroids.append(centroid)  
 
-            # Cache centroids and maps for logging and visualisaiotn
-            self.centroid_cache[layer_key].append(centroid.detach().cpu())
-            if self.save_maps:
-                with torch.no_grad():
+            # Get first attention map for this layer
+            attn_probs = self.step_store[layer_key][0]
+            eot_centroid = self.get_eot_centroid(attn_probs)
+            self.step_centroids.append(eot_centroid)
+
+            # Optional: store detached attention map for logging
+            with torch.no_grad():
+                self.global_centroids[layer_key].append(eot_centroid.detach().cpu())
+                if self.save_maps:
                     self.attention_maps[layer_key].append(attn_probs.detach().cpu())
 
         self.step_store = self.get_empty_store()

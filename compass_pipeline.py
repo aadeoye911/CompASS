@@ -181,7 +181,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                 with torch.enable_grad():
-                    self.unet.zero_grad()
+                    
                     latents.detach_()
                     latent_model_input.requires_grad = run_compass  # Always enable grad
 
@@ -192,6 +192,8 @@ class CompASSPipeline(StableDiffusionPipeline):
                         encoder_hidden_states=prompt_embeds, 
                         cross_attention_kwargs=self.cross_attention_kwargs
                     ).sample
+                    
+                    self.unet.zero_grad()
                     
                     if self.do_classifier_free_guidance:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
@@ -209,6 +211,10 @@ class CompASSPipeline(StableDiffusionPipeline):
                     ####################################################
 
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
+
+                    
+                    if i == len(timesteps) - 1 or (i + 1) % self.scheduler.order == 0:
+                        progress_bar.update()
 
                     if callback_on_step_end is not None:
                         callback_kwargs = {}
