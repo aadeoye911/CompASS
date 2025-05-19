@@ -176,7 +176,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         # 7. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             
-            # for i, t in enumerate(timesteps):
             for i, t in enumerate(timesteps):
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)

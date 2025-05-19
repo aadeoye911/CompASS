@@ -89,7 +89,7 @@ def compute_centroids(attn_map, grid):
 
     return centroids # [B, 2]
 
-def centroids_to_kde(centroids, grid, sigma=1):
+def centroids_to_kde(centroids, grid, sigma=0.05):
     batch_size, num_samples, _ = centroids.shape
     # Compute squared distance between each centroid and grid location
     diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
@@ -122,7 +122,7 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
 
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
-def rot_points(H, W):
+def rot_grid(H, W):
     positions = generate_grid(H, W, normalize=True, keep_aspect=False)
     dist_1 = distance_to_point(positions, torch.tensor([-1/3, 1/3]))
     dist_2 = distance_to_point(positions, torch.tensor([1/3, 1/3]))
@@ -132,16 +132,6 @@ def rot_points(H, W):
     distances = torch.min(torch.stack([dist_1, dist_2, dist_3, dist_4], dim=0), dim=0).values
 
     return distances
-
-# def z_normalization(attn_map):
-#     """ 
-#     Z normalization
-#     """
-#     mean = attn_map.mean()
-#     std = attn_map.std()
-#     # if torch.isclose(std, torch.tensor(0.0), atol=1e-8)
-#     #     return torch.zeros_like(attn_map) # Avoid division by zero
-#     return (attn_map - mean) / std
 
 # def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
 #     """
