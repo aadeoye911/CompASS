@@ -122,26 +122,6 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
 
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
-def rot_lines(H, W):
-    positions = generate_grid(H, W)
-    horizontal_normal = get_standard_normal(type="horizontal")
-    vertical_normal = get_standard_normal(type="vertical")
-
-    H1_distances = distance_to_line(positions, horizontal_normal, H / 3)
-    H2_distances = distance_to_line(positions, horizontal_normal, 2 * H / 3)
-    H_distances = torch.min(H1_distances, H2_distances)
-
-    V1_distances = distance_to_line(positions, vertical_normal, W / 3)
-    V2_distances = distance_to_line(positions, vertical_normal, 2 * W / 3)
-    V_distances = torch.min(V1_distances, V2_distances)
-
-    distances = H_distances + V_distances
-    distances = gaussian_weighting(distances)
-    print("min =", distances.min().item(), "max =", distances.max().item(), "mean =", distances.mean().item())
-    visualise_attn(distances)
-
-    return distances
-
 def rot_points(H, W):
     positions = generate_grid(H, W, normalize=True, keep_aspect=False)
     dist_1 = distance_to_point(positions, torch.tensor([-1/3, 1/3]))
@@ -152,11 +132,6 @@ def rot_points(H, W):
     distances = torch.min(torch.stack([dist_1, dist_2, dist_3, dist_4], dim=0), dim=0).values
 
     return distances
-
-def symmetry_mse(attn_map, sigma=1):
-    mirror = torch.flip(attn_map, dims=[1])  # Flip horizontal
-    score = torch.mean((attn_map - mirror)**2)
-    return score
 
 # def z_normalization(attn_map):
 #     """ 

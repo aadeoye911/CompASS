@@ -44,7 +44,7 @@ class EmptyControl(AttentionControl):
         return attn
     
 class AttentionStore(AttentionControl):
-    def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=True):
+    def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
@@ -55,12 +55,13 @@ class AttentionStore(AttentionControl):
         self.device = device
         self.save_maps = save_maps
 
-        self.layer_metadata = {}
         self.step_store = defaultdict(list)
-        self.centroids = None
-
         self.attention_maps = defaultdict(list)
-        self.centroid_cache = defaultdict(list)
+
+        self.step_centroids = None
+        self.centroid_cache = None
+        
+        self.layer_metadata = {}
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
@@ -74,58 +75,54 @@ class AttentionStore(AttentionControl):
         Called once after layer keys are known
         """
         self.step_store = self.get_empty_store()
-        self.attention_maps = self.get_empty_store()
-        self.centroid_cache = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
+        self.centroids = []
         self.initialized = True
    
     def reset(self):
         super(AttentionStore, self).reset()
         self.step_store = self.get_empty_store()
-        self.centroids = None
         self.attention_maps = self.get_empty_store()
-        self.centroid_cache = self.get_empty_store()
+        self.centroids = []
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
     def forward(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
-        batch_size, seq_len, _ = attn_probs.shape
-        if seq_len not in self.grid_cache:
-            self.get_meshgrid(seq_len)
-        
-        H, W = self.resolutions[seq_len]
-        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        eot_probs = eot_probs.reshape(-1, H, W, 1)
-        layer_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
-        self.step_store[layer_key].append(layer_centroid)
-        if self.save_maps:
-            self.attention_maps[layer_key].append(eot_probs.detach())
+        self.step_store[layer_key].append(attn_probs)
         return attn_probs
     
     def between_steps(self):
         # Store resolution and initialise meshgrid for centroid computations if unknown
-        step_centroids = []
         for layer_key in sorted(self.layer_metadata.keys()):
-            step_centroids.append(self.step_store[layer_key][0].unsqueeze(1))
-            self.centroid_cache[layer_key].append(self.step_store[layer_key].detach())
-        
-        step_centroids = torch.cat(step_centroids, dim=1)
-        if self.centroids is None:
-            self.centroids = step_centroids
-        else:
-            self.centroids = torch.cat(
-                [self.centroids, step_centroids], dim=1 # [B, T+1, 2]
-            )
-
+            attn_map = self.step_store[layer_key][0]
+            centroid = self.get_eot_centroid(attn_map)
+            self.centroids.append(centroid)
+            if self.save_maps:
+                with torch.no_grad():
+                    self.global_store[layer_key].append(attn_map.detach())
         self.step_store = self.get_empty_store()
 
-    def get_meshgrid(self, seq_len):
+    def get_eot_centroid(self, attn_probs):
+        batch_size, seq_len, _ = attn_probs.shape
+        if seq_len not in self.grid_cache:
+            self.cache_grid_and_resolution(seq_len)
+        
+        H, W = self.resolutions[seq_len]
+        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+        eot_probs = eot_probs.reshape(-1, H, W, 1)
+        eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
+        
+        return eot_centroid
+
+    def cache_grid_and_resolution(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
         self.resolutions[seq_len] = (H, W)
         with torch.no_grad():  
             grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
         self.grid_cache[seq_len] = grid.to(self.device)
+
         
 """
 Adapted from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
