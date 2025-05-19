@@ -7,43 +7,7 @@ from diffusers.models.attention_processor import Attention, AttnProcessor2_0
 from collections import defaultdict
 from composition import generate_grid, compute_centroids
 
-class AttentionControl(abc.ABC):
-
-    def step_callback(self, x_t):
-        return x_t
-
-    def between_steps(self):
-        return
-
-    @abc.abstractmethod
-    def forward(self, attn, layer_key: str):
-        raise NotImplementedError
-
-    def __call__(self, attn, layer_key: str):
-        if self.cur_attn_layer < self.num_attn_layers:
-            self.forward(attn, layer_key)
-        self.cur_attn_layer += 1
-        if self.cur_attn_layer == self.num_attn_layers:
-            self.cur_attn_layer = 0
-            self.cur_step += 1
-            self.between_steps()
-
-    def reset(self):
-        self.cur_step = 0
-        self.cur_attn_layer = 0
-
-    def __init__(self):
-        self.cur_step = 0
-        self.num_attn_layers = -1
-        self.cur_attn_layer = 0
-
-
-class EmptyControl(AttentionControl):
-
-    def forward(self, attn, layer_key: str):
-        return attn
-    
-class AttentionStore(AttentionControl):
+class AttentionStore:
     def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
@@ -55,16 +19,13 @@ class AttentionStore(AttentionControl):
         self.device = device
         self.save_maps = save_maps
 
-        self.step_store = defaultdict(list)
-        self.attention_maps = defaultdict(list)
-
-        self.step_centroids = None
-        self.centroid_cache = None
-        
         self.layer_metadata = {}
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
-    
+
+        self.centroids = defaultdict(list)
+        self.attention_maps = defaultdict(list)
+
         self.initialized = False
     
     def get_empty_store(self):
@@ -74,35 +35,26 @@ class AttentionStore(AttentionControl):
         """
         Called once after layer keys are known
         """
-        self.step_store = self.get_empty_store()
-        self.attention_store = self.get_empty_store()
-        self.centroids = []
+        self.centroids = self.get_empty_store()
+        self.attention_maps = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        super(AttentionStore, self).reset()
-        self.step_store = self.get_empty_store()
+        self.centroids = self.get_empty_store()
         self.attention_maps = self.get_empty_store()
-        self.centroids = []
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
-    def forward(self, attn_probs, layer_key: str):
+    def __call__(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
-        self.step_store[layer_key].append(attn_probs)
+        centroid = self.get_eot_centroid(attn_probs)
+        self.centroids[layer_key].append(centroid)
+        if self.save_maps:
+            with torch.no_grad():
+                self.attention_maps[layer_key].append(attn_probs.detach().cpu())
+
         return attn_probs
-    
-    def between_steps(self):
-        # Store resolution and initialise meshgrid for centroid computations if unknown
-        for layer_key in sorted(self.layer_metadata.keys()):
-            attn_map = self.step_store[layer_key][0]
-            centroid = self.get_eot_centroid(attn_map)
-            self.centroids.append(centroid)
-            if self.save_maps:
-                with torch.no_grad():
-                    self.attention_maps[layer_key].append(attn_map.detach())
-        self.step_store = self.get_empty_store()
 
     def get_eot_centroid(self, attn_probs):
         batch_size, seq_len, _ = attn_probs.shape
@@ -123,7 +75,6 @@ class AttentionStore(AttentionControl):
             grid = generate_grid(H, W, centered=True, grid_aspect="equal") # Shape [H, W, 2]
         self.grid_cache[seq_len] = grid.to(self.device)
 
-        
 """
 Adapted from https://github.com/huggingface/diffusers/blob/v0.32.2/src/diffusers/models/attention_processor.py
 """
