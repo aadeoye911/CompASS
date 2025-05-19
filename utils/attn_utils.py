@@ -108,13 +108,7 @@ class AttentionStore(AttentionControl):
         batch_size, seq_len, _ = attn_probs.shape
         if seq_len not in self.grid_cache:
             self.cache_grid_and_resolution(seq_len)
-        
-        # Check for classifier guidance
-        if batch_size != len(self.eot_tensor):
-            print(batch_size, len(self.eot_tensor))
-            assert len(self.eot_tensor) * 2 == batch_size
-            attn_probs = attn_probs.chunk(2)[1]
-        
+                
         H, W = self.resolutions[seq_len]
         eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
         eot_probs = eot_probs.reshape(-1, H, W, 1)

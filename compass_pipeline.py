@@ -163,6 +163,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         # Extract EoT token indices from prompt tokens
         eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
         eot_tensor = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt).to(device)
+        if self.do_classifier_free_guidance:
+            eot_tensor = torch.cat[torch.ones(batch_size * num_images_per_prompt), eot_tensor]
 
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
