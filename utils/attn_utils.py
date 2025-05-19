@@ -8,14 +8,17 @@ from collections import defaultdict
 from composition import generate_grid, compute_centroids
 
 class AttentionStore:
-    def __init__(self, save_maps=False):
+    def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
-        super(AttentionStore, self).__init__()
-        self.layer_metadata = {}
+        self.latent_height = latent_height
+        self.latent_width = latent_width
+        self.eot_tensor = eot_tensor
+        self.device = device
         self.save_maps = save_maps
 
+        self.layer_metadata = {}
         self.step_store = defaultdict(list)
         self.step_centroids = None
         self.global_centroids = {}
