@@ -109,8 +109,9 @@ class AttentionStore(AttentionControl):
         if seq_len not in self.grid_cache:
             self.cache_grid_and_resolution(seq_len)
         
+        # Check for classifier guidance
         if batch_size != len(self.eot_tensor):
-            assert self.eot_tensor * 2 == batch_size
+            assert len(self.eot_tensor) * 2 == batch_size
             attn_probs = attn_probs.chunk(2)[1]
         
         H, W = self.resolutions[seq_len]
@@ -225,7 +226,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
     
 def aggregate_padding_tokens(attn_probs, eot_tensor, device):
     B, seq_len, num_tokens = attn_probs.shape
-    num_images = len(eot_tensor)
     # Apply mask to isolate EoT paddings along token dimension
     token_range = torch.arange(num_tokens, device=device).unsqueeze(0) # shape: [1, num_tokens]
     token_mask = token_range >= eot_tensor.unsqueeze(1)                # shape: [B, num_tokens]
