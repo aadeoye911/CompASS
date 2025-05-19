@@ -101,7 +101,7 @@ class AttentionStore(AttentionControl):
             self.centroids.append(centroid)
             if self.save_maps:
                 with torch.no_grad():
-                    self.global_store[layer_key].append(attn_map.detach())
+                    self.attention_maps[layer_key].append(attn_map.detach())
         self.step_store = self.get_empty_store()
 
     def get_eot_centroid(self, attn_probs):
