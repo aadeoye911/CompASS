@@ -169,7 +169,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
-        self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_maps=save_maps)
+        self.attn_store = AttentionStore(save_maps=save_maps)
         self.register_attention_control()
         ###############################################################################
 
@@ -182,7 +182,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
                 with torch.enable_grad():
                     
-                    latents.detach_()
+                    latents = latents.clone().detach().requires_grad_(True)
                     latent_model_input.requires_grad = run_compass  # Always enable grad
 
                     # predict the noise residual
