@@ -209,14 +209,15 @@ class CompASSPipeline(StableDiffusionPipeline):
                     
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
+                        with torch.enable_grad():
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                        centroids = self.attn_store.step_centroids[0]  # or your preferred source
-                        saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
-                        loss = divergence_loss(saliency_pred, target_map)
-                        grad_cond = torch.autograd.grad(loss, [latents])[0]
-                        # loss.backward()
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+                            centroids = self.attn_store.step_centroids[0]  # or your preferred source
+                            saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
+                            loss = divergence_loss(saliency_pred, target_map)
+                            grad_cond = torch.autograd.grad(loss, [latents])[0]
+                            # loss.backward()
+                            noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
                     ####################################################
 
