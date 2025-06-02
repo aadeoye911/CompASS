@@ -202,7 +202,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
                         centroids = torch.stack([self.attn_store.attn_centroids[-1]
-                                                    for key in self.attn_store.attention_store.keys()
+                                                    for key in self.attn_store.attn_centroids.keys()
                                                 ], dim=1)  # or your preferred source
 
                         grid = self.attn_store.grid_cache[16 * latent_width / 4]
