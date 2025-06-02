@@ -203,11 +203,9 @@ class CompASSPipeline(StableDiffusionPipeline):
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
                         centroids = self.attn_store.get_eot_centroids(eot_tensor)
-                        print(centroids)
                         grid = self.attn_store.grid_cache[16 * latent_width / 4]
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
                         loss = divergence_loss(saliency_pred, target_map)
-                        print(loss.item())
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
                         # loss.backward()
                 
