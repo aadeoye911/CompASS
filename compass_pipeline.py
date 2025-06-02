@@ -213,7 +213,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     if run_compass:
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                        centroids = torch.stack([self.get_eot_centroids(
+                        centroids = torch.stack([self.get_eot_centroid(
                                                     self.attn_store.attention_store[key][-1]
                                                     ) for key in self.attn_store.attention_store.keys()
                                                 ], dim=1)  # or your preferred source
