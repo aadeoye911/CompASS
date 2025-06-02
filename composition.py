@@ -132,7 +132,7 @@ def rot_loss(positions, temperature=5):
     dists = distance_to_point(mean_position, powerpoints)
     weights = torch.softmax(-temperature * dists, dim=-1)         # [B, 4]
     expected = (weights.unsqueeze(-1) * powerpoints).sum(dim=1)   # [B, 2]
-    loss = torch.sum((mean_position.squeeze(1) - expected) ** 2)  # [B, 2] -> scalar
+    loss = torch.sum((mean_position - expected) ** 2)  # [B, 2] -> scalar
     return loss
 
 def ll_loss(positions, axis="left_diag"):
