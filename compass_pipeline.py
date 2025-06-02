@@ -211,7 +211,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     if run_compass:
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                        centroids = torch.stack(self.attn_store.step_centroids[1], dim=1)  # or your preferred source
+                        centroids = torch.stack(self.attn_store.step_centroids, dim=1)  # or your preferred source
 
                         if self.do_classifier_free_guidance:
                             _, centroids = centroids.chunk(2)
