@@ -74,8 +74,9 @@ class AttentionStore:
         self.step_store = self.get_empty_store()
         self.step_store = self.get_empty_store()
         
-    def get_eot_centroids(self, eot_tensor):
+    def get_eot_centroids(self, eot_tensor, return_grid = True):
         centroid_list = []
+        grid = None
         for layer_key, item in self.attention_store.items():
             if not item:
                 continue
@@ -84,6 +85,8 @@ class AttentionStore:
             if seq_len not in self.grid_cache:
                 self.cache_grid_and_resolution(seq_len)   
             H, W = self.resolutions[seq_len]
+            if H == 16 and not grid:
+                grid = self.grid_cache[seq_len]
             eot_probs = aggregate_padding_tokens(attn_probs, eot_tensor, self.device)
             eot_probs = eot_probs.reshape(-1, H, W, 1)
             eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
@@ -91,7 +94,12 @@ class AttentionStore:
         if not centroid_list:
             raise ValueError("No attention maps found to compute centroids from.")
         
-        return torch.stack(centroid_list, dim=1)
+        centroids = torch.stack(centroid_list, dim=1)
+
+        if return_grid:
+            return centroids, grid
+        else:
+            return centroids
     
     def cache_grid_and_resolution(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
