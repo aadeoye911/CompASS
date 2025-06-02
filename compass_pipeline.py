@@ -8,7 +8,7 @@ from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
 from utils.attn_utils import MyCustomAttnProcessor, AttentionStore, aggregate_padding_tokens
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
-from composition import centroids_to_kde, divergence_loss, nll_loss, generate_grid, compute_centroids
+from composition import centroids_to_kde, divergence_loss, nll_loss, rot_loss, ll_loss
 import gc
 
 if is_torch_xla_available():
@@ -169,7 +169,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         _, _, latent_height, latent_width = latents.shape
         self.attn_store = AttentionStore(latent_height, latent_width, device, save_global_store=False)
         self.register_attention_control()
-        target_map = target_map.to(device)
         ###############################################################################
         # 7. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
@@ -199,10 +198,8 @@ class CompASSPipeline(StableDiffusionPipeline):
                     
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
-                        centroids, grid = self.attn_store.get_eot_centroids(eot_tensor)
-                        saliency_pred = centroids_to_kde(centroids, grid, sigma=bandwidth)
-                        loss = nll_loss(saliency_pred, target_map)
-                        print(loss.item())
+                        centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
+                        loss = rot_loss(centroids)
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
 
                         # Update full latents only using conditional gradient

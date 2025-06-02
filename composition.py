@@ -89,7 +89,7 @@ def compute_centroids(attn_map, grid):
 
     return centroids # [B, 2]
 
-def centroids_to_kde(centroids, grid, bandwith=0.01):
+def centroids_to_kde(centroids, grid, bandwidth=0.01):
     batch_size, num_samples, _ = centroids.shape
     # Compute squared distance between each centroid and grid location
     diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
@@ -121,6 +121,23 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
     smoothed = F.conv2d(tensor, kernel, padding=kernel_size // 2)
 
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
+
+def get_rot_powerpoints():
+    return torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]]).unsqueeze(0)
+
+def rot_loss(positions, temperature=5):
+    mean_position = positions.mean(dim=1, keepdim=True)
+    powerpoints = get_rot_powerpoints().unsqueeze(0)
+    dists = distance_to_point(mean_position, powerpoints)
+    weights = torch.softmax(-temperature * dists, dim=-1)         # [B, 4]
+    expected = (weights.unsqueeze(-1) * powerpoints).sum(dim=1)   # [B, 2]
+    loss = torch.sum((mean_position.squeeze(1) - expected) ** 2)  # [B, 2] -> scalar
+    return loss
+
+def ll_loss(positions, axis="left_diag"):
+    normal = get_standard_normal(axis)              # e.g., [-1, 1] normalized
+    dists = distance_to_line(positions, normal)     # coords: [B, N, 2] or [N, 2]
+    return torch.sum(dists**2)                      # Penalize distance from line
 
 def rot_grid(H, W):
     positions = generate_grid(H, W, centered=True, grid_aspect="scaled")

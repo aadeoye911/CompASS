@@ -95,7 +95,6 @@ class AttentionStore:
             raise ValueError("No attention maps found to compute centroids from.")
         
         centroids = torch.stack(centroid_list, dim=1)
-
         if return_grid:
             return centroids, grid
         else:
@@ -105,7 +104,7 @@ class AttentionStore:
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
         self.resolutions[seq_len] = (H, W)
         with torch.no_grad():  
-            grid = generate_grid(H, W, centered=True, grid_aspect="scaled") # Shape [H, W, 2]
+            grid = generate_grid(H, W, centered=True, grid_aspect="scaled") * 2 # scaled to [-1, 1]
         self.grid_cache[seq_len] = grid.to(self.device)
 
 """
