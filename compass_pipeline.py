@@ -214,7 +214,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         centroids = self.attn_store.step_centroids[0]  # or your preferred source
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
                         loss = divergence_loss(saliency_pred, target_map)
-                        grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
+                        grad_cond = torch.autograd.grad(loss, [latents])[0]
                         # loss.backward()
                         noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
