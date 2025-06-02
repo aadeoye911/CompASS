@@ -36,15 +36,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         height, width = scale_resolution_to_multiple(height, width, self.total_downscale_factor, min_dim)
         return height, width
     
-    def get_eot_centroid(self, attn_probs):
-        batch_size, seq_len, _ = attn_probs.shape     
-        H, W = self.attn_store.resolutions[seq_len]
-        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        eot_probs = eot_probs.reshape(-1, H, W, 1)
-        eot_centroid = compute_centroids(eot_probs, self.attn_store.grid_cache[seq_len])
-        
-        return eot_centroid
-    
     def register_attention_control(self):
         attn_procs = {}
         cross_att_count = 0
@@ -218,8 +209,6 @@ class CompASSPipeline(StableDiffusionPipeline):
                                                     ) for key in self.attn_store.attention_store.keys()
                                                 ], dim=1)  # or your preferred source
 
-                        if self.do_classifier_free_guidance:
-                            _, centroids = centroids.chunk(2)
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.03)
                         loss = divergence_loss(saliency_pred, target_map)
 
