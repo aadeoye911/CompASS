@@ -8,20 +8,18 @@ from collections import defaultdict
 from composition import generate_grid, compute_centroids
 
 class AttentionStore:
-    def __init__(self, latent_height, latent_width, eot_tensor, device, save_global_store=False):
+    def __init__(self, latent_height, latent_width, device, save_global_store=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
         self.latent_height = latent_height
         self.latent_width = latent_width
-        self.eot_tensor = eot_tensor
         self.device = device
         self.save_global_store = save_global_store
 
         self.layer_metadata = {}
         self.step_store = defaultdict(list)
-        self.step_centroids = defaultdict(list)
-        self.attn_centroids = defaultdict(list)
+        self.attention_store = defaultdict(list)
         self.global_store = defaultdict(list)
 
         self.grid_cache = {}
@@ -40,14 +38,14 @@ class AttentionStore:
         Called once after layer keys are known
         """
         self.step_store = self.get_empty_store()
-        self.attn_store = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
         self.step_store = self.get_empty_store()
-        self.attn_store = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
@@ -78,7 +76,7 @@ class AttentionStore:
         self.step_store = self.get_empty_store()
         self.step_store = self.get_empty_store()
         
-    def get_eot_centroids(self):
+    def get_eot_centroids(self, eot_tensor):
         centroid_list = []
         for layer_key, item in self.attention_store.items():
             if not item:
@@ -88,7 +86,7 @@ class AttentionStore:
             if seq_len not in self.grid_cache:
                 self.cache_grid_and_resolution(seq_len)   
             H, W = self.resolutions[seq_len]
-            eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+            eot_probs = aggregate_padding_tokens(attn_probs, eot_tensor, self.device)
             eot_probs = eot_probs.reshape(-1, H, W, 1)
             eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
             centroid_list.append(eot_centroid)
