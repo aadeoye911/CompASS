@@ -154,6 +154,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         )
         
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
+        self.eta = eta
 
         ############################# CUSTOM LOGIC ####################################
         # Extract EoT token indices from prompt tokens
@@ -208,13 +209,8 @@ class CompASSPipeline(StableDiffusionPipeline):
                         grid = self.attn_store.grid_cache[16 * latent_width / 4]
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.03)
                         loss = divergence_loss(saliency_pred, target_map)
-
-                        print("latents requires_grad:", latents.requires_grad)
-                        print("loss requires_grad:", loss.requires_grad)
-                        print("latents in graph:", torch.autograd.grad(loss, [latents], retain_graph=True, allow_unused=True)[0] is not None)
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
                         # loss.backward()
-                        
                 
                     ####################################################
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
