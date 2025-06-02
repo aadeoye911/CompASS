@@ -66,3 +66,9 @@ def parse_module_name(name):
         return place_in_unet, level, instance
     except Exception as e:
         raise ValueError(f"Failed to parse module name '{name}': {e}")
+    
+def image2latent(model, image, device):
+    image = model.image_processor.preprocess(image)
+    image = image.to(device=device)
+    latents = model.vae.encode(image).latent_dist.mean * model.vae.config.scaling_factor
+    return latents

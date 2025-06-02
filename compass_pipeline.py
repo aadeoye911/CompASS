@@ -6,9 +6,9 @@ from diffusers.utils import is_torch_xla_available, logging, replace_example_doc
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline, StableDiffusionPipelineOutput
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
-from utils.attn_utils import MyCustomAttnProcessor, AttentionStore
+from utils.attn_utils import MyCustomAttnProcessor, AttentionStore, aggregate_padding_tokens
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
-from composition import centroids_to_kde, divergence_loss, generate_grid
+from composition import centroids_to_kde, divergence_loss, generate_grid, compute_centroids
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -36,11 +36,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         height, width = scale_resolution_to_multiple(height, width, self.total_downscale_factor, min_dim)
         return height, width
     
-    def image2latent(self, image, device):
-        image = self.image_processor.preprocess(image)
-        image = image.to(device=device)
-        latents = self.vae.encode(image).latent_dist.mean * self.vae.config.scaling_factor
-        return latents
+    def get_eot_centroid(self, attn_probs):
+        batch_size, seq_len, _ = attn_probs.shape     
+        H, W = self.resolutions[seq_len]
+        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+        eot_probs = eot_probs.reshape(-1, H, W, 1)
+        eot_centroid = compute_centroids(eot_probs, self.attn_store.grid_cache[seq_len])
+        
+        return eot_centroid
     
     def register_attention_control(self):
         attn_procs = {}
@@ -88,7 +91,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         ] = None,
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         run_compass: bool = False,
-        save_maps: bool = False,
         **kwargs,
     ):
         """
@@ -165,14 +167,14 @@ class CompASSPipeline(StableDiffusionPipeline):
         ############################# CUSTOM LOGIC ####################################
         # Extract EoT token indices from prompt tokens
         eot_indices = prompt2idx(self.tokenizer, prompt, eot_only=True)
-        eot_tensor = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt)
+        self.eot_tensor = torch.Tensor(eot_indices).repeat_interleave(num_images_per_prompt)
         if self.do_classifier_free_guidance:
-            eot_tensor = torch.cat([torch.ones(batch_size * num_images_per_prompt), eot_tensor])
-        eot_tensor = eot_tensor.to(device)
+            self.eot_tensor = torch.cat([torch.ones(batch_size * num_images_per_prompt),self.eot_tensor])
+        self.eot_tensor = self.eot_tensor.to(device)
 
         # Register attention control
         _, _, latent_height, latent_width = latents.shape
-        self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_maps=save_maps)
+        self.attn_store = AttentionStore(latent_height, latent_width, device, save_global_store=False)
         self.register_attention_control()
 
         loss_height = loss_res
@@ -211,7 +213,10 @@ class CompASSPipeline(StableDiffusionPipeline):
                     if run_compass:
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                        centroids = torch.stack(self.attn_store.step_centroids, dim=1)  # or your preferred source
+                        centroids = torch.stack([self.get_eot_centroids(
+                                                    self.attn_store.attention_store[key][-1]
+                                                    ) for key in self.attn_store.attention_store.keys()
+                                                ], dim=1)  # or your preferred source
 
                         if self.do_classifier_free_guidance:
                             _, centroids = centroids.chunk(2)

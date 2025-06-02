@@ -8,21 +8,19 @@ from collections import defaultdict
 from composition import generate_grid, compute_centroids
 
 class AttentionStore:
-    def __init__(self, latent_height, latent_width, eot_tensor, device, save_maps=False):
+    def __init__(self, latent_height, latent_width, device, save_global_store=False):
         """
         Initializes an AttentionStore that tracks attention maps with structured keys.
         """
         self.latent_height = latent_height
         self.latent_width = latent_width
-        self.eot_tensor = eot_tensor
         self.device = device
-        self.save_maps = save_maps
+        self.save_global_store = save_global_store
 
         self.layer_metadata = {}
         self.step_store = defaultdict(list)
-        self.step_centroids = None
-        self.global_centroids = {}
-        self.attention_maps = defaultdict(list)
+        self.attention_store = defaultdict(list)
+        self.global_store = defaultdict(list)
 
         self.grid_cache = {}
         self.resolutions = {}
@@ -40,60 +38,46 @@ class AttentionStore:
         Called once after layer keys are known
         """
         self.step_store = self.get_empty_store()
-        self.global_centroids = self.get_empty_store()
-        if self.save_maps:
-            self.attention_maps = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
+        if self.save_global_store:
+            self.global_store = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
         self.step_store = self.get_empty_store()
-        self.global_centroids = self.get_empty_store()
-        if self.save_maps:
-            self.attention_maps = self.get_empty_store()
+        self.attention_store = self.get_empty_store()
+        if self.save_global_store:
+            self.global_store = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
         self.grid_cache = {}
     
     def __call__(self, attn_probs, layer_key: str):
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
+                
         if self.cur_att_layer >= 0:
             self.step_store[layer_key].append(attn_probs)
+            batch_size, seq_len, _ = attn_probs.shape
+            if seq_len not in self.grid_cache:
+                self.cache_grid_and_resolution(seq_len)
+        
         self.cur_att_layer += 1
         if self.cur_att_layer == self.num_att_layers:
             self.cur_att_layer = 0
             self.between_steps()
     
     def between_steps(self):
-        self.step_centroids = []
-
-        for layer_key in self.step_store:
-            if not self.step_store[layer_key]:
-                continue
-
-            # Get first attention map for this layer
-            attn_probs = self.step_store[layer_key][0]
-            eot_centroid = self.get_eot_centroid(attn_probs)
-            self.step_centroids.append(eot_centroid)
-
-            # Optional: store detached attention map for logging
+        self.attention_store = self.step_store
+        if self.save_global_store:
             with torch.no_grad():
-                self.global_centroids[layer_key].append(eot_centroid.detach().cpu())
-                if self.save_maps:
-                    self.attention_maps[layer_key].append(attn_probs.detach().cpu())
-
+                if len(self.global_store) == 0:
+                    self.global_store = self.step_store
+                else:
+                    for key in self.global_store:
+                        for i in range(len(self.global_store[key])):
+                            self.global_store[key][i] += self.step_store[key][i].detach()
         self.step_store = self.get_empty_store()
-
-    def get_eot_centroid(self, attn_probs):
-        batch_size, seq_len, _ = attn_probs.shape
-        if seq_len not in self.grid_cache:
-            self.cache_grid_and_resolution(seq_len)
-                
-        H, W = self.resolutions[seq_len]
-        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        eot_probs = eot_probs.reshape(-1, H, W, 1)
-        eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
-        
-        return eot_centroid
+        self.step_store = self.get_empty_store()
 
     def cache_grid_and_resolution(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
@@ -156,8 +140,8 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
         value = attn.to_v(encoder_hidden_states)
 
         ################ CUSTOM LOGIC ########################################
-        attention_probs = attn.get_attention_scores(query, key, attention_mask)
-        self.store(attention_probs, self.layer_key)
+        attn_probs = attn.get_attention_scores(query, key, attention_mask)
+        self.store(attn_probs, self.layer_key)
         ######################################################################
 
         inner_dim = key.shape[-1]
