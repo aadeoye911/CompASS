@@ -83,7 +83,6 @@ def generate_grid(H, W, centered=False, grid_aspect="auto"):
 
 def compute_centroids(attn_map, grid):
     grid = grid.unsqueeze(0)  # [1, H, W, 2]
-    print(attn_map.min(), attn_map.max())
     attn_map = minmax_normalization(attn_map)
     weighted_coords = attn_map * grid  # [B, H, W, 2]
     centroids = weighted_coords.sum(dim=(1, 2)) / attn_map.sum(dim=(1, 2))

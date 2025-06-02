@@ -155,10 +155,6 @@ class MyCustomAttnProcessor(AttnProcessor2_0):
 
         ################ CUSTOM LOGIC ########################################
         attn_probs = attn.get_attention_scores(query, key, attention_mask)
-        if torch.isnan(attn_probs).any():
-            print(f"[NaN DETECTED] in attention_probs at layer {self.layer_key}")
-            print("attention_probs stats:", attn_probs.min().item(), attn_probs.max().item())
-            raise ValueError("NaNs detected in attention map!")
         self.store(attn_probs, self.layer_key)
         ######################################################################
 
