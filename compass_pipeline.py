@@ -168,9 +168,6 @@ class CompASSPipeline(StableDiffusionPipeline):
         self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_global_store=False)
         self.register_attention_control()
 
-        loss_height = loss_res
-        loss_width = latent_width / latent_height * loss_res
-        grid = generate_grid(loss_height, loss_width, centered=True, grid_aspect="equal").to(device) # Shape [H, W, 2]
         target_map = target_map.to(device)
         ###############################################################################
 
@@ -204,11 +201,11 @@ class CompASSPipeline(StableDiffusionPipeline):
                     if run_compass:
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                        centroids = torch.stack([self.attn_store.get_eot_centroid(
-                                                    self.attn_store.attention_store[key][-1]
-                                                    ) for key in self.attn_store.attention_store.keys()
+                        centroids = torch.stack([self.attn_store.attn_centroids[-1]
+                                                    for key in self.attn_store.attention_store.keys()
                                                 ], dim=1)  # or your preferred source
 
+                        grid = self.attn_store.grid_cache[16 * latent_width / 4]
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.03)
                         loss = divergence_loss(saliency_pred, target_map)
 

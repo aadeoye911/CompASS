@@ -20,7 +20,8 @@ class AttentionStore:
 
         self.layer_metadata = {}
         self.step_store = defaultdict(list)
-        self.attention_store = defaultdict(list)
+        self.step_centroids = defaultdict(list)
+        self.attn_centroids = defaultdict(list)
         self.global_store = defaultdict(list)
 
         self.grid_cache = {}
@@ -62,6 +63,7 @@ class AttentionStore:
             if seq_len not in self.grid_cache:
                 self.cache_grid_and_resolution(seq_len)
             eot_centroid = self.get_eot_centroid(attn_probs)
+            self.step_centroids[layer_key].append(eot_centroid)
         
         self.cur_att_layer += 1
         if self.cur_att_layer == self.num_att_layers:
@@ -69,16 +71,17 @@ class AttentionStore:
             self.between_steps()
     
     def between_steps(self):
+        self.attn_centroids = self.step_centroids
         if self.save_global_store:
             with torch.no_grad():
                 if len(self.global_store) == 0:
-                    self.global_store = self.step_store
+                    self.global_store = self.step_centroids
                 else:
                     for key in self.global_store:
                         for i in range(len(self.global_store[key])):
-                            self.global_store[key][i] += self.step_store[key][i].detach()
-        self.step_store = self.get_empty_store()
-        self.step_store = self.get_empty_store()
+                            self.global_store[key][i] += self.step_centroids[key][i].detach()
+        self.step_centroids = self.get_empty_store()
+        self.step_centroids = self.get_empty_store()
 
         
     def get_eot_centroid(self, attn_probs):
