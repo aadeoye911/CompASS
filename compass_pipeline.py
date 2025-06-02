@@ -222,6 +222,10 @@ class CompASSPipeline(StableDiffusionPipeline):
                             _, centroids = centroids.chunk(2)
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.03)
                         loss = divergence_loss(saliency_pred, target_map)
+
+                        print("latents requires_grad:", latents.requires_grad)
+                        print("loss requires_grad:", loss.requires_grad)
+                        print("latents in graph:", torch.autograd.grad(loss, [latents], retain_graph=True, allow_unused=True)[0] is not None)
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
                         # loss.backward()
                         
