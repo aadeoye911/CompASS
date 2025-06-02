@@ -6,17 +6,20 @@ from upsetplot import from_indicators
 import warnings
 import seaborn as sns
 import numpy as np
+import torch
+from typing import Tuple, Optional
+from composition import centroids_to_kde, generate_grid
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def plot_image(image_path, ax, third_lines=True):
+def plot_image(image_path, ax, third_lines=True, width=1):
     """
     Plots an image on the given axes with an option to overlay third lines.
     """
     img = mpimg.imread(image_path)  # Load image as a NumPy array
     ax.imshow(img)
     if third_lines:
-        plot_third_lines(ax)
+        plot_third_lines(ax, width=width)
     ax.axis("off")
 
 def plot_third_lines(ax, color='red', style='--', width=0.2):
@@ -76,19 +79,67 @@ def plot_ar_distribution(labels_df):
     plt.tight_layout()
     plt.show()
 
-# def visualize_latents(sampler):
-#     T = len(sampler.decoded_images)
-#     cols = min(10, T)  # Max 10 columns
-#     rows = (T + cols - 1) // cols
-#     fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
+def plot_centroid_evolution(image, centroids, step_interval = 10, cols = 5, plot_centroids=True, plot_saliency=True, sigma=0.05, alpha=0.4):
+    """
+    Plots a grid of subplots showing the evolution of centroids over time.
+    """
+    img_np = np.array(image)
+    H, W = img_np.shape[:2]
 
-#     # Plot images in grid
-#     for i, ax in enumerate(axes.flatten()):
-#         if i < len(sampler.decoded_images):
-#             ax.imshow(sampler.decoded_images[i])
-#             ax.set_title(f"$z_{{{T -i}}}$", fontsize=12)
-#         ax.axis("off")
+    T, L, B, _ = centroids.shape
+    cmap = plt.get_cmap("tab20")
+    colors = [cmap(i) for i in range(L)]
 
-#     # Tight layout for better spacing
-#     plt.tight_layout()
-#     plt.show()
+    steps = np.arange(step_interval, T + 1, step_interval)
+    rows = 2
+
+    fig, axes = plt.subplots(rows, cols, figsize=(3.5 * cols, 2.5 * rows), constrained_layout=True)
+    axes = np.atleast_2d(axes)  # Ensure axes is always 2D
+
+    t_start = 0
+    for idx, step in enumerate(steps):
+        for row in range(rows):
+            ax = axes[row, idx]
+            ax.imshow(img_np, extent=[0, img_np.shape[1], 0, img_np.shape[0]], alpha=1-alpha)
+            ax.axis('off')
+
+            if idx == 0:
+              row_label = "Unconditional" if row == 0 else "Conditional"
+              ax.set_ylabel(f"{row_label} attention")
+
+
+            t_step = steps[idx]
+            if row < 2:
+                interval_centroids = centroids[t_step-1, :, row, :]
+            else:
+                interval_centroids = centroids[t_step-1, :, :, :]
+
+            if plot_centroids:
+                for layer in range(L):
+                    scaled_centroids =  interval_centroids[layer].reshape(-1, 2) * torch.Tensor([W, H]) + torch.Tensor([W / 2, H / 2])
+                    ax.scatter(scaled_centroids[:, 0],  scaled_centroids[:, 1], color=colors[layer], marker='*', s=20, linewidths=2, label=keys[layer])
+
+            if plot_saliency:
+                kde_centroids = interval_centroids.reshape(-1, 2)
+                grid = generate_grid(H // 8, W //8, centered=True, grid_aspect="scaled")
+                kde_map = centroids_to_kde(kde_centroids.unsqueeze(0), grid, sigma=sigma)[0]  # shape [H, W]
+                print(kde_map.min(), kde_map.max())
+                ax.imshow(kde_map.numpy(), extent=[0, img_np.shape[1], 0, img_np.shape[0]], origin='lower', cmap='jet', alpha=alpha)
+
+            if row == 0:
+                ax.set_title(f"T = {t_step}")
+
+
+    row_labels = ["Unconditional", "Conditional"]
+    for row_idx, label in enumerate(row_labels):
+        fig.text(
+            -0.01,                          # x position (very left)
+            1 - (row_idx + 0.5) / rows,   # y position centered in row
+            label,
+            va='center',
+            ha='right',
+            fontsize=12,
+        )
+
+    plt.subplots_adjust(right=0.85)  # adjust to make room
+    plt.show()

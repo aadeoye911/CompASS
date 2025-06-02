@@ -89,7 +89,7 @@ def compute_centroids(attn_map, grid):
 
     return centroids # [B, 2]
 
-def centroids_to_kde(centroids, grid, sigma=0.05):
+def centroids_to_kde(centroids, grid, sigma=0.01):
     batch_size, num_samples, _ = centroids.shape
     # Compute squared distance between each centroid and grid location
     diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
@@ -123,15 +123,30 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
 def rot_grid(H, W):
-    positions = generate_grid(H, W, normalize=True, keep_aspect=False)
-    dist_1 = distance_to_point(positions, torch.tensor([-1/3, 1/3]))
-    dist_2 = distance_to_point(positions, torch.tensor([1/3, 1/3]))
-    dist_3 = distance_to_point(positions, torch.tensor([1/3, -1/3]))
-    dist_4 = distance_to_point(positions, torch.tensor([-1/3, -1/3]))
+    positions = generate_grid(H, W, centered=True, grid_aspect="scaled")
+    dist_1 = distance_to_point(positions, torch.tensor([-1/6, 1/6]))
+    dist_2 = distance_to_point(positions, torch.tensor([1/6, 1/6]))
+    dist_3 = distance_to_point(positions, torch.tensor([1/6, -1/6]))
+    dist_4 = distance_to_point(positions, torch.tensor([-1/6, -1/6]))
 
     distances = torch.min(torch.stack([dist_1, dist_2, dist_3, dist_4], dim=0), dim=0).values
 
     return distances
+
+def divergence_loss(P: torch.Tensor, Q: torch.Tensor, mode: str = "kl", eps: float = 1e-8) -> torch.Tensor:
+    """
+    Computes divergence between two normalized 2D heatmaps.
+    """
+    P = P + eps
+    Q = Q + eps
+
+    if mode == "kl":
+        return torch.sum(P * torch.log(P / Q))
+    elif mode == "js":
+        M = 0.5 * (P + Q)
+        return 0.5 * (P * (P.log() - M.log())).sum() + 0.5 * (Q * (Q.log() - M.log())).sum()
+    else:
+        raise ValueError(f"Unsupported divergence mode: '{mode}'. Use 'kl' or 'js'.")
 
 # def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
 #     """

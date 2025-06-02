@@ -8,6 +8,7 @@ from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
 from utils.attn_utils import MyCustomAttnProcessor, AttentionStore
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
+from composition import centroids_to_kde, divergence_loss, generate_grid
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -79,6 +80,8 @@ class CompASSPipeline(StableDiffusionPipeline):
         negative_prompt_embeds: Optional[torch.Tensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        target_map = None,
+        loss_res = 16,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         callback_on_step_end: Optional[
             Union[Callable[[int, int, Dict], None], PipelineCallback, MultiPipelineCallbacks]
@@ -171,6 +174,11 @@ class CompASSPipeline(StableDiffusionPipeline):
         _, _, latent_height, latent_width = latents.shape
         self.attn_store = AttentionStore(latent_height, latent_width, eot_tensor, device, save_maps=save_maps)
         self.register_attention_control()
+
+        loss_height = loss_res
+        loss_width = latent_width / latent_height * loss_res
+        grid = generate_grid(loss_height, loss_width, centered=True, grid_aspect="equal").to(device) # Shape [H, W, 2]
+        target_map = target_map.to(device)
         ###############################################################################
 
         # 7. Denoising loop
@@ -202,11 +210,13 @@ class CompASSPipeline(StableDiffusionPipeline):
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
                         # replaece with actuall loss function
-                        print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
-                 
-                        # grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
-                        # # loss.backward()
-                        # noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+                        # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
+                        centroids = self.attn_store.step_centroids[0]  # or your preferred source
+                        saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
+                        loss = divergence_loss(saliency_pred, target_map)
+                        grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
+                        # loss.backward()
+                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
                     ####################################################
 
