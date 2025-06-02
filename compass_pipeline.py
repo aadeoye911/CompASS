@@ -212,7 +212,9 @@ class CompASSPipeline(StableDiffusionPipeline):
                         # replaece with actuall loss function
                         # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
                         centroids = torch.stack(self.attn_store.step_centroids[1], dim=1)  # or your preferred source
-                        print(centroids.shape)
+
+                        if self.do_classifier_free_guidance:
+                            _, centroids = centroids.chunk(2)
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.03)
                         loss = divergence_loss(saliency_pred, target_map)
                         grad_cond = torch.autograd.grad(loss, [latents])[0]
