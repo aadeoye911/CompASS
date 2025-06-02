@@ -8,7 +8,7 @@ from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
 from utils.attn_utils import MyCustomAttnProcessor, AttentionStore, aggregate_padding_tokens
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
-from composition import centroids_to_kde, divergence_loss, generate_grid, compute_centroids
+from composition import centroids_to_kde, divergence_loss, nll_loss, generate_grid, compute_centroids
 import gc
 
 if is_torch_xla_available():
@@ -76,7 +76,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
         target_map = None,
-        loss_res = 16,
+        bandwidth=0.01,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         callback_on_step_end: Optional[
             Union[Callable[[int, int, Dict], None], PipelineCallback, MultiPipelineCallbacks]
@@ -199,13 +199,17 @@ class CompASSPipeline(StableDiffusionPipeline):
                     
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
-                        # replaece with actuall loss function
-                        # print(f"Number of centroids at timestep {i}: {len(self.attn_store.centroids)} with shape: {self.attn_store.centroids[0].shape}")
                         centroids, grid = self.attn_store.get_eot_centroids(eot_tensor)
-                        saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
-                        loss = divergence_loss(saliency_pred, target_map)
+                        saliency_pred = centroids_to_kde(centroids, grid, sigma=bandwidth)
+                        loss = nll_loss(saliency_pred, target_map)
+                        print(loss.item())
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+
+                        # Update full latents only using conditional gradient
+                        noise_pred += self.eta * self.scheduler.sigmas[i] * torch.cat([
+                            torch.zeros_like(grad_cond),  # no grad on unconditional
+                            grad_cond
+                        ])
                 
                     ####################################################
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample

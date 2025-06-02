@@ -89,13 +89,13 @@ def compute_centroids(attn_map, grid):
 
     return centroids # [B, 2]
 
-def centroids_to_kde(centroids, grid, sigma=0.01):
+def centroids_to_kde(centroids, grid, bandwith=0.01):
     batch_size, num_samples, _ = centroids.shape
     # Compute squared distance between each centroid and grid location
     diffs = (centroids.unsqueeze(2).unsqueeze(3) - grid)  # [B, N, H, W, 2]
     dists = (diffs ** 2).sum(dim=-1)  # [B, N, H, W]
     # Apply Gaussian kernel function
-    weights = gaussian_weighting(dists, sigma)
+    weights = gaussian_weighting(dists, sigma=bandwidth)
     kde = weights.sum(dim=1)
     # Normalise to a valid PDF
     kde = kde / kde.sum(dim=(1, 2), keepdim=True) # [B, H, W]
@@ -147,6 +147,16 @@ def divergence_loss(P: torch.Tensor, Q: torch.Tensor, mode: str = "kl", eps: flo
         return 0.5 * (P * (P.log() - M.log())).sum() + 0.5 * (Q * (Q.log() - M.log())).sum()
     else:
         raise ValueError(f"Unsupported divergence mode: '{mode}'. Use 'kl' or 'js'.")
+
+def nll_loss(pred: torch.Tensor, target: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    """
+    Negative Log-Likelihood Loss between two probability distributions.
+    pred: [B, H, W] - predicted KDE saliency map
+    target: [B, H, W] - target saliency map
+    """
+    pred = pred.clamp(min=eps)
+    loss = - (target * torch.log(pred)).sum(dim=(1, 2))  # sum over H, W
+    return loss.mean()  # mean over batch
 
 # def get_filter_kernels(filter="central", dtype=torch.float32, device="cpu"):
 #     """
