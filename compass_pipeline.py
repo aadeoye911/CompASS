@@ -38,7 +38,7 @@ class CompASSPipeline(StableDiffusionPipeline):
     
     def get_eot_centroid(self, attn_probs):
         batch_size, seq_len, _ = attn_probs.shape     
-        H, W = self.resolutions[seq_len]
+        H, W = self.attn_store.resolutions[seq_len]
         eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
         eot_probs = eot_probs.reshape(-1, H, W, 1)
         eot_centroid = compute_centroids(eot_probs, self.attn_store.grid_cache[seq_len])
