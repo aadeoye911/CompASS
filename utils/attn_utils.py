@@ -55,9 +55,7 @@ class AttentionStore:
         if not self.initialized:
             raise RuntimeError("AttentionStore not initialized.")
                 
-        if self.cur_att_layer >= 0:
-            self.step_store[layer_key].append(attn_probs)
-
+        self.step_store[layer_key].append(attn_probs)
         self.cur_att_layer += 1
         if self.cur_att_layer == self.num_att_layers:
             self.cur_att_layer = 0
