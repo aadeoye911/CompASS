@@ -178,13 +178,13 @@ class CompASSPipeline(StableDiffusionPipeline):
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             
             for i, t in enumerate(timesteps):
-                latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                 with torch.enable_grad():
-                    
-                    latents = latents.clone().detach().requires_grad_(True)
-                    latent_model_input.requires_grad = run_compass  # Always enable grad
+
+                    latents = latents.requires_grad_(True)
+
+                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                     # predict the noise residual
                     noise_pred = self.unet(
