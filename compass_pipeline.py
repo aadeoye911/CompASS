@@ -206,6 +206,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         grid = self.attn_store.grid_cache[16 * latent_width / 4]
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
                         loss = divergence_loss(saliency_pred, target_map)
+                        print(loss.item())
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
                         # loss.backward()
                 
