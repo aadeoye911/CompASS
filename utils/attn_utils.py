@@ -39,15 +39,15 @@ class AttentionStore:
         """
         Called once after layer keys are known
         """
-        self.step_store = self.get_empty_store()
         self.step_centroids = self.get_empty_store()
+        self.attn_centroids = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.step_store = self.get_empty_store()
-        self.attention_store = self.get_empty_store()
+        self.step_centroids = self.get_empty_store()
+        self.attn_centroids = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
