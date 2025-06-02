@@ -122,12 +122,13 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
 
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
-def get_rot_powerpoints():
-    return torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]]).unsqueeze(0)
+def get_rot_powerpoints(device=None):
+    points = torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]]).unsqueeze(0)
+    return points if device is None else points.to(device)
 
 def rot_loss(positions, temperature=5):
-    mean_position = positions.mean(dim=1, keepdim=True)
-    powerpoints = get_rot_powerpoints().unsqueeze(0)
+    mean_position = positions.mean(dim=1, keepdim=True)                                                  # Ensure consistency
+    powerpoints = get_rot_powerpoints(mean_position.device).unsqueeze(0)    
     dists = distance_to_point(mean_position, powerpoints)
     weights = torch.softmax(-temperature * dists, dim=-1)         # [B, 4]
     expected = (weights.unsqueeze(-1) * powerpoints).sum(dim=1)   # [B, 2]
