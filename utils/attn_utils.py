@@ -39,15 +39,15 @@ class AttentionStore:
         """
         Called once after layer keys are known
         """
-        self.step_centroids = self.get_empty_store()
-        self.attn_centroids = self.get_empty_store()
+        self.step_store = self.get_empty_store()
+        self.attn_store = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.initialized = True
    
     def reset(self):
-        self.step_centroids = self.get_empty_store()
-        self.attn_centroids = self.get_empty_store()
+        self.step_store = self.get_empty_store()
+        self.attn_store = self.get_empty_store()
         if self.save_global_store:
             self.global_store = self.get_empty_store()
         self.resolutions = {} # store layer resolutions for ease
@@ -59,39 +59,43 @@ class AttentionStore:
                 
         if self.cur_att_layer >= 0:
             self.step_store[layer_key].append(attn_probs)
-            batch_size, seq_len, _ = attn_probs.shape
-            if seq_len not in self.grid_cache:
-                self.cache_grid_and_resolution(seq_len)
-            eot_centroid = self.get_eot_centroid(attn_probs)
-            self.step_centroids[layer_key].append(eot_centroid)
-        
+
         self.cur_att_layer += 1
         if self.cur_att_layer == self.num_att_layers:
             self.cur_att_layer = 0
             self.between_steps()
     
     def between_steps(self):
-        self.attn_centroids = self.step_centroids
+        self.attention_store = self.step_store
         if self.save_global_store:
             with torch.no_grad():
                 if len(self.global_store) == 0:
-                    self.global_store = self.step_centroids
+                    self.global_store = self.step_store
                 else:
                     for key in self.global_store:
                         for i in range(len(self.global_store[key])):
-                            self.global_store[key][i] += self.step_centroids[key][i].detach()
-        self.step_centroids = self.get_empty_store()
-        self.step_centroids = self.get_empty_store()
-
+                            self.global_store[key][i] += self.step_store[key][i].detach()
+        self.step_store = self.get_empty_store()
+        self.step_store = self.get_empty_store()
         
-    def get_eot_centroid(self, attn_probs):
-        batch_size, seq_len, _ = attn_probs.shape     
-        H, W = self.resolutions[seq_len]
-        eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
-        eot_probs = eot_probs.reshape(-1, H, W, 1)
-        eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
+    def get_eot_centroids(self):
+        centroid_list = []
+        for layer_key, item in self.attention_store.items():
+            if not item:
+                continue
+            attn_probs = item[-1]
+            batch_size, seq_len, _ = attn_probs.shape
+            if seq_len not in self.grid_cache:
+                self.cache_grid_and_resolution(seq_len)   
+            H, W = self.resolutions[seq_len]
+            eot_probs = aggregate_padding_tokens(attn_probs, self.eot_tensor, self.device)
+            eot_probs = eot_probs.reshape(-1, H, W, 1)
+            eot_centroid = compute_centroids(eot_probs, self.grid_cache[seq_len])
+            centroid_list.append(eot_centroid)
+        if not centroid_list:
+            raise ValueError("No attention maps found to compute centroids from.")
         
-        return eot_centroid
+        return torch.stack(centroid_list, dim=1)
     
     def cache_grid_and_resolution(self, seq_len):
         H, W = seq_len_to_spatial_dims(seq_len, self.latent_height, self.latent_width)
