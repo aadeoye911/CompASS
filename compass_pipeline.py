@@ -9,6 +9,7 @@ from diffusers.image_processor import PipelineImageInput
 from utils.attn_utils import MyCustomAttnProcessor, AttentionStore, aggregate_padding_tokens
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
 from composition import centroids_to_kde, divergence_loss, generate_grid, compute_centroids
+import gc
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -206,14 +207,11 @@ class CompASSPipeline(StableDiffusionPipeline):
                         grid = self.attn_store.grid_cache[16 * latent_width / 4]
                         saliency_pred = centroids_to_kde(centroids, grid, sigma=0.01)
                         loss = divergence_loss(saliency_pred, target_map)
-                        print(loss.item())
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
-                        # loss.backward()
+                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
                     ####################################################
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
-                    noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
-
                     
                     if i == len(timesteps) - 1 or (i + 1) % self.scheduler.order == 0:
                         progress_bar.update()
@@ -232,6 +230,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         xm.mark_step()
 
                     torch.cuda.empty_cache()
+                    gc.collect()
 
         with torch.no_grad():
             # Postprocess final outputs
