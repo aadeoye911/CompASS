@@ -216,11 +216,11 @@ class CompASSPipeline(StableDiffusionPipeline):
                         loss = divergence_loss(saliency_pred, target_map)
                         grad_cond = torch.autograd.grad(loss, [latents])[0]
                         # loss.backward()
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+                        
                 
                     ####################################################
-
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
+                    noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
 
                     
                     if i == len(timesteps) - 1 or (i + 1) % self.scheduler.order == 0:
