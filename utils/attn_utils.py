@@ -74,7 +74,7 @@ class AttentionStore:
         self.step_store = self.get_empty_store()
         self.step_store = self.get_empty_store()
         
-    def get_eot_centroids(self, eot_tensor, return_grid = True):
+    def get_eot_centroids(self, eot_tensor, return_grid=True):
         centroid_list = []
         grid = None
         for layer_key, item in self.attention_store.items():
@@ -85,7 +85,7 @@ class AttentionStore:
             if seq_len not in self.grid_cache:
                 self.cache_grid_and_resolution(seq_len)   
             H, W = self.resolutions[seq_len]
-            if H == 16 and not grid:
+            if H == 16 and grid is None:
                 grid = self.grid_cache[seq_len]
             eot_probs = aggregate_padding_tokens(attn_probs, eot_tensor, self.device)
             eot_probs = eot_probs.reshape(-1, H, W, 1)
