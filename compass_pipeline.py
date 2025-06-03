@@ -229,7 +229,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             # Postprocess final outputs
             if not output_type == "latent":
                 image = self.vae.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[0]
-                image, has_nsfw_concept = self.run_safety_checker(image, device, prompt_embeds.dtype)
+                # image, has_nsfw_concept = self.run_safety_checker(image, device, prompt_embeds.dtype)
                 has_nsfw_concept = None
             else:
                 image = latents
