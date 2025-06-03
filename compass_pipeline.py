@@ -203,10 +203,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
 
                         # Update full latents only using conditional gradient
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * torch.cat([
-                            torch.zeros_like(grad_cond),  # no grad on unconditional
-                            grad_cond
-                        ])
+                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
                     ####################################################
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
