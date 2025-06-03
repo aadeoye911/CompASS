@@ -201,8 +201,6 @@ class CompASSPipeline(StableDiffusionPipeline):
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
                         loss = rot_loss(centroids)
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
-
-                        # Update full latents only using conditional gradient
                         noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
                     ####################################################
@@ -232,6 +230,7 @@ class CompASSPipeline(StableDiffusionPipeline):
             if not output_type == "latent":
                 image = self.vae.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[0]
                 image, has_nsfw_concept = self.run_safety_checker(image, device, prompt_embeds.dtype)
+                has_nsfw_concept = None
             else:
                 image = latents
                 has_nsfw_concept = None
