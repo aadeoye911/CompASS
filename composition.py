@@ -25,7 +25,7 @@ def distance_to_line(positions, line_normal, line_point=None, signed=True, keepd
     """
     line_point = torch.Tensor([0, 0]) if line_point is None else line_point
     line_point = line_point.to(positions.device)
-    line_normal = normalize_vector(line_normal).to(positions.device)                    
+    line_normal / line_normal.norm()                 
     distances = torch.sum(line_normal * (positions - line_point), dim=-1, keepdim=keepdim)
     if not signed:
         return torch.abs(distances)
@@ -33,7 +33,7 @@ def distance_to_line(positions, line_normal, line_point=None, signed=True, keepd
     return distances
 
 def normalize_vector(vector, eps=1e-8):
-    vector = vector.to(dtype=torch.float32) 
+    vector = vector
     norm = torch.norm(vector, p=2)
     if norm < eps:
         norm = norm + eps # Avoid division by zero
