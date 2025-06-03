@@ -24,7 +24,8 @@ def distance_to_line(positions, line_normal, line_point=None, signed=True, keepd
     Compute distance to a line.
     """
     line_point = torch.Tensor([0, 0]) if line_point is None else line_point
-    line_normal = normalize_vector(line_normal)                    
+    line_point = line_point.to(positions.device)
+    line_normal = normalize_vector(line_normal).to(positions.device)                    
     distances = torch.sum(line_normal * (positions - line_point), dim=-1, keepdim=keepdim)
     if not signed:
         return torch.abs(distances)
@@ -137,7 +138,7 @@ def rot_loss(positions, temperature=10, mean_only=False):
     return loss
 
 def ll_loss(positions, axis="left_diag", sigma=0.2):
-    normal = get_standard_normal(axis).to(positions.device)              # e.g., [-1, 1] normalized
+    normal = get_standard_normal(axis)             # e.g., [-1, 1] normalized
     dists = distance_to_line(positions, normal)     # coords: [B, N, 2] or [N, 2]
     weighted = torch.exp(-0.5 * (dists / sigma) ** 2)  # [B, N]
     loss = 1 - weighted.mean() 
