@@ -174,13 +174,16 @@ class CompASSPipeline(StableDiffusionPipeline):
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             
             for i, t in enumerate(timesteps):
+                latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                 with torch.enable_grad():
 
-                    latents = latents.clone().detach().requires_grad_(True)
+                    self.unet.zero_grad()
+                    latents.detach_()
 
-                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+                    if run_compass:    
+                        latent_model_input.requires_grad = True
 
                     # predict the noise residual
                     noise_pred = self.unet(
@@ -198,10 +201,17 @@ class CompASSPipeline(StableDiffusionPipeline):
                     
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
+                        loss = torch.tensor(0.0).to('cuda')
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
                         loss = ll_loss(centroids)
-                        grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
+
+                        loss.backward()
+
+                        # first tensor is the gradient of unconditional diffusion (tensor of 0s)
+                        _, dldz = latent_model_input.grad.chunk(2, dim=0)
+                        dldz = dldz.squeeze() 
+                    
+                        noise_pred += self.eta * self.scheduler.sigmas[i] * dldz
                 
                     ####################################################
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
