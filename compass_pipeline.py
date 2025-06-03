@@ -8,7 +8,7 @@ from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
 from utils.attn_utils import MyCustomAttnProcessor, AttentionStore, aggregate_padding_tokens
 from utils.sd_utils import parse_module_name, prompt2idx, scale_resolution_to_multiple
-from composition import centroids_to_kde, divergence_loss, nll_loss, rot_loss, ll_loss
+from composition import rot_loss, ll_loss, vb_loss
 import gc
 
 if is_torch_xla_available():

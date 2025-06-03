@@ -8,7 +8,7 @@ def minmax_normalization(attn_map):
 
     return (attn_map - min) / (max - min)
 
-def distance_to_point(positions, point, method="manhattan"):
+def distance_to_point(positions, point=torch.Tensor([0, 0]), method="manhattan"):
     displacement = positions - point
     if method == "manhattan":
         distances = torch.sum(torch.abs(displacement), dim=-1)  # Scaled L1 norm
@@ -123,22 +123,32 @@ def apply_gaussian_filter(tensor: torch.Tensor, sigma: float = 0.05, kernel_size
     return smoothed.permute(0, 2, 3, 1)   # Remove added dims
 
 def get_rot_powerpoints(device=None):
-    points = torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]]).unsqueeze(0)
+    points = torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]])
     return points if device is None else points.to(device)
 
-def rot_loss(positions, temperature=5):
-    mean_position = positions.mean(dim=1, keepdim=True)                                                  # Ensure consistency
-    powerpoints = get_rot_powerpoints(mean_position.device).unsqueeze(0)    
-    dists = distance_to_point(mean_position, powerpoints)
-    weights = torch.softmax(-temperature * dists, dim=-1)         # [B, 4]
-    expected = (weights.unsqueeze(-1) * powerpoints).sum(dim=1)   # [B, 2]
-    loss = torch.sum((mean_position - expected) ** 2)  # [B, 2] -> scalar
+def rot_loss(positions, temperature=10, mean_only=False):
+    powerpoints = get_rot_powerpoints(positions.device).unsqueeze(0).unsqueeze(0)
+    if mean_only:
+        positions = positions.mean(dim=1, keepdim=True)  # [B, 1, 2]            
+    dists = ((positions.unsqueeze(2) - powerpoints) ** 2).sum(dim=-1)
+    weights = torch.softmax(-temperature * dists, dim=-1)  # [B, N, K]
+    expected = (weights.unsqueeze(-1) * powerpoints).sum(dim=2)  # [B, N, 2]
+    loss = ((positions - expected) ** 2).sum(dim=-1).mean()  # scalar
     return loss
 
-def ll_loss(positions, axis="left_diag"):
+def ll_loss(positions, axis="left_diag", sigma=0.2):
     normal = get_standard_normal(axis)              # e.g., [-1, 1] normalized
     dists = distance_to_line(positions, normal)     # coords: [B, N, 2] or [N, 2]
-    return torch.sum(dists**2)                      # Penalize distance from line
+    weighted = torch.exp(-0.5 * (dists / sigma) ** 2)  # [B, N]
+    loss = 1 - weighted.mean() 
+    return loss
+
+def vb_loss(positions, sigma=2):
+    centroid = positions.mean(dim=1, keepdim=True)
+    dist = distance_to_point(centroid)
+    weighted = gaussian_weighting(dist, sigma=sigma)
+    loss = 1 - weighted
+    return loss
 
 def rot_grid(H, W):
     positions = generate_grid(H, W, centered=True, grid_aspect="scaled")
