@@ -199,7 +199,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     ######### CUSTOM LOGIC HERE ################ 
                     if run_compass:
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                        loss = rot_loss(centroids)
+                        loss = rot_loss(centroids, mean_only=True)
                         grad_cond = torch.autograd.grad(loss, [latents], retain_graph=True)[0]
                         noise_pred += self.eta * self.scheduler.sigmas[i] * grad_cond
                 
