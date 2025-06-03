@@ -138,7 +138,7 @@ def rot_loss(positions, temperature=10, mean_only=False):
     return loss
 
 def ll_loss(positions, axis="left_diag", sigma=0.2):
-    normal = get_standard_normal(axis)             # e.g., [-1, 1] normalized
+    normal = get_standard_normal(axis).to(positions.device)             # e.g., [-1, 1] normalized
     dists = distance_to_line(positions, normal)     # coords: [B, N, 2] or [N, 2]
     weighted = torch.exp(-0.5 * (dists / sigma) ** 2)  # [B, N]
     loss = 1 - weighted.mean() 
