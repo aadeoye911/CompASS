@@ -135,6 +135,8 @@ class CompASSPipeline(StableDiffusionPipeline):
 
         if self.do_classifier_free_guidance:
             prompt_embeds = torch.cat([uncond_embeds, cond_embeds])
+        else:
+            prompt_embeds = cond_embeds
 
         # 4. Prepare timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
