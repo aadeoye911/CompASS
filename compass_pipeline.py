@@ -181,8 +181,9 @@ class CompASSPipeline(StableDiffusionPipeline):
                     latents = latents.detach().clone().requires_grad_(True)
 
                     # No CFG for loss guidance, just prompt_embeds
+                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
                     latent_model_input = self.scheduler.scale_model_input(latents, t)
-
+                    
                     noise_pred = self.unet(
                         latent_model_input,
                         t,
