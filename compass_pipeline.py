@@ -197,7 +197,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
                         self.unet.zero_grad()
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                        loss = ll_loss(centroids)
+                        loss = rot_loss(centroids)
                         if torch.isnan(loss):
                             raise ValueError("Loss became NaN during guidance step.")
 
