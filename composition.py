@@ -9,6 +9,7 @@ def minmax_normalization(attn_map):
     return (attn_map - min) / (max - min)
 
 def distance_to_point(positions, point=torch.Tensor([0, 0]), method="manhattan"):
+    point = point.to(positions.device)
     displacement = positions - point
     if method == "manhattan":
         distances = torch.sum(torch.abs(displacement), dim=-1)  # Scaled L1 norm
