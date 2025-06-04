@@ -177,29 +177,31 @@ class CompASSPipeline(StableDiffusionPipeline):
                 # Pass 1: Aesthetic/Compositional Guidance
                 # ---------------------------
                 if run_compass:
-                    self.unet.zero_grad()
-                    latents = latents.detach().clone().requires_grad_(True)
-
-                    # No CFG for loss guidance, just prompt_embeds
-                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-                    latent_model_input = self.scheduler.scale_model_input(latents, t)
+                    with torch.enable_grad():
                     
-                    noise_pred = self.unet(
-                        latent_model_input,
-                        t,
-                        encoder_hidden_states=prompt_embeds,
-                        cross_attention_kwargs=self.cross_attention_kwargs
-                    ).sample
+                        self.unet.zero_grad()
+                        latents = latents.clone().detach().requires_grad_(True)
 
-                    centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                    loss = vb_loss(centroids)
+                        # No CFG for loss guidance, just prompt_embeds
+                        latent_model_input = latents
+                        latent_model_input = self.scheduler.scale_model_input(latents, t)
 
-                    loss.backward()
-                    grad = latents.grad
+                        noise_pred = self.unet(
+                            latent_model_input,
+                            t,
+                            encoder_hidden_states=prompt_embeds,
+                            cross_attention_kwargs=self.cross_attention_kwargs
+                        ).sample
 
-                    # Update latents via gradient descent
-                    latents = latents - self.eta * self.scheduler.sigmas[i] * grad
-                    latents = latents.detach()
+                        self.unet.zero_grad()
+                        centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
+                        loss = vb_loss(centroids)
+
+                        grad_cond = torch.autograd.grad(loss, [latents])[0]
+
+                        latents = latents - self.eta * self.scheduler.sigmas[i] * grad_cond
+                        # loss.backward()
+                        # grad = latents.grad
 
                 # ---------------------------
                 # Pass 2: Classifier-Free Guidance Denoising
