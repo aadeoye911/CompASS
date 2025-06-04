@@ -176,7 +176,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                 # ---------------------------
                 # Pass 1: Aesthetic/Compositional Guidance
                 # ---------------------------
-                if run_compass:
+                if run_compass and i > 10:
                     with torch.enable_grad():
                     
                         self.unet.zero_grad()
