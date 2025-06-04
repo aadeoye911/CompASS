@@ -127,7 +127,7 @@ def get_rot_powerpoints(device=None):
     points = torch.tensor([[-1/3, 1/3], [1/3, 1/3], [1/3, -1/3], [-1/3, -1/3]])
     return points if device is None else points.to(device)
 
-def rot_loss(positions, temperature=10, mean_only=False):
+def rot_loss(positions, temperature=5, mean_only=False):
     powerpoints = get_rot_powerpoints(positions.device).unsqueeze(0).unsqueeze(0)
     if mean_only:
         positions = positions.mean(dim=1, keepdim=True)  # [B, 1, 2]            
@@ -137,14 +137,14 @@ def rot_loss(positions, temperature=10, mean_only=False):
     loss = ((positions - expected) ** 2).sum(dim=-1).mean()  # scalar
     return loss
 
-def ll_loss(positions, axis="left_diag", sigma=0.2):
+def ll_loss(positions, axis="right_diag", sigma=0.3):
     normal = get_standard_normal(axis).to(positions.device)             # e.g., [-1, 1] normalized
     dists = distance_to_line(positions, normal)     # coords: [B, N, 2] or [N, 2]
     weighted = torch.exp(-0.5 * (dists / sigma) ** 2)  # [B, N]
     loss = 1 - weighted.mean() 
     return loss
 
-def vb_loss(positions, sigma=2):
+def vb_loss(positions, sigma=0.1):
     centroid = positions.mean(dim=1, keepdim=True)
     dist = distance_to_point(centroid)
     weighted = gaussian_weighting(dist, sigma=sigma)
