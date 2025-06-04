@@ -149,7 +149,7 @@ def vb_loss(positions, sigma=0.1):
     centroid = positions.mean(dim=1, keepdim=True)
     dist = distance_to_point(centroid)
     weighted = gaussian_weighting(dist, sigma=sigma)
-    loss = 1 - weighted
+    loss = 1 - weighted.mean()
     return loss
 
 def rot_grid(H, W):
