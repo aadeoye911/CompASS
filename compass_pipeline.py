@@ -203,7 +203,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                     if run_compass:
                         loss = torch.tensor(0.0).to('cuda')
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                        loss = ll_loss(centroids)
+                        loss = vb_loss(centroids)
                         loss.backward()
 
                         # first tensor is the gradient of unconditional diffusion (tensor of 0s)
