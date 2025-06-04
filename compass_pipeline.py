@@ -195,7 +195,7 @@ class CompASSPipeline(StableDiffusionPipeline):
 
                         self.unet.zero_grad()
                         centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                        loss = vb_loss(centroids)
+                        loss = ll_loss(centroids)
 
                         grad_cond = torch.autograd.grad(loss, [latents])[0]
 
