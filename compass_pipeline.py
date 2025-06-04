@@ -123,7 +123,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         device = self._execution_device
 
         # 3. Encode input prompt
-        prompt_embeds, negative_prompt_embeds = self.encode_prompt(
+        cond_embeds, uncond_embeds = self.encode_prompt(
             prompt, 
             device, 
             num_images_per_prompt, 
@@ -134,7 +134,7 @@ class CompASSPipeline(StableDiffusionPipeline):
         )
 
         if self.do_classifier_free_guidance:
-            prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
+            prompt_embeds = torch.cat([uncond_embeds, cond_embeds])
 
         # 4. Prepare timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -189,7 +189,7 @@ class CompASSPipeline(StableDiffusionPipeline):
                         noise_pred = self.unet(
                             latent_model_input,
                             t,
-                            encoder_hidden_states=prompt_embeds,
+                            encoder_hidden_states=cond_embeds,
                             cross_attention_kwargs=self.cross_attention_kwargs
                         ).sample
 
