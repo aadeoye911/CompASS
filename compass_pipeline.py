@@ -172,48 +172,99 @@ class CompASSPipeline(StableDiffusionPipeline):
         ###############################################################################
         # 7. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            
             for i, t in enumerate(timesteps):
-                latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
-
-                with torch.enable_grad():
-
+                # ---------------------------
+                # Pass 1: Aesthetic/Compositional Guidance
+                # ---------------------------
+                if run_compass:
                     self.unet.zero_grad()
-                    latents.detach_()
+                    latents = latents.detach().clone().requires_grad_(True)
 
-                    if run_compass:    
-                        latent_model_input.requires_grad = True
+                    # No CFG for loss guidance, just prompt_embeds
+                    latent_model_input = self.scheduler.scale_model_input(latents, t)
 
-                    # predict the noise residual
                     noise_pred = self.unet(
-                        latent_model_input, 
-                        t, 
-                        encoder_hidden_states=prompt_embeds, 
+                        latent_model_input,
+                        t,
+                        encoder_hidden_states=prompt_embeds,
                         cross_attention_kwargs=self.cross_attention_kwargs
                     ).sample
-                    
-                    self.unet.zero_grad()
-                    
+
+                    centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
+                    loss = vb_loss(centroids)
+
+                    loss.backward()
+                    grad = latents.grad
+
+                    # Update latents via gradient descent
+                    latents = latents - self.eta * self.scheduler.sigmas[i] * grad
+                    latents = latents.detach()
+
+                # ---------------------------
+                # Pass 2: Classifier-Free Guidance Denoising
+                # ---------------------------
+                with torch.no_grad():
+                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+
+                    noise_pred = self.unet(
+                        latent_model_input,
+                        t,
+                        encoder_hidden_states=prompt_embeds,
+                        cross_attention_kwargs=self.cross_attention_kwargs
+                    ).sample
+
                     if self.do_classifier_free_guidance:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
                         noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
-                    
-                    ######### CUSTOM LOGIC HERE ################ 
-                    if run_compass:
-                        loss = torch.tensor(0.0).to('cuda')
-                        centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
-                        loss = vb_loss(centroids)
-                        loss.backward()
 
-                        # first tensor is the gradient of unconditional diffusion (tensor of 0s)
-                        _, dldz = latent_model_input.grad.chunk(2, dim=0)
-                        dldz = dldz.squeeze() 
-                    
-                        noise_pred += self.eta * self.scheduler.sigmas[i] * dldz
-                
-                    ####################################################
+                    # Step through scheduler
                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
+
+
+        # with self.progress_bar(total=num_inference_steps) as progress_bar:
+            
+        #     for i, t in enumerate(timesteps):
+        #         latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+        #         latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+
+        #         with torch.enable_grad():
+
+        #             self.unet.zero_grad()
+        #             latents.detach_()
+
+        #             if run_compass:    
+        #                 latent_model_input.requires_grad = True
+
+        #             # predict the noise residual
+        #             noise_pred = self.unet(
+        #                 latent_model_input, 
+        #                 t, 
+        #                 encoder_hidden_states=prompt_embeds, 
+        #                 cross_attention_kwargs=self.cross_attention_kwargs
+        #             ).sample
+                    
+        #             self.unet.zero_grad()
+                    
+        #             if self.do_classifier_free_guidance:
+        #                 noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+        #                 noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    
+        #             ######### CUSTOM LOGIC HERE ################ 
+        #             if run_compass:
+        #                 loss = torch.tensor(0.0).to('cuda')
+        #                 centroids = self.attn_store.get_eot_centroids(eot_tensor, return_grid=False)
+        #                 loss = vb_loss(centroids)
+        #                 loss.backward()
+
+        #                 # first tensor is the gradient of unconditional diffusion (tensor of 0s)
+        #                 _, dldz = latent_model_input.grad.chunk(2, dim=0)
+        #                 dldz = dldz.squeeze() 
+                    
+        #                 noise_pred += self.eta * self.scheduler.sigmas[i] * dldz
+                
+        #             ####################################################
+        #             latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
                     
                     if i == len(timesteps) - 1 or (i + 1) % self.scheduler.order == 0:
                         progress_bar.update()
