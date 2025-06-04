@@ -6,7 +6,7 @@ def minmax_normalization(attn_map):
     min = attn_map.amin(dim=(1, 2), keepdim=True)  # [B, 1, 1, 1]
     max = attn_map.amax(dim=(1, 2), keepdim=True)  # [B, 1, 1, 1]
 
-    return (attn_map - min) / (max - min)
+    return (attn_map - min) / (max - min + 1e-8)
 
 def distance_to_point(positions, point=torch.Tensor([0, 0]), method="manhattan"):
     point = point.to(positions.device)
